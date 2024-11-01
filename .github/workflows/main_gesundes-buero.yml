@@ -21,17 +21,26 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: npm install, build, and test
-        run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+      # Install dependencies and build for frontend
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: ./frontend
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: ./frontend
+
+      # Install dependencies for backend
+      - name: Install backend dependencies
+        run: npm install
+        working-directory: ./backend
       
+      # Upload built frontend for deployment
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: node-app
-          path: .
+          name: frontend-dist
+          path: ./frontend/dist
 
   deploy:
     runs-on: ubuntu-latest
@@ -46,7 +55,7 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: node-app
+          name: frontend-dist
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -61,5 +70,4 @@ jobs:
         with:
           app-name: 'gesundes-buero'
           slot-name: 'Production'
-          package: .
-          
+          package: ./backend
