@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version: '20.x'
+          node-version: '16.x'
 
       # Install and build frontend
       - name: Install and build frontend
