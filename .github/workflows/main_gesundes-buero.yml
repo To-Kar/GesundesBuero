@@ -18,37 +18,25 @@ jobs:
         with:
           node-version: '20.x'
 
-      # Install dependencies and build for frontend
-      - name: Install frontend dependencies
-        run: npm install
-        working-directory: ./frontend
+      # Install and build frontend
+      - name: Install and build frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
 
-      - name: Build frontend
-        run: npm run build
-        working-directory: ./frontend
-
-      # Install dependencies for backend
+      # Install backend dependencies
       - name: Install backend dependencies
-        run: npm install
-        working-directory: ./backend
-      
-      # Upload built frontend for deployment
-      - name: Upload frontend artifact for deployment job
+        run: |
+          cd backend
+          npm install
+
+      # Upload artifacts for deployment
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-dist
-          path: ./frontend/dist
-
-      # Zip backend for deployment
-      - name: Zip backend files
-        run: zip -r backend.zip ./
-        working-directory: ./backend
-
-      - name: Upload backend artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-zip
-          path: ./backend/backend.zip
+          name: node-app
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
@@ -57,19 +45,14 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write # This is required for requesting the JWT
+      id-token: write #This is required for requesting the JWT
 
     steps:
-      - name: Download frontend artifact from build job
+      - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: frontend-dist
-      
-      - name: Download backend artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-zip
-      
+          name: node-app
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -83,4 +66,6 @@ jobs:
         with:
           app-name: 'gesundes-buero'
           slot-name: 'Production'
-          package: backend/backend.zip
+          package: .
+        working-directory: ./backend
+
