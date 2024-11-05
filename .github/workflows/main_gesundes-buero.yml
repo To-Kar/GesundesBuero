@@ -1,12 +1,9 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Node.js app to Azure Web App - gesundes-buero
 
 on:
   push:
     branches:
-      - main
+      - development
   workflow_dispatch:
 
 jobs:
@@ -21,26 +18,25 @@ jobs:
         with:
           node-version: '20.x'
 
-      # Install dependencies and build for frontend
-      - name: Install frontend dependencies
-        run: npm install
-        working-directory: ./frontend
+      # Install and build frontend
+      - name: Install and build frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
 
-      - name: Build frontend
-        run: npm run build
-        working-directory: ./frontend
-
-      # Install dependencies for backend
+      # Install backend dependencies
       - name: Install backend dependencies
-        run: npm install
-        working-directory: ./backend
-      
-      # Upload built frontend for deployment
+        run: |
+          cd backend
+          npm install
+
+      # Upload artifacts for deployment
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-dist
-          path: ./frontend/dist
+          name: node-app
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
@@ -55,8 +51,8 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: frontend-dist
-      
+          name: node-app
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -71,3 +67,4 @@ jobs:
           app-name: 'gesundes-buero'
           slot-name: 'Production'
           package: ./backend
+
