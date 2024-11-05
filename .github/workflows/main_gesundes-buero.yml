@@ -66,6 +66,6 @@ jobs:
         with:
           app-name: 'gesundes-buero'
           slot-name: 'Production'
-          package: .
-        working-directory: ./backend
+          package: ./backend
+
 
