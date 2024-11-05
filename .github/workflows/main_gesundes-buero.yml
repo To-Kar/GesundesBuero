@@ -30,6 +30,7 @@ jobs:
         run: |
           cd backend
           npm install
+          node server.js
 
       # Upload artifacts for deployment
       - name: Upload artifact for deployment job
