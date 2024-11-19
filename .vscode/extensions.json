@@ -1,3 +1,6 @@
 {
-  "recommendations": ["Vue.volar"]
+  "recommendations": [
+    "ms-azuretools.vscode-azurefunctions",
+    "Vue.volar"
+  ]
 }
