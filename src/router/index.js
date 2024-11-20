@@ -2,10 +2,10 @@ import { createRouter, createWebHistory} from 'vue-router';
 import RoomView from '../views/RoomView.vue';
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
         {
-            path: '/',
+            path: '/room',
             name: 'room',
             component: RoomView
         },
