@@ -1,12 +1,13 @@
-<script>
-
+<script >
+import { RouterView } from 'vue-router';
+export default {
+  name: 'App',
+  components: {
+    RouterView
+  }
+}
 </script>
 
 <template>
-  <div>
-    
-    <div class="app-content">
-      <Room />
-    </div>
-  </div>
+  <RouterView />
 </template>
