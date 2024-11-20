@@ -1,16 +1,16 @@
 <script>
-import Leiste from './components/nav-bar.vue';
+import navbar from './components/nav-bar.vue';
 
 export default {
   components: {
-    Leiste
+    navbar
   }
 }
 </script>
 
 <template>
   <div>
-    <Leiste />
+  <navbar />
   </div>
 </template>
 

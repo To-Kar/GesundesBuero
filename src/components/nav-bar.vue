@@ -12,7 +12,7 @@
 
 <script>
 export default {
-  name: 'Leiste',
+  name: 'navbar',
   methods: {
     handleAlertClick() {
       /*alert('Lahmacun')*/
