@@ -5,31 +5,31 @@ const rooms = {
     "room1": {
         sensorData: {
             temperature: 22.5,
-            humidity: 45.0
+            humidity: 39.0
         }
     },
     "room2": {
         sensorData: {
-            temperature: 22.5,
-            humidity: 45.0
+            temperature: 24.5,
+            humidity: 37.0
         }
     },
     "room3": {
         sensorData: {
-            temperature: 22.5,
+            temperature: 20.5,
             humidity: 45.0
         }
     },
     "room4": {
         sensorData: {
-            temperature: 22.5,
-            humidity: 45.0
+            temperature: 23.5,
+            humidity: 46.0
         }
     },
     "room5": {
         sensorData: {
             temperature: 22.5,
-            humidity: 45.0
+            humidity: 47.0
         }
     }
 };
