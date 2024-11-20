@@ -1,5 +1,5 @@
 <script>
-import Leiste from './components/Leiste/leiste.vue';
+import Leiste from './components/nav-bar.vue';
 
 export default {
   components: {
@@ -9,9 +9,21 @@ export default {
 </script>
 
 <template>
-  <div class="obere-leiste">
+  <div>
     <Leiste />
   </div>
 </template>
 
-<style src = "./App.css"></style>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    background-color: whitesmoke;
+  }
+  
+  #app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+</style>
