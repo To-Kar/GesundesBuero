@@ -1,0 +1,43 @@
+/* Styling für den Header */
+.app-header {
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .header-button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease;
+  }
+  
+  .header-button:hover {
+    transform: scale(1.1);
+    border: none;
+  }
+
+  .header-button:focus {
+    outline: none;
+  }
+  
+  .header-icon {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .header-logo {
+    width: 100%;
+    max-width: 200px;
+    height: 100px;
+    padding-left: 50%;
+    padding-right: 50%;
+  }
+  
