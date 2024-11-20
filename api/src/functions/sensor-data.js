@@ -33,7 +33,7 @@ const rooms = {
         }
     }
 };
-
+// REST-API um Sensordaten für einen bestimmten Raum bereitzustellen
 app.http('sensor-data', {
     methods: ['GET'],
     authLevel: 'anonymous',
@@ -42,17 +42,18 @@ app.http('sensor-data', {
         context.log(`Http function processed request for url "${request.url}"`);
         const roomId = request.params.roomId; // roomId aus der URL
 
-        // überprüfen ob Raum vorhanden
+        //überprüfen ob Raum vorhanden
         if (!rooms[roomId]) {
             context.log(`Room with ID ${roomId} not found`); // Anzeige auf Terminal
             return {
-                body: { error: `Room with ID ${roomId} not found` }
+                jsonBody: { error: `Room with ID ${roomId} not found` } //mit jsonBody sicherstellen dass js Objekt auch in JSON String konvertiert wird
             };
         }
+
         // Daten zurückgeben
         context.log(`Sensor data for ${roomId}:`, rooms[roomId].sensorData); //Anzeige auf Terminal
         return {
-            body: rooms[roomId].sensorData
+            jsonBody: rooms[roomId].sensorData //mit jsonBody sicherstellen dass js Objekt auch in JSON String konvertiert wird
         };
     }
 });
