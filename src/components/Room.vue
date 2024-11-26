@@ -1,37 +1,69 @@
 <script>
 export default {
-  name: 'Room',
+  name: "Room",
   props: {
     name: {
       type: String,
-      default: 'Büroraum 1'
+      default: "Büroraum",
     },
     temperature: {
       type: Number,
-      default: 19
+      required: true, // Temperatur ist erforderlich
     },
     humidity: {
       type: Number,
-      default: 45
-    }
-  }
-}
+      required: true, // Luftfeuchtigkeit ist erforderlich
+    },
+    number: {
+      type: Number,
+      required: true, // Die Nummer des Raums ist erforderlich
+    },
+  },
+  computed: {
+    // Farbe basierend auf der Temperatur
+    temperatureColor() {
+      if (this.temperature < 20) return "#87cefa"; // Unter 20°C → Blau
+      if (this.temperature > 24) return "#cd5c5c"; // Über 24°C → Rot
+      return "#3cb371"; // Dazwischen → Grün
+    },
+    // Farbe basierend auf der Luftfeuchtigkeit
+    humidityColor() {
+      if (this.humidity < 45) return "#87cefa"; // Unter 30% → Blau
+      if (this.humidity > 55) return "#cd5c5c"; // Über 60% → Rot
+      return "#3cb371"; // Dazwischen → Grün
+    },
+  },
+};
 </script>
 
 <template>
   <div class="room-card">
-    <h2 class="room-title">{{ name }}</h2>
+    <h2 class="room-title">{{ name }} {{ number }}</h2>
     <div class="room-layout">
-      <img src="../assets/Büro1.jpg" alt="Raum Layout" class="room-image">
+      <img src="../assets/Büro1.jpg" alt="Raum Layout" class="room-image" />
       <div class="metrics">
-        <div class="temperature">{{ temperature }}°C</div>
-        <div class="humidity">{{ humidity }}%</div>
+        <!-- Dynamische Farbe für Temperatur -->
+        <div class="temperature" :style="{ backgroundColor: temperatureColor }">
+          {{ temperature }}°C
+        </div>
+        <!-- Dynamische Farbe für Luftfeuchtigkeit -->
+        <div class="humidity" :style="{ backgroundColor: humidityColor }">
+          {{ humidity }}%
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;display=swap');
+
+/* Anwenden des Fonts */
+.room-card {
+  font-family: 'Noto Sans', sans-serif;
+}
+
+/* Hauptcontainer */
 .room-card {
   background-color: #f5f5f5;
   border-radius: 8px;
@@ -42,19 +74,22 @@ export default {
   margin: auto;
 }
 
+/* Titel */
 .room-title {
   font-size: 1.5rem;
   margin-bottom: 1rem;
   text-align: center;
 }
 
+/* Bildlayout */
 .room-layout {
   position: relative;
   width: 100%;
   height: 0;
   padding-top: 56.25%; /* 16:9 Aspect Ratio */
-}
+} 
 
+/* Raum-Bild */
 .room-image {
   position: absolute;
   top: 0;
@@ -64,47 +99,26 @@ export default {
   object-fit: cover;
 }
 
+/* Temperatur- und Luftfeuchtigkeitsanzeige */
 .metrics {
   position: absolute;
-  right: 1rem;
-  top: 1rem;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  font-size: 1rem; /* Dynamische Schriftgröße */
 }
 
+/* Dynamische Anzeige für Temperatur und Luftfeuchtigkeit */
 .temperature,
 .humidity {
   padding: 0.5rem;
   border-radius: 4px;
+  color: white; /* Textfarbe immer weiß */
   text-align: center;
-  font-size: calc(0.8rem + 1vw); /* Dynamische Schriftgröße basierend auf der Fensterbreite */
   font-weight: bold;
-  color: white;
-  width: fit-content;
-  min-width: 50px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Für bessere Lesbarkeit */
-}
-
-.temperature {
-  background-color: #007bff; /* Blaue Farbe */
-}
-
-.humidity {
-  background-color: #28a745; /* Grüne Farbe */
-}
-
-/* Responsive Anpassungen */
-@media (max-width: 768px) {
-  .metrics {
-    font-size: 0.9rem;
-  }
-
-  .temperature,
-  .humidity {
-    font-size: calc(0.7rem + 1vw);
-  }
+  min-width: 60px;
+  max-width: 100px;
+  font-size: calc(0.8rem + 1vw); /* Dynamische Schriftgröße */
 }
 </style>
-
