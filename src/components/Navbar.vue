@@ -54,7 +54,7 @@ export default {
   </div>
 </template>
 
-<style>
+<style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400&display=swap');
 * {
   font-family: 'Noto Sans', sans-serif;
