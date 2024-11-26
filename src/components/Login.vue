@@ -1,6 +1,6 @@
 <script>
 import companyLogo from '../assets/systecs-logo.png' // Importiert das Logo-Bild
-import companyVideo from '../assets/Unbenanntes Video – Mit Clipchamp erstellt.mp4' // Importiert das Video
+import companyVideo from '../assets/companyVideo.mp4' // Importiert das Video
 
 export default {
   name: "Login",
@@ -52,7 +52,7 @@ export default {
   </div>
 </template>
   
-<style>
+<style scoped>
 
 body {
   overflow: hidden; /* Deaktiviert Scrollen */

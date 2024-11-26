@@ -8,6 +8,7 @@ const router = createRouter({
             path: '/Login',
             name: 'Login',
             component: LoginView,
+            meta: { hideNavbar: true}
         },
     ],
 }
