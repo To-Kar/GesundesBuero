@@ -8,14 +8,31 @@ export default {
   },
   data() {
     return {
-      rooms: [
-        { number: 1, temperature: 19, humidity: 43 },
-        { number: 2, temperature: 22, humidity: 45 },
-        { number: 3, temperature: 25, humidity: 65 },
-        { number: 4, temperature: 18, humidity: 50 },
-        { number: 5, temperature: 23, humidity: 35 },
-      ],
+      rooms: [],
     };
+  },
+  mounted() {
+    this.fetchRoomData();
+  },
+  methods: {
+    async fetchRoomData() {
+      try {
+        const roomIds = ["room1", "room2", "room3", "room4", "room5"];
+        const requests = roomIds.map((id) =>
+          fetch(`http://localhost:7071/api/rooms/${id}/sensor-data`)
+            .then((response) => response.json())
+        );
+        const responses = await Promise.all(requests);
+
+        this.rooms = responses.map((data, index) => ({
+          number: index + 1,
+          temperature: data.temperature,
+          humidity: data.humidity,
+        }));
+      } catch (error) {
+        console.error("Fehler beim Abrufen der Raumdaten:", error);
+      }
+    },
   },
 };
 </script>
@@ -33,6 +50,7 @@ export default {
 </template>
 
 <style scoped>
+/* Dein vorhandenes CSS */
 .room-view {
   display: flex;
   flex-wrap: wrap;
