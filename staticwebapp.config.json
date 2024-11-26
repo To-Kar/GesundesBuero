@@ -15,11 +15,12 @@
       "identityProviders": {
         "azureActiveDirectory": {
           "registration": {
-            "openIdIssuer": "https://login.microsoftonline.com/TENANT_ID/v2.0",
-            "clientIdSettingName": "36a7510e-7260-437e-bdd6-08375a65cf93",
-            "clientSecretSettingName": "clientSecret"
+            "openIdIssuer": "https://login.microsoftonline.com/${{ secrets.AZUREAPPSERVICE_TENANTID }}/v2.0",
+            "clientIdSettingName": "AZUREAPPSERVICE_CLIENTID",
+            "clientSecretSettingName": "AZURE_STATIC_WEB_APPS_API_TOKEN_ORANGE_SKY_0967A5B03"
           }
         }
       }
     }
   }
+  
