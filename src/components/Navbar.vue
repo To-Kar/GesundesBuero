@@ -21,7 +21,12 @@ export default {
       if (event.target.classList.contains('settings-overlay')) {
         this.showSettings = false
       }
-    }
+    },
+    handleLogoutClick() {
+      this.$router.push("/login")
+      localStorage.removeItem('authToken'); // Beispiel: Entfernt ein Auth-Token
+      this.showSettings = false; // Schließt das Overlay
+    },
   }
 }
 </script>
@@ -47,7 +52,7 @@ export default {
        class="settings-overlay"
        @click="closeOverlay">
     <div class="settings-content">
-      <button class="logout-button">
+      <button class="logout-button" @click="handleLogoutClick">
         Logout
       </button>
     </div>
@@ -73,6 +78,7 @@ export default {
   align-items: center;
   border-bottom: 2px solid #9292927c;
   z-index: 1001;
+  background-color: whitesmoke;
 }
 .header-button {
   background: none;

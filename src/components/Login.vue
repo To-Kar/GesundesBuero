@@ -13,8 +13,8 @@ export default {
   },
   methods: {
     redirectToAzureSSO() {
-      // Leitet zur Azure SSO-Seite weiter
-      window.location.href = "https://orange-sky-0967a5b03.5.azurestaticapps.net/";
+      // Leitet zu einer anderen Route innerhalb der Anwendung weiter
+      this.$router.push("/room"); // Ersetze "/zielroute" mit der gewünschten Route
     },
   },
 };
