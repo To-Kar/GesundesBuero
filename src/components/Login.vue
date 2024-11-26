@@ -125,7 +125,8 @@ body {
   font-style: normal;
   font-size: 30px; /* Schriftgröße des Slogans */
   color: #000000; /* Weiße Schrift */
-  margin-top: 10px;
+  margin-top: 5px;
+  margin-bottom: 20px;
 }
 
 /* Login-Button */

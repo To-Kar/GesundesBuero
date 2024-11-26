@@ -77,8 +77,8 @@ export default {
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid #9292927c;
-  z-index: 1001;
   background-color: whitesmoke;
+  z-index: 1001;
 }
 .header-button {
   background: none;

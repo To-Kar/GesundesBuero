@@ -56,7 +56,6 @@ export default {
   flex-wrap: wrap;
   justify-content: center;
   gap: 1rem;
-  padding-top: 100px;
 }
 
 .room-view > * {

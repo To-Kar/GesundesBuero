@@ -18,11 +18,10 @@ export default {
   <RouterView />
 </template>
 
-<style scoped>
+<style>
 * {
     margin: 0;
     padding: 0;
-    background-color: whitesmoke;
   }
   
   #app {
