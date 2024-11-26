@@ -1,49 +1,14 @@
-<template>
-  <div id="app">
-    <!-- Video als Hintergrund -->
-    <video autoplay muted loop class="background-video">
-      <source src="../assets/Unbenanntes Video – Mit Clipchamp erstellt.mp4" type="video/mp4" />
-      Ihr Browser unterstützt keine Videos.
-    </video>
-    <div :class="{ 'dark-overlay': isHovered }"></div>
-    
-    <!-- Inhalt auf dem Video -->
-    <div class="overlay-content">
-      <!-- Logo -->
-      <header class="app-header">
-        <img src="../assets/systecs-logo.png" alt="Logo" class="header-logo" />
-        <!-- Slogan -->
-        <p class="slogan">Ihr gesundes Büro</p>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Hurricane&family=Lobster&display=swap" rel="stylesheet">
-      </header>
-
-      <!-- Login-Button -->
-      <div class="login-container">
-        <button
-          class="login-button"
-          @mouseover="isHovered = true"
-          @mouseleave="isHovered = false"
-          @click="redirectToAzureSSO"
-        >
-          Anmelden
-        </button>
-        <!-- Nachricht bei Hover -->
-        <p class="hover-message" :class="{ visible: isHovered }">
-          Sie werden nun zum Microsoft Anmeldedienst weitergeleitet
-        </p>
-      </div>
-    </div>
-  </div>
-</template>
-  
 <script>
+import companyLogo from '../assets/systecs-logo.png' // Importiert das Logo-Bild
+import companyVideo from '../assets/Unbenanntes Video – Mit Clipchamp erstellt.mp4' // Importiert das Video
+
 export default {
   name: "Login",
   data() {
     return {
       isHovered: false, // Überwacht den Hover-Zustand
+      companyLogo,
+      companyVideo
     };
   },
   methods: {
@@ -55,7 +20,38 @@ export default {
 };
 </script>
 
-
+<template>
+  <div id="app">
+    <!-- Video als Hintergrund -->
+    <video autoplay muted loop class="background-video">
+      <source :src="companyVideo" type="video/mp4" />
+      Ihr Browser unterstützt keine Videos.
+    </video>
+    <div :class="{ 'dark-overlay': isHovered }"></div>
+    
+    <!-- Inhalt auf dem Video -->
+    <div class="overlay-content">
+      <!-- Logo -->
+      <header class="app-header">
+        <img :src="companyLogo" class="header-logo" />
+        <!-- Slogan -->
+        <p class="slogan">Ihr gesundes Büro</p>
+        <link rel="stylesheet" href="https://use.typekit.net/fea8sbd.css">
+        
+        <!-- Login-Button -->
+          <button
+          class="login-button"
+          @mouseover="isHovered = true"
+          @mouseleave="isHovered = false"
+          @click="redirectToAzureSSO"
+          >
+          Anmelden
+        </button>
+    </header>
+    </div>
+  </div>
+</template>
+  
 <style>
 
 body {
@@ -101,70 +97,54 @@ body {
 
 /* Header */
 .app-header {
-  margin-bottom: 20px; /* Abstand zwischen Logo und Slogan */
+  /*margin-bottom: 10px; /* Abstand zwischen Logo und Slogan */
   text-align: center;
+  box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05);
+  background-color: rgba(255, 255, 255, 0.55);
+  border-radius: 45px;
+  height: auto; /* Lässt die Höhe flexibel bleiben */
+  min-height: 350px; /* Mindesthöhe, die immer beibehalten wird */
+  max-height: 350px; /* Maximale Höhe, die immer beibehalten wird */
+  padding: 3%;
+  display: flex;
+  flex-direction: column; /* Richtet die Inhalte untereinander aus */
+  align-items: center; /* Zentriert die Inhalte horizontal */
+  justify-content: center; /* Zentriert die Inhalte vertikal */
 }
 
 .header-logo {
+  padding: 0;
   width: 400px; /* Größe des Logos */
   height: auto;
-  background-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0px 0px 8px 4px #0083bc;
 }
 
 /* Slogan */
 .slogan {
-  font-family: "Hurricane", cursive;
+  font-family: "bruno-ace", sans-serif;
   font-weight: 400;
   font-style: normal;
-  font-size: 40px; /* Schriftgröße des Slogans */
-  color: white; /* Weiße Schrift */
+  font-size: 30px; /* Schriftgröße des Slogans */
+  color: #000000; /* Weiße Schrift */
   margin-top: 10px;
 }
 
 /* Login-Button */
-.login-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  position: relative; /* Verhindert Verschiebungen */
-}
-
 .login-button {
-  padding: 15px 30px;
-  font-size: 18px;
-  background-color: #0083bc; /* Systecs-Blau */
-  color: #002b56;
+  box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05);
+  height: 70px;
+  width: 190px;
   border: none;
-  border-radius: 5px;
+  padding: 15px 30px;
+  font-size: 24px;
+  background-color: #0083bc; /* Systecs-Blau */
+  color: #ffffff;
+  border-radius: 45px;
   cursor: pointer;
   transition: background-color 0.5s ease;
 }
 
 .login-button:hover {
-  background-color: #005a9e; /* Dunkleres Blau beim Hover */
-}
-
-.login-button:focus {
-  outline: none;
-  box-shadow: 0px 0px 4px 2px rgba(0, 120, 212, 0.5);
-}
-
-/* Nachricht bei Hover */
-.hover-message {
-  left: 0;
-  right: 0;
-  font-size: 16px;
-  color: white;
-  opacity: 0; /* Unsichtbar, wenn nicht im Hover-Zustand */
-  text-align: center;
-  transition: 0.3s ; /* Sanftes Einblenden */
-  margin-top: 20px;
-}
-
-.hover-message.visible {
-  opacity: 1; /* Sichtbar im Hover-Zustand */
+  background-color: #002b56; /* Dunkleres Systecs */
 }
 
 
