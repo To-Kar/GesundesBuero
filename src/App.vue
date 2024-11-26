@@ -1,7 +1,7 @@
-<script>
+<script >
 import navbar from './components/Navbar.vue';
-
 export default {
+  name: 'App',
   components: {
     navbar
   }
@@ -9,9 +9,8 @@ export default {
 </script>
 
 <template>
-  <div>
   <navbar />
-  </div>
+  <RouterView />
 </template>
 
 <style>
