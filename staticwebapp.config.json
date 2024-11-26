@@ -1,0 +1,25 @@
+{
+    "routes": [
+      {
+        "route": "/*",
+        "allowedRoles": ["authenticated"]
+      }
+    ],
+    "responseOverrides": {
+      "401": {
+        "statusCode": 302,
+        "redirect": "/.auth/login/aad"
+      }
+    },
+    "auth": {
+      "identityProviders": {
+        "azureActiveDirectory": {
+          "registration": {
+            "openIdIssuer": "https://login.microsoftonline.com/TENANT_ID/v2.0",
+            "clientIdSettingName": "36a7510e-7260-437e-bdd6-08375a65cf93",
+            "clientSecretSettingName": "clientSecret"
+          }
+        }
+      }
+    }
+  }
