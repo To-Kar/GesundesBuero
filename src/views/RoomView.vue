@@ -1,3 +1,9 @@
+<template>
+  <div>
+    <Room v-for="room in rooms" :key="room.number" :room="room" />
+  </div>
+</template>
+
 <script>
 import Room from "../components/Room.vue";
 
@@ -8,59 +14,36 @@ export default {
   },
   data() {
     return {
-      rooms: [],
+      rooms: [], // Array to hold room data
     };
   },
   mounted() {
-    this.fetchRoomData();
+    this.fetchRoomData(); // Fetch room data when the component mounts
   },
   methods: {
     async fetchRoomData() {
+      const API_BASE_URL = "http://localhost:7071/api/room";
       try {
-        const roomIds = ["room1", "room2", "room3", "room4", "room5"];
-        const requests = roomIds.map((id) =>
-          fetch(`http://localhost:7071/api/rooms/${id}/sensor-data`)
-            .then((response) => response.json())
-        );
-        const responses = await Promise.all(requests);
+        const response = await fetch(`${API_BASE_URL}/rooms/sensor-data`);
+        if (!response.ok) {
+          throw new Error(`Error fetching room data`);
+        }
+        const data = await response.json();
 
-        this.rooms = responses.map((data, index) => ({
-          number: index + 1,
-          temperature: data.temperature,
-          humidity: data.humidity,
+        // Log the data received from the API for debugging
+        console.log("Data received from API:", data);
+
+        this.rooms = data.map((roomData) => ({
+          number: roomData.room_id || "N/A",
+          temperature: roomData.target_temp || "N/A",
+          humidity: roomData.target_humidity || "N/A",
+          image: `/assets/images/room${roomData.room_id}.jpg`,
         }));
+        console.log(`Fetched rooms:`, this.rooms);
       } catch (error) {
-        console.error("Fehler beim Abrufen der Raumdaten:", error);
+        console.error("Error fetching room data:", error);
       }
     },
   },
 };
 </script>
-
-<template>
-  <div class="room-view">
-    <Room
-      v-for="room in rooms"
-      :key="room.number"
-      :number="room.number"
-      :temperature="room.temperature"
-      :humidity="room.humidity"
-    />
-  </div>
-</template>
-
-<style scoped>
-/* Dein vorhandenes CSS */
-.room-view {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.room-view > * {
-  flex: 1 1 calc(50% - 1rem);
-  max-width: calc(50% - 1rem);
-  box-sizing: border-box;
-}
-</style>
