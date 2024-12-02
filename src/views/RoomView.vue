@@ -17,7 +17,7 @@
 
 <script>
 import Room from "../components/Room.vue";
-import axios from 'axios';
+import { roomApi } from "../services/roomApi";
 
 export default {
   name: "RoomView",
@@ -26,49 +26,42 @@ export default {
   },
   data() {
     return {
-      rooms: [], // Array to hold room data
+      rooms: [],
+      error: null,
+      loading: false
     };
   },
   mounted() {
-    this.fetchRoomData(); // Fetch room data when the component mounts
+    this.loadRooms();
   },
   methods: {
-    async fetchRoomData() {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:7071/api";
+    async loadRooms() {
+      this.loading = true;
+      this.error = null;
       try {
-        const response = await axios.get(`${API_BASE_URL}/sensor-data`);
-        const data = response.data;
-
-        console.log("Data received from API:", data);
-
-        this.rooms = data.map((roomData) => ({
-          number: roomData.room_id || "N/A",
-          name: roomData.name || "Room",
-          temperature: roomData.current_temp || "N/A",
-          humidity: roomData.current_humidity || "N/A",
-          target_temperature: roomData.target_temp || "N/A",
-          target_humidity: roomData.target_humidity || "N/A",
-          image: roomData.imageURL || `/assets/images/room${roomData.room_id}.jpg`,
-          status: roomData.status || { temp_status: 'unknown', humidity_status: 'unknown' }
-        }));
-        console.log(`Fetched rooms:`, this.rooms);
+        this.rooms = await roomApi.getAllRooms();
       } catch (error) {
-        console.error("Error fetching room data:", error.message);
-        // Add more detailed error logging
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          console.error("Response data:", error.response.data);
-          console.error("Response status:", error.response.status);
-        } else if (error.request) {
-          // The request was made but no response was received
-          console.error("No response received:", error.request);
-        }
+        this.error = error.message;
+        console.error("Failed to load rooms:", error);
+      } finally {
+        this.loading = false;
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
 <style scoped>
+.room-view {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
 
+.room-view > * {
+  flex: 1 1 calc(50% - 1rem);
+  max-width: calc(50% - 1rem);
+  box-sizing: border-box;
+}
 </style>
