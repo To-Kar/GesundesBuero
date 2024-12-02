@@ -2,145 +2,311 @@
 import settingsImage from '../assets/settings.png'
 import alertImage from '../assets/alert.png'
 import companyLogo from '../assets/company-logo.png'
+import NotificationCenter from './NotificationCenter.vue';
+
 export default {
-  data() {
-    return {
-      settingsImage,
-      alertImage,
-      companyLogo,
-      showSettings: false
-    }
-  },
-  methods: {
-    handleAlertClick() {
-    },
-    handleSettingsClick() {
-      this.showSettings = !this.showSettings
-    },
-    closeOverlay(event) {
-      if (event.target.classList.contains('settings-overlay')) {
-        this.showSettings = false
-      }
-    }
+ name: 'Navbar',
+ components: {
+   NotificationCenter
+ },
+
+ data() {
+   return {
+     settingsImage,
+     alertImage,
+     companyLogo,
+
+     showSettings: false,
+
+     showNotifications: false,    
+     showFullNotifications: false,
+     notifications: [
+     {
+         id: 1,
+         message: "Room1 ist danone",
+         timestamp: new Date('2024-02-02T10:30:00').getTime(),
+         read: false
+       },
+       {
+         id: 2,
+         message: "Room2 stinkt",
+         timestamp: new Date('2024-02-01T15:45:00').getTime(),
+         read: true
+       },
+       {
+         id: 3,
+         message: "Room3 ist bissle kalt bruder",
+         timestamp: new Date('2024-02-01T09:20:00').getTime(),
+         read: false
+       },
+       {
+         id: 4,
+         message: "Room4 ist gut amk",
+         timestamp: new Date('2024-01-31T13:00:00').getTime(),
+         read: true
+       },
+       {
+         id: 5,
+         message: "Room5 kann eier lecken",
+         timestamp: new Date('2024-01-31T11:15:00').getTime(),
+         read: false
+       }
+     ]
+   }
+ },
+
+ mounted() {
+   document.addEventListener('click', this.handleGlobalClick);
+ },
+
+ beforeUnmount() {
+   document.removeEventListener('click', this.handleGlobalClick);
+ },
+
+ methods: {
+   handleGlobalClick(event) {
+     const isClickInsideNotifications = event.target.closest('.notifications-content');
+     const isClickInsideSettings = event.target.closest('.settings-content');
+     const isClickOnHeaderButton = event.target.closest('.header-button');
+   
+     if (!isClickInsideNotifications && !isClickInsideSettings && !isClickOnHeaderButton) {
+       this.showSettings = false;
+       this.showNotifications = false;
+     }
+   },
+   handleAlertClick() {
+     this.showNotifications = !this.showNotifications;
+     if (this.showSettings) this.showSettings = false;
+   },
+   handleSettingsClick() {
+     this.showSettings = !this.showSettings
+     if (this.showNotifications) this.showNotifications = false;
+   },
+   showAllNotifications() {
+     this.showFullNotifications = true;
+     this.showNotifications = false;
+     document.body.style.overflow = 'hidden';
+   },
+   handleNotificationCenterClose() {
+    this.showFullNotifications = false;
+    document.body.style.overflow = 'auto';
   }
+ },
+ computed: {
+   recentNotifications() {
+     return this.notifications.slice(0, 5);
+   }
+ }
 }
 </script>
 
 <template>
-  <nav class="app-header">
-    <div class="nav-section">
-      <button class="header-button" @click="handleAlertClick">
-        <img :src="alertImage" class="header-icon" />
-      </button>
-    </div>
-   
-    <img :src="companyLogo" class="header-logo" />
-   
-    <div class="nav-section">
-      <button class="header-button" @click="handleSettingsClick">
-        <img :src="settingsImage" class="header-icon" />
-      </button>
-    </div>
-  </nav>
+ <nav class="app-header">
+   <div class="nav-section">
+     <button class="header-button" @click="handleAlertClick">
+       <img :src="alertImage" class="header-icon" />
+     </button>
+   </div>
+  
+   <img :src="companyLogo" class="header-logo" />
+  
+   <div class="nav-section">
+     <button class="header-button" @click="handleSettingsClick">
+       <img :src="settingsImage" class="header-icon" />
+     </button>
+   </div>
+ </nav>
 
-  <div v-if="showSettings" 
-       class="settings-overlay"
-       @click="closeOverlay">
-    <div class="settings-content">
-      <button class="logout-button">
-        Logout
-      </button>
-    </div>
-  </div>
+ <div v-if="showSettings" class="settings-overlay">
+   <div class="settings-content">
+     <button class="settings-button">
+       Alle Einstellungen
+     </button>
+     <button class="settings-button">
+       Abmelden
+     </button>
+   </div>
+ </div>
+
+ <div v-if="showNotifications" class="notifications-overlay">
+   <div class="notifications-content">
+     <div class="notifications-list">
+       <div v-for="notification in recentNotifications" 
+            :key="notification.id" 
+            class="notification-item">
+         <p>{{ notification.message }}</p>
+         <small>{{ new Date(notification.timestamp).toLocaleString() }}</small>
+       </div>
+     </div>
+     <button class="show-more-button" @click="showAllNotifications">
+       Alle Mitteilungen anzeigen
+     </button>
+   </div>
+ </div>
+
+ <NotificationCenter 
+   v-if="showFullNotifications"
+   :notifications="notifications"
+   @close="handleNotificationCenterClose"
+ />
 </template>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400&display=swap');
 * {
-  font-family: 'Noto Sans', sans-serif;
+ font-family: 'Noto Sans', sans-serif;
 }
 
 .app-header {
-  position: fixed;
-  top: 0;
-  left: 0;        
-  right: 0;
-  width: 100%;
-  height: 100px;
-  min-width: 300px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid #9292927c;
-  z-index: 1001;
-}
-.header-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: transform 0.1s ease;
-}
-.header-button:hover {
-  transform: scale(1.1);
-}
-.header-icon {
-  width: min(40px, 8vw);
-  height: min(40px, 8vw);
-}
-.header-logo {
-  height: min(50px, 5vw);    
-  width: auto;      
-}
-.nav-section {
-  width: 100px;
-  display: flex;
-  align-items: center;
-  padding: 0 min(50px, 3%);
-}
-.nav-section:first-child {
-  justify-content: flex-start;
-}
-.nav-section:last-child {
-  justify-content: flex-end;
+ position: fixed;
+ top: 0;
+ left: 0;        
+ right: 0;
+ width: 100%;
+ height: 100px;
+ min-width: 300px;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ border-bottom: 2px solid #9292927c;
+ z-index: 1001;
+ background-color: white;
 }
 
+.header-button {
+ background: none;
+ border: none;
+ cursor: pointer;
+ display: flex;
+ align-items: center;
+ transition: transform 0.1s ease;
+}
+
+.header-button:hover {
+ transform: scale(1.1);
+}
+
+.header-icon {
+ width: min(40px, 8vw);
+ height: min(40px, 8vw);
+}
+
+.header-logo {
+ height: min(50px, 5vw);    
+ width: auto;      
+}
+
+.nav-section {
+ width: 100px;
+ display: flex;
+ align-items: center;
+ padding: 0 min(50px, 3%);
+}
+
+.nav-section:first-child {
+ justify-content: flex-start;
+}
+
+.nav-section:last-child {
+ justify-content: flex-end;
+}
+
+/* Settings Styling */
 .settings-overlay {
-  position: fixed;
-  top: 0;
-  right: min(50px,3%);
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-start;
-  z-index: 1000;
+ background-color: hsl(210, 0%, 100%);
+ position: fixed;
+ top: 90px;
+ border-radius: 10px;
+ right: min(50px,3%);
+ display: flex;
+ justify-content: flex-end;
+ align-items: flex-start;
+ z-index: 1001;
 }
 
 .settings-content {
-  background-color: #302c2c;
-  padding: 0;
-  margin-top: 100px;
-  margin-right: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  min-width: 200px;
+ padding: 0;
+ border-radius: 10px;
+ box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+ min-width: 200px;
+ overflow: hidden;
 }
 
-.logout-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  color: #ffffff;
-  transition: all 0.2s ease;
-  width: 100%;
-  text-align: left;
-  padding: 15px 20px;
-  border-radius: 10px; 
+.settings-button {
+ background: none;
+ border: none;
+ font-size: 16px;
+ color: hsl(210, 0%, 60%);
+ border-bottom: 1px solid hsl(210, 0%, 60%);
+ transition: all 0.2s ease;
+ width: 100%;
+ text-align: left;
+ padding: 15px 20px; 
+ cursor: pointer;
 }
 
-.logout-button:hover {
-  background-color: #575050;
-  width: 100%;
+.settings-button:first-child {
+ border-top-left-radius: 10px;
+ border-top-right-radius: 10px;
+}
+
+.settings-button:last-child {
+ border-bottom-left-radius: 10px;
+ border-bottom-right-radius: 10px;
+ border-bottom: none;
+}
+
+.settings-button:hover {
+ background-color: hsl(210, 0%, 95%);
+ color: black;
+}
+
+/* Notification Center Styling */
+.notifications-overlay {
+ background-color: hsl(210, 0%, 100%);
+ position: fixed;
+ top: 90px;
+ border-radius: 10px;
+ left: min(50px,3%); 
+ display: flex;
+ justify-content: flex-start;
+ align-items: flex-start;
+ z-index: 1001;
+}
+
+.notifications-content {
+ padding: 0;
+ border-radius: 10px;
+ box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+ min-width: 200px;
+ overflow: hidden;
+}
+
+.notification-item {
+ padding: 15px 20px;
+ border-bottom: 1px solid hsl(210, 0%, 90%);
+ color: black;
+}
+
+.notification-item:last-child {
+ border-bottom: none;
+}
+
+.show-more-button {
+ background: none;
+ border: none;
+ font-size: 16px;
+ font-weight: 600;
+ color: hsl(210, 80%, 60%);
+ width: 100%;
+ padding: 15px 20px;
+ text-align: left;
+ transition: all 0.2s ease;
+ cursor: pointer;
+ border-top: 1px solid hsl(210, 0%, 90%);
+}
+
+.show-more-button:hover {
+ background-color: hsl(210, 0%, 95%);
 }
 </style>
