@@ -21,36 +21,7 @@ export default {
      showNotifications: false,    
      showFullNotifications: false,
      notifications: [
-     {
-         id: 1,
-         message: "Room1 ist danone",
-         timestamp: new Date('2024-02-02T10:30:00').getTime(),
-         read: false
-       },
-       {
-         id: 2,
-         message: "Room2 stinkt",
-         timestamp: new Date('2024-02-01T15:45:00').getTime(),
-         read: true
-       },
-       {
-         id: 3,
-         message: "Room3 ist bissle kalt bruder",
-         timestamp: new Date('2024-02-01T09:20:00').getTime(),
-         read: false
-       },
-       {
-         id: 4,
-         message: "Room4 ist gut amk",
-         timestamp: new Date('2024-01-31T13:00:00').getTime(),
-         read: true
-       },
-       {
-         id: 5,
-         message: "Room5 kann eier lecken",
-         timestamp: new Date('2024-01-31T11:15:00').getTime(),
-         read: false
-       }
+     
      ]
    }
  },
