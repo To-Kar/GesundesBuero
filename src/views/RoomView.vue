@@ -1,14 +1,18 @@
 <script>
 import Room from "../components/Room.vue";
+import RoomDetail from "../components/RoomDetail.vue";
 
 export default {
   name: "RoomView",
   components: {
     Room,
+    RoomDetail,
   },
   data() {
     return {
       rooms: [],
+      showDetail: false,
+      roomId: "",
     };
   },
   mounted() {
@@ -23,15 +27,19 @@ export default {
             .then((response) => response.json())
         );
         const responses = await Promise.all(requests);
-
         this.rooms = responses.map((data, index) => ({
           number: index + 1,
+          roomId: roomIds[index],
           temperature: data.temperature,
           humidity: data.humidity,
         }));
       } catch (error) {
         console.error("Fehler beim Abrufen der Raumdaten:", error);
       }
+    },
+    goToRoomDetail(roomId) {
+      this.roomId = roomId;
+      this.showDetail = true; // Anzeige der Detailansicht
     },
   },
 };
@@ -45,7 +53,9 @@ export default {
       :number="room.number"
       :temperature="room.temperature"
       :humidity="room.humidity"
+      @click="goToRoomDetail(room.roomId)"
     />
+    <RoomDetail v-if="showDetail" :roomId="roomId" @close="showDetail = false" />
   </div>
 </template>
 
