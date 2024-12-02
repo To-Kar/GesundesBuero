@@ -1,10 +1,11 @@
 const { app } = require('@azure/functions');
 const sql = require('mssql');
 
-// Database configuration
+// Database configuration using environment variables
+//I will add the environment variables to the azure workflow later so it knows to load them
 const config = {
     server: '',
-    database: 'GesundesBuero',
+    database: '',
     user: '',
     password: '',
     options: {
@@ -14,87 +15,137 @@ const config = {
     port: 1433,
 };
 
-// REST API to fetch sensor data
 app.http('sensor-data', {
     methods: ['GET'],
     authLevel: 'anonymous',
-    route: 'rooms/{roomId?}/sensor-data', // Make roomId optional
+    route: 'sensor-data',
     handler: async (request, context) => {
-        const roomId = request.params.roomId; // Get roomId from request, may be undefined
+        // Log environment check (remove in production)
+        context.log('Database connection details:', {
+            server: config.server,
+            database: config.database,
+            user: config.user,
+            // Never log passwords
+            hasPassword: !!config.password
+        });
+
+        const roomId = request.query.get('roomId'); // Get roomId from query parameter
         context.log(`Received request for roomId: ${roomId}`);
 
         let pool;
         try {
             // Connect to the database
             pool = await sql.connect(config);
-            context.log('Connected to the database.');
-
-            // Build the query
-            let query = `
-                SELECT 
-                    R.target_temp, 
-                    R.target_humidity,
-                    R.room_id
-                FROM ROOM R
-            `;
-
-           
-
-            context.log(`Executing query: ${query}`);
-
-            // Create database request
-            const dbRequest = pool.request();
-
-            // Add roomId input parameter if necessary
-            if (roomId) {
-                dbRequest.input('roomId', sql.VarChar, roomId);
+            
+            if (!pool.connected) {
+                return {
+                    status: 503,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        error: 'Database Connection Error',
+                        message: 'Could not establish database connection'
+                    })
+                };
             }
 
-            // Execute the query
-            const result = await dbRequest.query(query);
+            // Build the query to join ROOM and SENSOR tables
+            let query = `
+                SELECT 
+                    R.room_id,
+                    R.name,
+                    R.imageURL,
+                    R.target_temp,
+                    R.target_humidity,
+                    S.temperature as current_temp,
+                    S.humidity as current_humidity,
+                    S.timestamp as last_updated
+                FROM ROOM R
+                LEFT JOIN SENSOR S ON R.sensor_id = S.sensor_id
+            `;
 
-            context.log(`Query result: ${JSON.stringify(result.recordset)}`);
+            if (roomId) {
+                query += ' WHERE R.room_id = @roomId';
+            }
 
-            // Handle no results found
+            // Add ordering to get the most recent data
+            query += ' ORDER BY R.room_id';
+
+            const request = pool.request();
+            if (roomId) {
+                request.input('roomId', sql.VarChar, roomId);
+            }
+
+            const result = await request.query(query);
+
             if (result.recordset.length === 0) {
-                context.log(`No data found for roomId: ${roomId}`);
                 return {
                     status: 404,
                     headers: { 'Content-Type': 'application/json' },
-                    jsonBody: { error: `Room with ID ${roomId} not found.` },
+                    body: JSON.stringify({
+                        error: 'Not Found',
+                        message: roomId ? `Room ${roomId} not found` : 'No rooms found'
+                    })
                 };
             }
 
-            // Return results
-            if (roomId) {
-                context.log(`Fetched data for roomId: ${roomId}:`, result.recordset[0]);
-                return {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' },
-                    jsonBody: result.recordset[0],
-                };
-            } else {
-                context.log('Fetched data for all rooms.');
-                return {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' },
-                    jsonBody: result.recordset,
-                };
-            }
+            // Transform the data for the response
+            const transformedData = result.recordset.map(room => ({
+                room_id: room.room_id,
+                name: room.name,
+                imageURL: room.imageURL,
+                target_temp: room.target_temp,
+                target_humidity: room.target_humidity,
+                current_temp: room.current_temp,
+                current_humidity: room.current_humidity,
+                last_updated: room.last_updated,
+                status: {
+                    temp_status: getTempStatus(room.current_temp, room.target_temp),
+                    humidity_status: getHumidityStatus(room.current_humidity, room.target_humidity)
+                }
+            }));
+
+            return {
+                status: 200,
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                },
+                body: JSON.stringify(roomId ? transformedData[0] : transformedData)
+            };
 
         } catch (error) {
-            // Handle errors
-            context.log(`Error occurred: ${error.message}`);
+            context.error('Error occurred:', error);
             return {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },
-                jsonBody: { error: 'Internal Server Error', details: error.message },
+                body: JSON.stringify({
+                    error: 'Internal Server Error',
+                    message: error.message
+                })
             };
         } finally {
-            // Close the database connection
             if (pool) {
-                pool.close();
+                await pool.close();
             }
         }
-    },
+    }
 });
+
+// Helper functions to determine status
+function getTempStatus(current, target) {
+    if (!current || !target) return 'unknown';
+    const diff = Math.abs(current - target);
+    if (diff <= 1) return 'optimal';
+    if (diff <= 2) return 'warning';
+    return 'critical';
+}
+
+function getHumidityStatus(current, target) {
+    if (!current || !target) return 'unknown';
+    const diff = Math.abs(current - target);
+    if (diff <= 5) return 'optimal';
+    if (diff <= 10) return 'warning';
+    return 'critical';
+}
