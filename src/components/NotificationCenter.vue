@@ -64,6 +64,9 @@ export default {
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -71,7 +74,6 @@ export default {
 }
 
 .notification-content {
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
   background-color: hsl(210, 0%, 100%);
   width: 100%;
   max-width: 600px;
@@ -112,7 +114,7 @@ export default {
   max-height: calc(80vh - 100px);
   overflow-y: auto;
   border-radius: 30px;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  border: 1px solid hsl(210, 0%, 60%);
 }
 
 .notification-item {

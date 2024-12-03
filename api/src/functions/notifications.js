@@ -97,7 +97,7 @@ app.http('notifications', {
                 }
             };
         } catch (error) {
-            context.log.error('Error in getNotifications:', error);
+            context.log.error('Error in notifications:', error);
             
             return {
                 status: 500,

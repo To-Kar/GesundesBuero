@@ -215,7 +215,7 @@ export default {
  background-color: hsl(0, 0%, 100%);
  position: fixed;
  top: 90px;
- border-radius: 30px;
+ border-radius: 20px;
  right: min(50px,3%);
  display: flex;
  justify-content: flex-end;
@@ -225,7 +225,7 @@ export default {
 
 .settings-content {
  padding: 0;
- border-radius: 30px;
+ border-radius: 20px;
  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
  min-width: 200px;
  max-width: 400px;
@@ -286,7 +286,6 @@ export default {
 .notification-item {
  border-bottom: 1px solid hsl(210, 0%, 90%);
  color: black;
- padding: 8px 24px;
  text-align: left;
  padding: 12px 24px;
 }
@@ -295,13 +294,12 @@ export default {
  border-bottom: none;
 }
 .notification-location{
-  font-size: 32px;
-  line-height: 38.4px;
+  font-size: 18px;
+  line-height: 25.2px;
   margin: 0;
-  letter-spacing: -0.68px;
+  letter-spacing: 0.009em;
   padding-left: 0;
   font-weight: 700;
-  padding-bottom: 8px;
 }
 .notification-description{
   font-size: 18px;
@@ -322,7 +320,7 @@ export default {
  background: none;
  border: none;
  font-size: 18px;
- font-weight: 700;
+ font-weight: 500;
  line-height: 25.2px;
  letter-spacing: 0.009em;
  color: hsl(210, 80%, 60%);
