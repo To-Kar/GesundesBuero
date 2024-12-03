@@ -1,54 +1,72 @@
+// sensorApi.js
+
 import { apiClient } from './apiClient';
 
-// Sensor API service
+// Funktion zur Berechnung des Status basierend auf aktuellen und Zielwerten
+const calculateStatus = (current, target, isHumidity = false) => {
+    if (current == null || target == null) return 'unknown';
+    const diff = Math.abs(current - target);
+    const threshold = isHumidity ? 5 : 1; // 5% für Luftfeuchtigkeit, 1°C für Temperatur
+
+    if (diff <= threshold) return 'optimal';
+    if (diff <= threshold * 2) return 'warning';
+    return 'critical';
+};
+
+// Private Funktion zur Transformation der Sensordaten
+const transformSensorData = (data) => ({
+    sensorId: data.sensor_id,
+    roomId: data.room_id ? data.room_id.toString() : 'N/A', // Stellen Sie sicher, dass roomId ein String ist
+    temperature: data.current_temp || data.temperature || 'N/A',
+    humidity: data.current_humidity || data.humidity || 'N/A',
+    timestamp: new Date(data.last_updated || data.timestamp),
+    status: {
+        temp_status: calculateStatus(data.current_temp, data.target_temp),
+        humidity_status: calculateStatus(data.current_humidity, data.target_humidity, true),
+    },
+});
+
+// Sensor API Service
 export const sensorApi = {
-    // Get latest sensor data for a room
+    // Aktuelle Sensordaten für einen Raum abrufen
     async getLatestSensorData(roomId) {
         try {
-            const response = await apiClient.get(`/sensor-data/latest/${roomId}`);
-            return this._transformSensorData(response.data);
+            const response = await apiClient.get('/sensor-data', {
+                params: { roomId },
+            });
+            const data = Array.isArray(response.data) ? response.data[0] : response.data;
+            console.log(`Sensordaten für Raum ${roomId}:`, data); // Debugging
+
+            return transformSensorData(data);
         } catch (error) {
-            console.error(`Error fetching sensor data for room ${roomId}:`, error);
+            console.error(`Fehler beim Abrufen der Sensordaten für Raum ${roomId}:`, error);
+            return null; // Bei Fehler null zurückgeben
+        }
+    },
+
+    // Neue Methode: Alle aktuellen Sensordaten abrufen
+    async getAllLatestSensorData() {
+        try {
+            const response = await apiClient.get('/sensor-data');
+            //console.log('Alle Sensordaten:', response.data); // Debugging
+
+            return response.data.map(transformSensorData);
+        } catch (error) {
+            console.error('Fehler beim Abrufen aller Sensordaten:', error);
             throw error;
         }
     },
 
-    // Get historical sensor data for a room
+    // Historische Sensordaten für einen Raum abrufen (optional)
     async getHistoricalData(roomId, startDate, endDate) {
         try {
-            const response = await apiClient.get(`/sensor-data/history/${roomId}`, {
-                params: { startDate, endDate }
+            const response = await apiClient.get('/sensor-data/history', {
+                params: { roomId, startDate, endDate },
             });
-            return response.data.map(this._transformSensorData);
+            return response.data.map(transformSensorData);
         } catch (error) {
-            console.error(`Error fetching historical data for room ${roomId}:`, error);
+            console.error(`Fehler beim Abrufen der historischen Daten für Raum ${roomId}:`, error);
             throw error;
         }
     },
-
-    // Private method to transform sensor data
-    _transformSensorData(data) {
-        return {
-            sensorId: data.sensor_id,
-            roomId: data.room_id,
-            temperature: data.temperature,
-            humidity: data.humidity,
-            timestamp: new Date(data.timestamp),
-            status: {
-                temp_status: this._calculateStatus(data.temperature, data.target_temp),
-                humidity_status: this._calculateStatus(data.humidity, data.target_humidity, true)
-            }
-        };
-    },
-
-    // Calculate status based on current and target values
-    _calculateStatus(current, target, isHumidity = false) {
-        if (!current || !target) return 'unknown';
-        const diff = Math.abs(current - target);
-        const threshold = isHumidity ? 5 : 1; // 5% for humidity, 1°C for temperature
-        
-        if (diff <= threshold) return 'optimal';
-        if (diff <= threshold * 2) return 'warning';
-        return 'critical';
-    }
-}; 
+};

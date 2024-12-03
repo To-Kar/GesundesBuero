@@ -1,4 +1,4 @@
-// sensor-data.js
+// rooms.js
 
 const { app } = require('@azure/functions');
 const sql = require('mssql');
@@ -8,7 +8,7 @@ const config = {
     server: '',
     database: '',
     user: '',
-    password: '', 
+    password: '', // Passwort aus Umgebungsvariable
     options: {
         encrypt: true,
         trustServerCertificate: false,
@@ -16,15 +16,15 @@ const config = {
     port: 1433,
 };
 
-app.http('sensor-data', {
+app.http('room', {
     methods: ['GET'],
     authLevel: 'anonymous',
-    route: 'sensor-data/{sensorId?}', // Optionaler sensorId-Parameter
+    route: 'rooms/{roomId?}', // Optionaler roomId-Parameter
     handler: async (request, context) => {
-        context.log('Anfrage für sensor-data erhalten');
+        context.log('Anfrage für rooms erhalten');
 
-        const sensorId = request.params.sensorId; // sensorId aus Routenparameter
-        context.log(`Angeforderte sensorId: ${sensorId}`);
+        const roomId = request.params.roomId; // roomId aus Routenparameter
+        context.log(`Angeforderte roomId: ${roomId}`);
 
         let pool;
         try {
@@ -42,23 +42,25 @@ app.http('sensor-data', {
                 };
             }
 
-            // Abfrage zum Abrufen der Sensordaten
+            // Abfrage zum Abrufen der Raumdaten
             let query = `
                 SELECT 
-                    sensor_id,
-                    temperature AS current_temp,
-                    humidity AS current_humidity,
-                    timestamp AS last_updated
-                FROM SENSOR
+                    room_id,
+                    name,
+                    imageURL,
+                    target_temp,
+                    target_humidity,
+                    sensor_id
+                FROM ROOM
             `;
 
-            if (sensorId) {
-                query += ' WHERE sensor_id = @sensorId';
+            if (roomId) {
+                query += ' WHERE room_id = @roomId';
             }
 
             const dbRequest = pool.request();
-            if (sensorId) {
-                dbRequest.input('sensorId', sql.VarChar, sensorId);
+            if (roomId) {
+                dbRequest.input('roomId', sql.VarChar, roomId);
             }
 
             const result = await dbRequest.query(query);
@@ -69,13 +71,13 @@ app.http('sensor-data', {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         error: 'Not Found',
-                        message: sensorId ? `Sensordaten für Sensor ${sensorId} nicht gefunden` : 'Keine Sensordaten gefunden',
+                        message: roomId ? `Raum ${roomId} nicht gefunden` : 'Keine Räume gefunden',
                     }),
                 };
             }
 
-            // Sensordaten zurückgeben
-            const sensors = result.recordset;
+            // Raumdaten zurückgeben
+            const rooms = result.recordset;
 
             return {
                 status: 200,
@@ -85,7 +87,7 @@ app.http('sensor-data', {
                     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                     'Access-Control-Allow-Headers': 'Content-Type',
                 },
-                body: JSON.stringify(sensorId ? sensors[0] : sensors),
+                body: JSON.stringify(roomId ? rooms[0] : rooms),
             };
         } catch (error) {
             context.error('Fehler aufgetreten:', error);

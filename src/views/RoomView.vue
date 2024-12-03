@@ -28,40 +28,22 @@ export default {
     return {
       rooms: [],
       error: null,
-      loading: false
+      loading: false,
     };
   },
-  mounted() {
-    this.loadRooms();
-  },
-  methods: {
-    async loadRooms() {
-      this.loading = true;
-      this.error = null;
-      try {
-        this.rooms = await roomApi.getAllRooms();
-      } catch (error) {
-        this.error = error.message;
-        console.error("Failed to load rooms:", error);
-      } finally {
-        this.loading = false;
-      }
+  async created() {
+    this.loading = true;
+    try {
+      this.rooms = await roomApi.getAllRoomsWithSensorData();
+    } catch (error) {
+      this.error = error.message;
+      console.error("Fehler beim Laden der Räume:", error);
+    } finally {
+      this.loading = false;
     }
-  }
+  },
 };
 </script>
 
 <style scoped>
-.room-view {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.room-view > * {
-  flex: 1 1 calc(50% - 1rem);
-  max-width: calc(50% - 1rem);
-  box-sizing: border-box;
-}
 </style>
