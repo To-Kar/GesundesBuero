@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'BDOGrotesk';
+    src: url('./BDOGrotesk-VF.woff2') format('woff2');
+    font-weight: 100 900;;
+    font-style: normal;
+    font-display: swap;
+  }

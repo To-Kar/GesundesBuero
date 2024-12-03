@@ -3,6 +3,7 @@ import settingsImage from '../assets/settings.png'
 import alertImage from '../assets/alert.png'
 import companyLogo from '../assets/company-logo.png'
 import NotificationCenter from './NotificationCenter.vue';
+import axios from 'axios';
 
 export default {
  name: 'Navbar',
@@ -20,21 +21,48 @@ export default {
 
      showNotifications: false,    
      showFullNotifications: false,
-     notifications: [
-     
-     ]
+     notifications: [],
+     isLoading: false,
+     error: null
    }
  },
-
- mounted() {
+ async mounted() {
    document.addEventListener('click', this.handleGlobalClick);
+
+   await this.fetchNotifications();
+   this.startNotificationPolling();
  },
 
  beforeUnmount() {
    document.removeEventListener('click', this.handleGlobalClick);
+
+   if (this.pollingInterval) {
+    clearInterval(this.pollingInterval);
+   }
  },
 
  methods: {
+  async fetchNotifications() {
+      try {
+        this.isLoading = true;
+        this.error = null;
+        
+        const response = await axios.get('http://localhost:7071/api/notifications');
+        this.notifications = response.data;
+
+      } catch (err) {
+        console.error('Failed to fetch notifications:', err);
+        this.error = 'Failed to load notifications';
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    startNotificationPolling() {
+      this.pollingInterval = setInterval(() => {
+        this.fetchNotifications();
+      }, 1 * 60 * 1000);
+    },
    handleGlobalClick(event) {
      const isClickInsideNotifications = event.target.closest('.notifications-content');
      const isClickInsideSettings = event.target.closest('.settings-content');
@@ -105,8 +133,9 @@ export default {
        <div v-for="notification in recentNotifications" 
             :key="notification.id" 
             class="notification-item">
-         <p>{{ notification.message }}</p>
-         <small>{{ new Date(notification.timestamp).toLocaleString() }}</small>
+         <h3 class="notification-location">{{ notification.room_id }}</h3>
+         <p class="notification-description">{{ notification.description }}</p>
+         <p class="notification-time">{{ new Date(notification.timestamp).toLocaleString() }}</p>
        </div>
      </div>
      <button class="show-more-button" @click="showAllNotifications">
@@ -123,9 +152,8 @@ export default {
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400&display=swap');
 * {
- font-family: 'Noto Sans', sans-serif;
+ font-family: 'BDOGrotesk', system-ui, sans-serif;
 }
 
 .app-header {
@@ -184,10 +212,10 @@ export default {
 
 /* Settings Styling */
 .settings-overlay {
- background-color: hsl(210, 0%, 100%);
+ background-color: hsl(0, 0%, 100%);
  position: fixed;
  top: 90px;
- border-radius: 10px;
+ border-radius: 30px;
  right: min(50px,3%);
  display: flex;
  justify-content: flex-end;
@@ -197,33 +225,37 @@ export default {
 
 .settings-content {
  padding: 0;
- border-radius: 10px;
- box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+ border-radius: 30px;
+ box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
  min-width: 200px;
+ max-width: 400px;
  overflow: hidden;
 }
 
 .settings-button {
  background: none;
  border: none;
- font-size: 16px;
+ font-size: 18px;
+ font-weight: 400;
+ line-height: 25.2px;
+ letter-spacing: 0.009em;
  color: hsl(210, 0%, 60%);
  border-bottom: 1px solid hsl(210, 0%, 60%);
  transition: all 0.2s ease;
  width: 100%;
  text-align: left;
- padding: 15px 20px; 
+ padding: 12px 24px; 
  cursor: pointer;
 }
 
 .settings-button:first-child {
- border-top-left-radius: 10px;
- border-top-right-radius: 10px;
+ border-top-left-radius: 20px;
+ border-top-right-radius: 20px;
 }
 
 .settings-button:last-child {
- border-bottom-left-radius: 10px;
- border-bottom-right-radius: 10px;
+ border-bottom-left-radius: 20px;
+ border-bottom-right-radius: 20px;
  border-bottom: none;
 }
 
@@ -232,49 +264,74 @@ export default {
  color: black;
 }
 
-/* Notification Center Styling */
+/* Notification Overlay Styling */
 .notifications-overlay {
  background-color: hsl(210, 0%, 100%);
  position: fixed;
  top: 90px;
- border-radius: 10px;
+ border-radius: 30px;
  left: min(50px,3%); 
- display: flex;
- justify-content: flex-start;
- align-items: flex-start;
+ max-width: 400px;
+ min-width: 200px;
  z-index: 1001;
 }
 
 .notifications-content {
  padding: 0;
- border-radius: 10px;
- box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
- min-width: 200px;
+ border-radius: 30px;
+ box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
  overflow: hidden;
 }
 
 .notification-item {
- padding: 15px 20px;
  border-bottom: 1px solid hsl(210, 0%, 90%);
  color: black;
+ padding: 8px 24px;
+ text-align: left;
+ padding: 12px 24px;
 }
 
 .notification-item:last-child {
  border-bottom: none;
 }
-
+.notification-location{
+  font-size: 32px;
+  line-height: 38.4px;
+  margin: 0;
+  letter-spacing: -0.68px;
+  padding-left: 0;
+  font-weight: 700;
+  padding-bottom: 8px;
+}
+.notification-description{
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 25.2px;
+  letter-spacing: 0.009em;
+  margin: 0;
+}
+.notification-time{
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 25.2px;
+  margin: 0;
+  letter-spacing: 0.009em;
+  color: hsl(210, 0%, 60%);
+}
 .show-more-button {
  background: none;
  border: none;
- font-size: 16px;
- font-weight: 600;
+ font-size: 18px;
+ font-weight: 700;
+ line-height: 25.2px;
+ letter-spacing: 0.009em;
  color: hsl(210, 80%, 60%);
  width: 100%;
- padding: 15px 20px;
- text-align: left;
+ text-align: center;
  transition: all 0.2s ease;
  cursor: pointer;
  border-top: 1px solid hsl(210, 0%, 90%);
+ padding: 12px;
 }
 
 .show-more-button:hover {

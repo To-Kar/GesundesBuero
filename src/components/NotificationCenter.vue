@@ -6,7 +6,23 @@ export default {
       required: true
     }
   },
-  emits: ['close']
+  emits: ['close'],
+  methods: {
+    formatDate(timestamp) {
+      try {
+        return new Date(timestamp).toLocaleString('de-DE', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch (error) {
+        console.error('Date formatting error:', error);
+        return 'Ungültiges Datum';
+      }
+    }
+  }
 }
 </script>
 
@@ -14,16 +30,21 @@ export default {
   <div class="notification-modal" @click="$emit('close')">
     <div class="notification-content" @click.stop>
       <div class="modal-header">
-        <h2>Mitteilungszentrale</h2>
+        <h2>Mitteilungen</h2>
         <button class="close-button" @click="$emit('close')">×</button>
       </div>
       <div class="modal-body">
-        <div v-for="notification in notifications" 
-             :key="notification.id" 
+        <div v-for="notification in notifications"
+             :key="notification.notification_id"
              class="notification-item">
-          <p>{{ notification.message }}</p>
-          <div class="notification-time">
-            {{ new Date(notification.timestamp).toLocaleString() }}
+          <div class="notification-header">
+            <span class="notification-type">{{ notification.type }}</span>
+            <span class="notification-time">{{ formatDate(notification.timestamp) }}</span>
+          </div>
+          <p class="notification-message">{{ notification.description }}</p>
+          <div class="notification-details">
+            <small>Raum: {{ notification.room_id }}</small>
+            <small>Sensor: {{ notification.sensor_id }}</small>
           </div>
         </div>
       </div>
@@ -32,6 +53,10 @@ export default {
 </template>
 
 <style scoped>
+* {
+ font-family: 'BDOGrotesk', system-ui, sans-serif;
+}
+
 .notification-modal {
   position: fixed;
   top: 0;
@@ -46,20 +71,31 @@ export default {
 }
 
 .notification-content {
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
-  background-color :hsl(210, 0%, 100%);
-  width: 90%;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  background-color: hsl(210, 0%, 100%);
+  width: 100%;
   max-width: 600px;
   max-height: 80vh;
-  border-radius: 10px;
-  padding: 20px;
+  border-radius: 30px;
+  padding: 24px 24px;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  width: 100%;
+  padding-bottom: 12px;
+}
+
+.modal-header h2 {
+  font-size: 32px;
+  line-height: 38.4px;
+  margin: 0;
+  letter-spacing: -0.68px;
+  font-weight: 700;
   color: black;
 }
 
@@ -67,25 +103,54 @@ export default {
   background: none;
   border: none;
   color: black;
-  font-size: 40px;
+  font-size: 45px;
+  font-weight: 700;
   cursor: pointer;
-  padding: 5px 10px;
 }
 
 .modal-body {
   max-height: calc(80vh - 100px);
   overflow-y: auto;
+  border-radius: 30px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 }
 
 .notification-item {
-  padding: 15px;
-  border-bottom: 1px solid #575050;
-  color: white;
+  border-bottom: 1px solid hsl(210, 0%, 60%);
+  color: black;
+  font-size: 18px;
+  line-height: 25.2px;
+  letter-spacing: 0.009em;
+  margin: 0;
+  padding: 12px 24px;
+}
+.notification-item:last-child {
+ border-bottom: none;
+}
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-type {
+  font-weight: 700;
 }
 
 .notification-time {
-  font-size: 0.8em;
-  color: #999;
-  margin-top: 5px;
+  font-weight: 400;
+  color: hsl(210, 0%, 60%);
+}
+
+.notification-message {
+  font-weight: 400;
+  margin: 0;
+}
+
+.notification-details {
+  font-weight: 400;
+  display: flex;
+  gap: 24px;
+  color: hsl(210, 0%, 60%);
 }
 </style>
