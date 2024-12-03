@@ -1,10 +1,10 @@
 <template>
   <transition name="slide-up">
     <div v-if="isVisible" class="room-detail">
-      <h1>Details für  {{ roomId }}</h1>
-      <p>Temperatur: {{ roomData.temperature }}°C</p>
-      <p>Luftfeuchtigkeit: {{ roomData.humidity }}%</p>
-      <button @click="goBack">Zurück</button>
+      <button class="back-button" @click="goBack">⬇</button>
+      <h1>Details für {{ roomId }}</h1>
+      <p class="temp">Temperatur: {{ temperature }}°C</p>
+      <p class="humid">Luftfeuchtigkeit: {{ humidity }}%</p>
     </div>
   </transition>
 </template>
@@ -14,48 +14,67 @@ export default {
   name: "RoomDetail",
   props: {
     roomId: {
+      type: String,
+      required: true,
+    },
+    temperature: {
+      type: Number,
+      required: true,
+    },
+    humidity: {
       type: Number,
       required: true,
     },
   },
   data() {
     return {
-      roomData: {
-        temperature: 0,
-        humidity: 0,
-      },
       isVisible: false,
     };
   },
   methods: {
-    async fetchRoomDetails() {
-      try {
-        const response = await fetch(
-          `http://localhost:7071/api/rooms/${this.roomId}/sensor-data`
-        );
-        this.roomData = await response.json();
-      } catch (error) {
-        console.error("Fehler beim Abrufen der Raumdetails:", error);
-      }
-    },
     goBack() {
-      this.isVisible = false; // Slider schließt sich
-      this.$emit("close"); // Emit to close detail view in RoomView
+      this.isVisible = false; 
+      this.$emit("close");
     },
   },
   mounted() {
-    this.fetchRoomDetails();
-    this.isVisible = true; // Detailansicht wird angezeigt
+    this.isVisible = true; 
   },
 };
 </script>
 
 <style scoped>
+
+.slide-up-enter-active, .slide-up-leave-active {
+  transition: transform 0.3s, opacity 0.3s;
+}
+.slide-up-enter-from {
+  transform: translateY(100%); 
+  opacity: 0;
+}
+
+.slide-up-enter-to {
+  transform: translateY(0); 
+  opacity: 1;
+}
+
+.back-button {
+  position: absolute; 
+  top: 0px; 
+  left: px;
+  border: none; 
+  font-size: 30px; 
+  cursor: pointer; 
+  color: #ffffff;
+}
+
+.back-button:hover {
+  color: #0056b3; 
+}
+
 .room-detail {
   position: fixed;
   bottom: 0;
-  left: 50%; /* Zentriert den Slider horizontal */
-  transform: translateX(-50%); /* Verschiebt den Slider um die Hälfte seiner Breite nach links */
   width: 100%;
   height: 70%;
   background-color: whitesmoke;
@@ -63,25 +82,34 @@ export default {
   padding: 20px;
   z-index: 100;
   overflow-y: auto;
+  border-top-right-radius: 45px;
+  border-top-left-radius: 45px;
 }
 
+.temp, .humid {
+  font-size: 20px;
+  color: #007bff;
+  text-align: center;
+}
 
-
-
+h1 {
+  font-size: 30px;
+  color: #007bff;
+  text-align: center;
+}
 
 button {
   margin-top: 20px;
   padding: 10px 15px;
   background-color: #007bff;
-  color: white;
+  color: whitesmoke;
   border: none;
   border-radius: 45px;
   cursor: pointer;
 }
 
 button:hover {
-  background-color: #0056b3;
-  transition: 0.5s;
+  background-color: whitesmoke;
+  transition: 0.2s;
 }
-
 </style>

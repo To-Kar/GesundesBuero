@@ -55,7 +55,14 @@ export default {
       :humidity="room.humidity"
       @click="goToRoomDetail(room.roomId)"
     />
-    <RoomDetail v-if="showDetail" :roomId="roomId" @close="showDetail = false" />
+    <RoomDetail
+      v-if="showDetail"
+      :roomId="roomId"
+      :temperature="rooms.find(room => room.roomId === roomId)?.temperature"
+      :humidity="rooms.find(room => room.roomId === roomId)?.humidity"
+      @close="showDetail = false"
+/>
+
   </div>
 </template>
 
