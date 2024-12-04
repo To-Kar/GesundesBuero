@@ -1,20 +1,3 @@
-<template>
-  <div>
-    <Room 
-      v-for="room in rooms" 
-      :key="room.number"
-      :name="room.name"
-      :number="room.number"
-      :temperature="room.temperature"
-      :humidity="room.humidity"
-      :target_temperature="room.target_temperature"
-      :target_humidity="room.target_humidity"
-      :image="room.image"
-      :status="room.status"
-    />
-  </div>
-</template>
-
 <script>
 import Room from "../components/Room.vue";
 import RoomDetail from "../components/RoomDetail.vue";
@@ -33,8 +16,11 @@ export default {
       roomId: "",
       error: null,
       loading: false,
+      temperature: 0,
+      humidity: 0,
     };
   },
+
   async created() {
     this.loading = true;
     try {
@@ -46,6 +32,20 @@ export default {
       this.loading = false;
     }
   },
+  methods:{
+  goToRoomDetail(roomId, temperature, humidity) {
+    console.log("Raum-ID angeklickt:", roomId); // Debugging
+    if (!roomId) {
+      console.error("Kein roomId übergeben!");
+      return;
+    }
+    this.roomId = roomId;
+    this.temperature = temperature;
+    this.humidity = humidity;
+    console.log("Details für Raum-ID anzeigen:", this.roomId); // Debugging
+    this.showDetail = true; // Anzeige der Detailansicht
+  },
+}
 };
 </script>
 
@@ -54,16 +54,20 @@ export default {
     <Room
       v-for="room in rooms"
       :key="room.number"
+      :name="room.name"
       :number="room.number"
       :temperature="room.temperature"
       :humidity="room.humidity"
-      @click="goToRoomDetail(room.roomId)"
-    />
+      :image="room.image"
+      :status="room.status"
+      @click="goToRoomDetail(room.number, room.temperature, room.humidity)"
+/>
+
     <RoomDetail
       v-if="showDetail"
       :roomId="roomId"
-      :temperature="rooms.find(room => room.roomId === roomId)?.temperature"
-      :humidity="rooms.find(room => room.roomId === roomId)?.humidity"
+      :temperature="temperature"
+      :humidity="humidity"
       @close="showDetail = false"
 />
 
@@ -71,4 +75,17 @@ export default {
 </template>
 
 <style scoped>
+/* Dein vorhandenes CSS */
+.room-view {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.room-view > * {
+  flex: 1 1 calc(50% - 1rem);
+  max-width: calc(50% - 1rem);
+  box-sizing: border-box;
+}
 </style>
