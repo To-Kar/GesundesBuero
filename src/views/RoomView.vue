@@ -1,6 +1,24 @@
+<template>
+  <div>
+    <Room 
+      v-for="room in rooms" 
+      :key="room.number"
+      :name="room.name"
+      :number="room.number"
+      :temperature="room.temperature"
+      :humidity="room.humidity"
+      :target_temperature="room.target_temperature"
+      :target_humidity="room.target_humidity"
+      :image="room.image"
+      :status="room.status"
+    />
+  </div>
+</template>
+
 <script>
 import Room from "../components/Room.vue";
 import RoomDetail from "../components/RoomDetail.vue";
+import { roomApi } from "../services/roomApi";
 
 export default {
   name: "RoomView",
@@ -13,34 +31,20 @@ export default {
       rooms: [],
       showDetail: false,
       roomId: "",
+      error: null,
+      loading: false,
     };
   },
-  mounted() {
-    this.fetchRoomData();
-  },
-  methods: {
-    async fetchRoomData() {
-      try {
-        const roomIds = ["room1", "room2", "room3", "room4", "room5"];
-        const requests = roomIds.map((id) =>
-          fetch(`http://localhost:7071/api/rooms/${id}/sensor-data`)
-            .then((response) => response.json())
-        );
-        const responses = await Promise.all(requests);
-        this.rooms = responses.map((data, index) => ({
-          number: index + 1,
-          roomId: roomIds[index],
-          temperature: data.temperature,
-          humidity: data.humidity,
-        }));
-      } catch (error) {
-        console.error("Fehler beim Abrufen der Raumdaten:", error);
-      }
-    },
-    goToRoomDetail(roomId) {
-      this.roomId = roomId;
-      this.showDetail = true; // Anzeige der Detailansicht
-    },
+  async created() {
+    this.loading = true;
+    try {
+      this.rooms = await roomApi.getAllRoomsWithSensorData();
+    } catch (error) {
+      this.error = error.message;
+      console.error("Fehler beim Laden der Räume:", error);
+    } finally {
+      this.loading = false;
+    }
   },
 };
 </script>
@@ -67,17 +71,4 @@ export default {
 </template>
 
 <style scoped>
-/* Dein vorhandenes CSS */
-.room-view {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.room-view > * {
-  flex: 1 1 calc(50% - 1rem);
-  max-width: calc(50% - 1rem);
-  box-sizing: border-box;
-}
 </style>
