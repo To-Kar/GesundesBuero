@@ -48,6 +48,32 @@ async function updateSensorData(data) {
     }
 }
 
+// Funktion zum Abrufen der Einstellungen (Intervall)
+async function fetchIntervalFromSettings() {
+    try {
+        const pool = await sql.connect(config);
+
+        // SQL-Abfrage für das Intervall
+        const selectQuery = `SELECT update_interval FROM Settings WHERE id = 1`; 
+        const result = await pool.request().query(selectQuery);
+
+        // Prüfen, ob Daten vorhanden sind
+        if (result.recordset.length === 0) {
+            throw new Error('Keine Daten in der Tabelle Settings gefunden.');
+        }
+
+        const interval = result.recordset[0].update_interval;
+
+        await pool.close();
+
+        return interval;
+    } catch (error) {
+        console.error('Fehler beim Abrufen des Intervalls:', error.message);
+        throw new Error(error.message);
+    }
+}
+
+
 // REST API
 app.http('sensor-data', {
     methods: ['PATCH'],
@@ -80,19 +106,21 @@ app.http('sensor-data', {
             }
     
             // Daten in die Datenbank schreiben
-            const tableData = await updateSensorData({
+            await updateSensorData({
                 sensor_id,
                 temperature,
                 humidity,
                 timestamp,
             });
+
+            // Intervall aus der Tabelle Settings abrufen
+            const interval = await fetchIntervalFromSettings();
     
-      
+            context.log('interval:', interval);
             return {
                 status: 200,
                 jsonBody: {
-                    message: `Daten erfolgreich für Sensor ${sensor_id} gespeichert.`,
-                    table: tableData,
+                    interval: interval,
                 },
             };
         } catch (error) {
