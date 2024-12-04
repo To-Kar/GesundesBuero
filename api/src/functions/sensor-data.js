@@ -1,17 +1,21 @@
+require('dotenv').config();
+
 const { app } = require('@azure/functions');
 const sql = require('mssql');
 
+
 // Verbindungsdetails zur Azure SQL-Datenbank
 const config = {
-    user: 'gesundesbuero',
-    password: 'x3B>U2;yd8r]YQ8',
-    server: 'gesundesbuero.database.windows.net',
-    database: 'GesundesBuero',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    server: process.env.DB_SERVER,
+    database: process.env.DB_DATABASE,
     options: {
         encrypt: true,
         trustServerCertificate: false,
     },
 };
+
 
 // Funktion zum Schreiben von Daten
 async function insertSensorData(data) {
