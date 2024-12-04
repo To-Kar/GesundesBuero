@@ -119,6 +119,6 @@ export default {
   font-weight: bold;
   min-width: 60px;
   max-width: 100px;
-  font-size: calc(0.8rem + 1vw); /* Dynamische Schriftgröße */
+  font-size: calc(0.5rem + 1vw); /* Dynamische Schriftgröße */
 }
 </style>
