@@ -19,7 +19,7 @@ export default {
       try {
         const roomIds = ["room1", "room2", "room3", "room4", "room5"];
         const requests = roomIds.map((id) =>
-          fetch(`http://localhost:7071/api/rooms/${id}/sensor-data`)
+          fetch(`http://localhost:7071/api/rooms/${id}/room-data`)
             .then((response) => response.json())
         );
         const responses = await Promise.all(requests);
