@@ -16,49 +16,41 @@ const config = {
     },
 };
 
-
-// Funktion zum Schreiben von Daten
-async function insertSensorData(data) {
+// Funktion zum Aktualisieren von Daten
+async function updateSensorData(data) {
     try {
-        // Verbindung zur Datenbank herstellen
         const pool = await sql.connect(config);
 
-        const insertData = {
-            sensor_id: data.sensor_id,
-            temperature: data.temperature,
-            humidity: data.humidity,
-            timestamp: new Date(), // aktueller Zeitstempel
-        };
-
-        // SQL-Abfrage für das Einfügen
-        const insertQuery = `
-            INSERT INTO SENSOR (sensor_id, temperature, humidity, timestamp)
-            VALUES (@sensor_id, @temperature, @humidity, @timestamp)
+        // SQL-Abfrage für die Aktualisierung
+        const updateQuery = `
+            UPDATE SENSOR
+            SET temperature = @temperature,
+                humidity = @humidity,
+                timestamp = @timestamp
+            WHERE sensor_id = @sensor_id
         `;
 
-        // Daten einfügen
-        await pool.request()
-            .input('sensor_id', sql.VarChar, insertData.sensor_id)
-            .input('temperature', sql.Decimal(5, 2), insertData.temperature)
-            .input('humidity', sql.Int, insertData.humidity)
-            .input('timestamp', sql.DateTime, insertData.timestamp || null)
-            .query(insertQuery);
+        // Parameter binden und Abfrage ausführen
+        const request = pool.request();
+        request.input('sensor_id', sql.VarChar, data.sensor_id);
+        request.input('temperature', sql.Decimal(5, 2), data.temperature);
+        request.input('humidity', sql.Int, data.humidity);
+        request.input('timestamp', sql.DateTime, data.timestamp); 
 
-        console.log(`Daten erfolgreich in die Tabelle SENSOR geschrieben:`, data);
+        await request.query(updateQuery);
 
-        
+        console.log(`Daten erfolgreich für Sensor ${data.sensor_id} aktualisiert:`, data);
+
         await pool.close();
-
-        
     } catch (error) {
-        console.error('Fehler beim Schreiben in die Tabelle:', error.message);
+        console.error('Fehler beim Aktualisieren der Tabelle:', error.message);
         throw new Error(error.message);
     }
 }
 
 // REST API
 app.http('sensor-data', {
-    methods: ['POST'],
+    methods: ['PATCH'],
     authLevel: 'anonymous',
     route: 'sensor/sensor-data',
     handler: async (request, context) => {
@@ -88,7 +80,7 @@ app.http('sensor-data', {
             }
     
             // Daten in die Datenbank schreiben
-            const tableData = await insertSensorData({
+            const tableData = await updateSensorData({
                 sensor_id,
                 temperature,
                 humidity,
