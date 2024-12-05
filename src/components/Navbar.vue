@@ -3,7 +3,7 @@ import settingsImage from '../assets/settings.png'
 import alertImage from '../assets/alert.png'
 import companyLogo from '../assets/company-logo.png'
 import NotificationCenter from './NotificationCenter.vue';
-import axios from 'axios';
+import { notificationService } from '../services/notificationService';
 
 export default {
  name: 'Navbar',
@@ -29,39 +29,32 @@ export default {
  async mounted() {
    document.addEventListener('click', this.handleGlobalClick);
 
-   await this.fetchNotifications();
-   this.startNotificationPolling();
+
+   await this.getNotifications();
+   notificationService.startPolling((data) => {
+      this.notifications = data;
+    });
  },
 
  beforeUnmount() {
    document.removeEventListener('click', this.handleGlobalClick);
 
-   if (this.pollingInterval) {
-    clearInterval(this.pollingInterval);
-   }
+   notificationService.stopPolling((data) => {
+      this.notifications = data;
+    });
  },
 
  methods: {
-  async fetchNotifications() {
+  async getNotifications() {
+      this.isLoading = true;
       try {
-        this.isLoading = true;
-        this.error = null;
-        
-        const response = await axios.get('http://localhost:7071/api/notifications');
-        this.notifications = response.data;
-
-      } catch (err) {
-        console.error('Failed to fetch notifications:', err);
+        this.notifications = await notificationService.getNotifications();
+      } catch (error) {
         this.error = 'Failed to load notifications';
+        console.error('Failed to fetch notifications:', error);
       } finally {
         this.isLoading = false;
       }
-    },
-
-    startNotificationPolling() {
-      this.pollingInterval = setInterval(() => {
-        this.fetchNotifications();
-      }, 1 * 60 * 1000);
     },
    handleGlobalClick(event) {
      const isClickInsideNotifications = event.target.closest('.notifications-content');

@@ -19,12 +19,6 @@ export default {
 </template>
 
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    background-color: whitesmoke;
-  }
-  
   #app {
     padding-top: 100px;
     max-height: 100vh;
