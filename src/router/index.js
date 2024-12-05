@@ -17,7 +17,7 @@ const router = createRouter({
             component: RoomView,
 
         }
-        ],
+    ],
 }
 );
 
