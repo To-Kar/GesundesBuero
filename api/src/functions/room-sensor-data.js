@@ -17,10 +17,10 @@ const config = {
     port: 1433,
 };
 
-app.http('sensor-data', {
+app.http('room-sensor-data', {
     methods: ['GET'],
     authLevel: 'anonymous',
-    route: 'sensor-data/{sensorId?}', // Optionaler sensorId-Parameter
+    route: 'room-sensor-data/{sensorId?}', // Optionaler sensorId-Parameter
     handler: async (request, context) => {
         context.log('Anfrage für sensor-data erhalten');
 
