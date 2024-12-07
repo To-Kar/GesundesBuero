@@ -33,3 +33,6 @@ node_modules
 dist
 dist-ssr
 *.local
+
+# Ignore test.js
+src/functions/test.js

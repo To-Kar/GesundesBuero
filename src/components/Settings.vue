@@ -1,14 +1,51 @@
 <script>
+import axios from 'axios';
+
 export default {
   name: 'Settings',
   data() {
     return {
       seconds: 0, // Startwert für Sekunden
-      minutes: 3, // Startwert für Minuten
+      minutes: 0, // Startwert für Minuten
       showSaveNotification: false // Status für die Speichern-Benachrichtigung
-    }
+    };
+  },
+  async mounted() {
+  try {
+    const response = await axios.get('http://localhost:7071/api/getSettings');
+    const { update_interval } = response.data;
+
+    // Setze die empfangenen Daten in die State-Werte
+    this.minutes = Math.floor(update_interval / 60); // Minuten berechnen
+    this.seconds = update_interval % 60; // Sekunden berechnen
+  } catch (error) {
+    console.error('Fehler beim Abrufen des Intervalls:', error.message || error);
+  }
   },
   methods: {
+    async saveSettings() {
+      const totalInterval = this.minutes * 60 + this.seconds;
+
+      try {
+        // Backend-PATCH-Request, um das Intervall zu speichern
+        await axios.patch('http://localhost:7071/api/updateInterval', {
+          update_interval: totalInterval
+        });
+
+        console.log(`Einstellungen gespeichert: ${this.minutes} Minuten, ${this.seconds} Sekunden`);
+
+        // Zeige die Speichern-Benachrichtigung an
+        this.showSaveNotification = true;
+
+        // Blende die Benachrichtigung nach 3 Sekunden aus
+        setTimeout(() => {
+          this.showSaveNotification = false;
+        }, 3000);
+      } catch (error) {
+        console.error('Fehler beim Speichern der Einstellungen:', error);
+      }
+    },
+    // Deine bestehenden Methoden zur Validierung und Aktualisierung der Eingabefelder
     updateSeconds(event) {
       const value = parseInt(event.target.value.trim());
       if (!isNaN(value) && value >= 0 && value <= 59) {
@@ -24,21 +61,9 @@ export default {
       } else {
         event.target.value = this.minutes; // Setze den Wert zurück, wenn die Eingabe ungültig ist
       }
-    },
-    saveSettings() {
-      // Speichere die aktuellen Werte (Sekunden und Minuten)
-      console.log(`Einstellungen gespeichert: ${this.minutes} Minuten, ${this.seconds} Sekunden`);
-
-      // Zeige die Speichern-Benachrichtigung an
-      this.showSaveNotification = true;
-
-      // Blende die Benachrichtigung nach 3 Sekunden aus
-      setTimeout(() => {
-        this.showSaveNotification = false;
-      }, 3000);
     }
   }
-}
+};
 </script>
 
 <template>
