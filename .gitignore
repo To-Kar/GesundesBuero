@@ -25,6 +25,8 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+.env
+
 
 # Build output
 node_modules
