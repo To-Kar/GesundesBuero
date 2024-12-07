@@ -1,6 +1,4 @@
 const sql = require('mssql');
-
-// Verbindungsdetails zur Azure SQL-Datenbank
 const config = {
     user: 'gesundesbuero',
     password: 'x3B>U2;yd8r]YQ8',
@@ -12,39 +10,54 @@ const config = {
     },
 };
 
-async function updateInterval(newInterval) {
+async function alterNotificationTable() {
     try {
-        // Verbindung zur Datenbank herstellen
         const pool = await sql.connect(config);
+       
+        // Prüfe ob die alte Spalte existiert
+        const checkColumn = await pool.request().query(`
+            SELECT * 
+            FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_NAME = 'Notification' 
+            AND COLUMN_NAME = 'timestamp'
+        `);
 
-        // SQL-Abfrage für das Update
-        const updateQuery = `
-            UPDATE SETTINGS
-            SET update_interval = @newInterval
-        `;
+        if (checkColumn.recordset.length > 0) {
+            // Lösche die alte Spalte
+            await pool.request().query(`
+                ALTER TABLE Notification
+                DROP COLUMN timestamp
+            `);
+        }
 
-        // Abfrage ausführen (Update)
-        await pool.request()
-            .input('newInterval', sql.Int, newInterval)
-            .query(updateQuery);
+        // Füge die neue Spalte hinzu
+        await pool.request().query(`
+            ALTER TABLE Notification
+            ADD timestamp datetime NOT NULL
+            CONSTRAINT DF_Notification_timestamp DEFAULT GETDATE()
+        `);
 
-        console.log(`Wert für update_interval erfolgreich aktualisiert: ${newInterval}`);
+        console.log('Tabelle erfolgreich geändert');
+        
+        // Zeige die aktuelle Tabellenstruktur
+        const tableInfo = await pool.request().query(`
+            SELECT 
+                COLUMN_NAME, 
+                DATA_TYPE,
+                COLUMN_DEFAULT,
+                IS_NULLABLE
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = 'Notification'
+            ORDER BY ORDINAL_POSITION
+        `);
+        
+        console.log('\nAktuelle Tabellenstruktur:');
+        console.table(tableInfo.recordset);
 
-        // Optional: Wert nach dem Update auslesen
-        const selectQuery = `
-            SELECT *
-            FROM SETTINGS
-        `;
-        const result = await pool.request().query(selectQuery);
-        console.log('Aktueller Wert für update_intervall in der Tabelle SETTINGS:');
-        console.table(result.recordset);
-
-        // Verbindung schließen
         await pool.close();
     } catch (error) {
-        console.error('Fehler beim Aktualisieren des update_interval:', error.message);
+        console.error('Fehler beim Ändern der Tabelle:', error.message);
     }
 }
 
-// Neuen Wert für update_intervall übergeben
-updateInterval(300); // Beispiel: Wert auf 10 setzen
+alterNotificationTable();

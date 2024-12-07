@@ -82,7 +82,21 @@ export default {
    handleNotificationCenterClose() {
     this.showFullNotifications = false;
     document.body.style.overflow = 'auto';
-  }
+  },
+  formatDate(timestamp) {
+      try {
+        return new Date(timestamp).toLocaleString('de-DE', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch (error) {
+        console.error('Date formatting error:', error);
+        return 'Ungültiges Datum';
+      }
+    }
  },
  computed: {
    recentNotifications() {
@@ -128,7 +142,7 @@ export default {
             class="notification-item">
          <h3 class="notification-location">{{ notification.room_id }}</h3>
          <p class="notification-description">{{ notification.description }}</p>
-         <p class="notification-time">{{ new Date(notification.timestamp).toLocaleString() }}</p>
+         <p class="notification-time">{{ formatDate(notification.timestamp) }}</p>
        </div>
      </div>
      <button class="show-more-button" @click="showAllNotifications">
