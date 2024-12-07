@@ -31,7 +31,7 @@ export const sensorApi = {
     // Aktuelle Sensordaten für einen Raum abrufen
     async getLatestSensorData(roomId) {
         try {
-            const response = await apiClient.get('/sensor-data', {
+            const response = await apiClient.get('/room-sensor-data', {
                 params: { roomId },
             });
             const data = Array.isArray(response.data) ? response.data[0] : response.data;
@@ -47,7 +47,7 @@ export const sensorApi = {
     // Neue Methode: Alle aktuellen Sensordaten abrufen
     async getAllLatestSensorData() {
         try {
-            const response = await apiClient.get('/sensor-data');
+            const response = await apiClient.get('/room-sensor-data');
             //console.log('Alle Sensordaten:', response.data); // Debugging
 
             return response.data.map(transformSensorData);
@@ -60,7 +60,7 @@ export const sensorApi = {
     // Historische Sensordaten für einen Raum abrufen (optional)
     async getHistoricalData(roomId, startDate, endDate) {
         try {
-            const response = await apiClient.get('/sensor-data/history', {
+            const response = await apiClient.get('/room-sensor-data/history', {
                 params: { roomId, startDate, endDate },
             });
             return response.data.map(transformSensorData);

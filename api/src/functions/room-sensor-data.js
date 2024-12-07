@@ -1,5 +1,6 @@
-// rooms.js
+// sensor-data.js
 require('dotenv').config();
+
 const { app } = require('@azure/functions');
 const sql = require('mssql');
 
@@ -16,15 +17,15 @@ const config = {
     port: 1433,
 };
 
-app.http('room', {
+app.http('sensor-data', {
     methods: ['GET'],
     authLevel: 'anonymous',
-    route: 'rooms/{roomId?}', // Optionaler roomId-Parameter
+    route: 'sensor-data/{sensorId?}', // Optionaler sensorId-Parameter
     handler: async (request, context) => {
-        context.log('Anfrage für rooms erhalten');
+        context.log('Anfrage für sensor-data erhalten');
 
-        const roomId = request.params.roomId; // roomId aus Routenparameter
-        context.log(`Angeforderte roomId: ${roomId}`);
+        const sensorId = request.params.sensorId; // sensorId aus Routenparameter
+        context.log(`Angeforderte sensorId: ${sensorId}`);
 
         let pool;
         try {
@@ -42,25 +43,23 @@ app.http('room', {
                 };
             }
 
-            // Abfrage zum Abrufen der Raumdaten
+            // Abfrage zum Abrufen der Sensordaten
             let query = `
                 SELECT 
-                    room_id,
-                    name,
-                    imageURL,
-                    target_temp,
-                    target_humidity,
-                    sensor_id
-                FROM ROOM
+                    sensor_id,
+                    temperature AS current_temp,
+                    humidity AS current_humidity,
+                    timestamp AS last_updated
+                FROM SENSOR
             `;
 
-            if (roomId) {
-                query += ' WHERE room_id = @roomId';
+            if (sensorId) {
+                query += ' WHERE sensor_id = @sensorId';
             }
 
             const dbRequest = pool.request();
-            if (roomId) {
-                dbRequest.input('roomId', sql.VarChar, roomId);
+            if (sensorId) {
+                dbRequest.input('sensorId', sql.VarChar, sensorId);
             }
 
             const result = await dbRequest.query(query);
@@ -71,13 +70,13 @@ app.http('room', {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         error: 'Not Found',
-                        message: roomId ? `Raum ${roomId} nicht gefunden` : 'Keine Räume gefunden',
+                        message: sensorId ? `Sensordaten für Sensor ${sensorId} nicht gefunden` : 'Keine Sensordaten gefunden',
                     }),
                 };
             }
 
-            // Raumdaten zurückgeben
-            const rooms = result.recordset;
+            // Sensordaten zurückgeben
+            const sensors = result.recordset;
 
             return {
                 status: 200,
@@ -87,7 +86,7 @@ app.http('room', {
                     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                     'Access-Control-Allow-Headers': 'Content-Type',
                 },
-                body: JSON.stringify(roomId ? rooms[0] : rooms),
+                body: JSON.stringify(sensorId ? sensors[0] : sensors),
             };
         } catch (error) {
             context.error('Fehler aufgetreten:', error);
@@ -106,3 +105,6 @@ app.http('room', {
         }
     },
 });
+
+
+
