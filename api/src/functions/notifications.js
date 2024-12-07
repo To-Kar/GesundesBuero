@@ -1,104 +1,45 @@
+require('dotenv').config();
+
 const { app } = require('@azure/functions');
+const sql = require('mssql');
+
+const config = {
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    server: process.env.DB_SERVER,
+    database: process.env.DB_DATABASE,
+    options: {
+        encrypt: true,
+        trustServerCertificate: false,
+    },
+    port: 1433,
+};
 
 app.http('notifications', {
     methods: ['GET'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
+        let pool
         try {
-            const notifications = [
-                {
-                    notification_id: 1,
-                    room_id: "Room1",
-                    sensor_id: "sensor1",
-                    type: "Temperatur",
-                    description: "Temperatur zu hoch in Raum 1",
-                    timestamp: new Date().toISOString(),
-                    status: true
-                },
-                {
-                    notification_id: 2,
-                    room_id: "Room2",
-                    sensor_id: "sensor2",
-                    type: "Feuchtigkeit",
-                    description: "Luftfeuchtigkeit kritisch in Raum 2",
-                    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-                    status: true
-                },
-                {
-                    notification_id: 3,
-                    room_id: "Room2",
-                    sensor_id: "sensor2",
-                    type: "Feuchtigkeit",
-                    description: "Luftfeuchtigkeit kritisch in Raum 2",
-                    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-                    status: true
-                },
-                {
-                    notification_id: 4,
-                    room_id: "Room2",
-                    sensor_id: "sensor2",
-                    type: "Feuchtigkeit",
-                    description: "Luftfeuchtigkeit zu hoch in Raum 2",
-                    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-                    status: true
-                },
-                {
-                    notification_id: 5,
-                    room_id: "Room2",
-                    sensor_id: "sensor2",
-                    type: "Feuchtigkeit",
-                    description: "Luftfeuchtigkeit kritisch in Raum 2",
-                    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-                    status: true
-                },
-                {
-                    notification_id: 5,
-                    room_id: "Room2",
-                    sensor_id: "sensor2",
-                    type: "Feuchtigkeit",
-                    description: "Luftfeuchtigkeit kritisch in Raum 2",
-                    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-                    status: true
-                },
-                {
-                    notification_id: 5,
-                    room_id: "Room2",
-                    sensor_id: "sensor2",
-                    type: "Feuchtigkeit",
-                    description: "Luftfeuchtigkeit kritisch in Raum 2",
-                    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-                    status: true
-                },
-                {
-                    notification_id: 5,
-                    room_id: "Room2",
-                    sensor_id: "sensor2",
-                    type: "Feuchtigkeit",
-                    description: "Luftfeuchtigkeit kritisch in Raum 2",
-                    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-                    status: true
-                },
-                {
-                    notification_id: 5,
-                    room_id: "Room2",
-                    sensor_id: "sensor2",
-                    type: "Feuchtigkeit",
-                    description: "Luftfeuchtigkeit kritisch in Raum 2",
-                    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-                    status: true
-                }
-            ];
+            pool = await sql.connect(config);
+
+            const query = `
+                    SELECT * FROM Notification
+                        `
+
+            const request = pool.request();
+            const result = await request.query(query);
 
             return {
                 status: 200,
-                jsonBody: notifications,
+                jsonBody: result.recordset,
                 headers: {
                     'Content-Type': 'application/json'
                 }
             };
+
         } catch (error) {
             context.log.error('Error in notifications:', error);
-            
             return {
                 status: 500,
                 jsonBody: {
@@ -106,6 +47,10 @@ app.http('notifications', {
                     error: error.message
                 }
             };
+        }finally {
+            if (pool) {
+                await pool.close();
+            }
         }
     }
 });
