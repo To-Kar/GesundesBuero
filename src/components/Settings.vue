@@ -24,7 +24,7 @@ export default {
   },
   methods: {
     async saveSettings() {
-      const totalInterval = this.minutes * 60 + this.seconds;
+      const totalInterval = Math.floor(this.minutes * 60 + this.seconds);
 
       try {
         // Backend-PATCH-Request, um das Intervall zu speichern
