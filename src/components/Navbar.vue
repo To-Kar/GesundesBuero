@@ -3,12 +3,15 @@ import settingsImage from '../assets/settings.png'
 import alertImage from '../assets/alert.png'
 import companyLogo from '../assets/company-logo.png'
 import NotificationCenter from './NotificationCenter.vue';
+import Settings from './Settings.vue';
 import axios from 'axios';
+
 
 export default {
  name: 'Navbar',
  components: {
-   NotificationCenter
+   NotificationCenter,
+   Settings
  },
 
  data() {
@@ -16,6 +19,8 @@ export default {
      settingsImage,
      alertImage,
      companyLogo,
+
+     openSettings: false,
 
      showSettings: false,
 
@@ -89,7 +94,17 @@ export default {
    handleNotificationCenterClose() {
     this.showFullNotifications = false;
     document.body.style.overflow = 'auto';
-  }
+  },
+   showAllSettings() {
+     this.openSettings = true;
+     this.showNotifications = false;
+     this.showSettings = false;
+     document.body.style.overflow = 'hidden';
+  },
+   handleShowAllSettingsClose () {
+     this.openSettings = false;
+     document.body.style.overflow = 'auto';
+   }
  },
  computed: {
    recentNotifications() {
@@ -118,8 +133,8 @@ export default {
 
  <div v-if="showSettings" class="settings-overlay">
    <div class="settings-content">
-     <button class="settings-button">
-       Alle Einstellungen
+     <button class="settings-button" @click="showAllSettings">
+       Einstellungen
      </button>
      <button class="settings-button">
        Abmelden
@@ -149,6 +164,9 @@ export default {
    :notifications="notifications"
    @close="handleNotificationCenterClose"
  />
+
+<Settings v-if="openSettings" @close="openSettings = false" />
+
 </template>
 
 <style scoped>
