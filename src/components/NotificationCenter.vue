@@ -90,6 +90,7 @@ export default {
   align-items: center;
   width: 100%;
   padding-bottom: 12px;
+  position: relative;
 }
 
 .modal-header h2 {
@@ -102,11 +103,14 @@ export default {
 }
 
 .close-button {
+  position: absolute;
+  right: 0;
+  line-height: 38.4px;
   background: none;
   border: none;
-  color: black;
+  color: hsl(210, 0%, 0%);
   font-size: 45px;
-  font-weight: 700;
+  font-weight: 200;
   cursor: pointer;
 }
 
@@ -114,11 +118,11 @@ export default {
   max-height: calc(80vh - 100px);
   overflow-y: auto;
   border-radius: 30px;
-  border: 1px solid hsl(210, 0%, 60%);
+  border: 1px solid hsl(210, 0%, 80%);
 }
 
 .notification-item {
-  border-bottom: 1px solid hsl(210, 0%, 60%);
+  border-bottom: 1px solid hsl(210, 0%, 80%);
   color: black;
   font-size: 18px;
   line-height: 25.2px;

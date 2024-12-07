@@ -14,17 +14,11 @@ export default {
 </script>
 
 <template>
-  <navbar v-if="!route.meta.hideNavbar" />
+  <navbar v-if="!route.meta.hideNavbar"/>
   <RouterView />
 </template>
 
-<style scoped>
-* {
-    margin: 0;
-    padding: 0;
-    background-color: whitesmoke;
-  }
-  
+<style>
   #app {
     padding-top: 100px;
     max-height: 100vh;
@@ -32,8 +26,13 @@ export default {
     display: flex;
     flex-direction: column;
   }
-
   #app:has(.login-view){
     padding-top: 0;
   }
 </style>
+
+
+
+
+
+
