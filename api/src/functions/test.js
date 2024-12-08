@@ -1,13 +1,14 @@
 const sql = require('mssql');
 const config = {
-    user: 'gesundesbuero',
-    password: 'x3B>U2;yd8r]YQ8',
-    server: 'gesundesbuero.database.windows.net',
-    database: 'GesundesBuero',
+    user: '',
+    password: '',
+    server: '',
+    database: '',
     options: {
         encrypt: true,
         trustServerCertificate: false,
     },
+    port: 1433,
 };
 
 async function alterNotificationTable() {
