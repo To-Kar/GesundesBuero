@@ -62,7 +62,8 @@ export default {
       :status="room.status"
       @click="goToRoomDetail(room.number, room.temperature, room.humidity)"
 />
-
+</div>
+<div class="room-detail-view">
     <RoomDetail
       v-if="showDetail"
       :roomId="roomId"
