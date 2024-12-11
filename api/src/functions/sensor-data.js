@@ -8,7 +8,7 @@ const config = {
     server: '',
     database: '',
     user: '',
-    password: '', 
+    password: '', // Passwort aus Umgebungsvariable
     options: {
         encrypt: true,
         trustServerCertificate: false,

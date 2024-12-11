@@ -33,12 +33,14 @@ export default {
     }
   },
   methods:{
-  goToRoomDetail(roomId, temperature, humidity) {
+  goToRoomDetail(image, name, roomId, temperature, humidity) {
     console.log("Raum-ID angeklickt:", roomId); // Debugging
     if (!roomId) {
       console.error("Kein roomId übergeben!");
       return;
     }
+    this.image = image;
+    this.name = name;
     this.roomId = roomId;
     this.temperature = temperature;
     this.humidity = humidity;
@@ -60,12 +62,14 @@ export default {
       :humidity="room.humidity"
       :image="room.image"
       :status="room.status"
-      @click="goToRoomDetail(room.number, room.temperature, room.humidity)"
+      @click="goToRoomDetail(room.image, room.name, room.number, room.temperature, room.humidity)"
 />
 </div>
 <div class="room-detail-view">
     <RoomDetail
       v-if="showDetail"
+      :image="image"
+      :name="name"
       :roomId="roomId"
       :temperature="temperature"
       :humidity="humidity"
