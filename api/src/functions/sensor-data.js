@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const { app } = require('@azure/functions');
 const sql = require('mssql');
+const { checkThresholdsAndNotify } = require('./notifications');
 
 
 // Verbindungsdetails zur Azure SQL-Datenbank
@@ -38,6 +39,8 @@ async function updateSensorData(data) {
         request.input('timestamp', sql.DateTime, data.timestamp); 
 
         await request.query(updateQuery);
+
+        await checkThresholdsAndNotify(data);
 
         console.log(`Daten erfolgreich für Sensor ${data.sensor_id} aktualisiert:`, data);
 

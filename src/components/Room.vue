@@ -6,18 +6,29 @@ export default {
       type: String,
       default: "Büroraum",
     },
+    image: {
+      type: String,
+      required: true
+    },
     temperature: {
-      type: Number,
-      required: true, // Temperatur ist erforderlich
+      type: [Number, String],
+      required: true,
     },
     humidity: {
-      type: Number,
-      required: true, // Luftfeuchtigkeit ist erforderlich
+      type: [Number, String],
+      required: true,
     },
     number: {
-      type: Number,
-      required: true, // Die Nummer des Raums ist erforderlich
+      type: [Number, String],
+      required: true,
     },
+    status: {
+      type: Object,
+      default: () => ({
+        temp_status: 'unknown',
+        humidity_status: 'unknown'
+      })
+    }
   },
   computed: {
     // Farbe basierend auf der Temperatur
@@ -37,10 +48,10 @@ export default {
 </script>
 
 <template>
-  <div class="room-card">
+  <div class="room-card" @click="$emit('click')">
     <h2 class="room-title">{{ name }} {{ number }}</h2>
     <div class="room-layout">
-      <img src="../assets/Büro1.jpg" alt="Raum Layout" class="room-image" />
+      <img :src="image" alt="Raum Layout" class="room-image" />
       <div class="metrics">
         <!-- Dynamische Farbe für Temperatur -->
         <div class="temperature" :style="{ backgroundColor: temperatureColor }">
@@ -119,6 +130,6 @@ export default {
   font-weight: bold;
   min-width: 60px;
   max-width: 100px;
-  font-size: calc(0.8rem + 1vw); /* Dynamische Schriftgröße */
+  font-size: calc(0.5rem + 1vw); /* Dynamische Schriftgröße */
 }
 </style>

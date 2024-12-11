@@ -1,39 +1,51 @@
 <script>
 import Room from "../components/Room.vue";
+import RoomDetail from "../components/RoomDetail.vue";
+import { roomApi } from "../services/roomApi";
 
 export default {
   name: "RoomView",
   components: {
     Room,
+    RoomDetail,
   },
   data() {
     return {
       rooms: [],
+      showDetail: false,
+      roomId: "",
+      error: null,
+      loading: false,
+      temperature: 0,
+      humidity: 0,
     };
   },
-  mounted() {
-    this.fetchRoomData();
-  },
-  methods: {
-    async fetchRoomData() {
-      try {
-        const roomIds = ["room1", "room2", "room3", "room4", "room5"];
-        const requests = roomIds.map((id) =>
-          fetch(`http://localhost:7071/api/rooms/${id}/room-data`)
-            .then((response) => response.json())
-        );
-        const responses = await Promise.all(requests);
 
-        this.rooms = responses.map((data, index) => ({
-          number: index + 1,
-          temperature: data.temperature,
-          humidity: data.humidity,
-        }));
-      } catch (error) {
-        console.error("Fehler beim Abrufen der Raumdaten:", error);
-      }
-    },
+  async created() {
+    this.loading = true;
+    try {
+      this.rooms = await roomApi.getAllRoomsWithSensorData();
+    } catch (error) {
+      this.error = error.message;
+      console.error("Fehler beim Laden der Räume:", error);
+    } finally {
+      this.loading = false;
+    }
   },
+  methods:{
+  goToRoomDetail(roomId, temperature, humidity) {
+    console.log("Raum-ID angeklickt:", roomId); // Debugging
+    if (!roomId) {
+      console.error("Kein roomId übergeben!");
+      return;
+    }
+    this.roomId = roomId;
+    this.temperature = temperature;
+    this.humidity = humidity;
+    console.log("Details für Raum-ID anzeigen:", this.roomId); // Debugging
+    this.showDetail = true; // Anzeige der Detailansicht
+  },
+}
 };
 </script>
 
@@ -42,10 +54,23 @@ export default {
     <Room
       v-for="room in rooms"
       :key="room.number"
+      :name="room.name"
       :number="room.number"
       :temperature="room.temperature"
       :humidity="room.humidity"
-    />
+      :image="room.image"
+      :status="room.status"
+      @click="goToRoomDetail(room.number, room.temperature, room.humidity)"
+/>
+
+    <RoomDetail
+      v-if="showDetail"
+      :roomId="roomId"
+      :temperature="temperature"
+      :humidity="humidity"
+      @close="showDetail = false"
+/>
+
   </div>
 </template>
 
