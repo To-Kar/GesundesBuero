@@ -87,7 +87,7 @@ export const roomApi = {
     // Raumeinstellungen aktualisieren (optional)
     async updateRoomSettings(roomId, settings) {
         try {
-            const response = await apiClient.put(`/rooms/${roomId}`, settings);
+            const response = await apiClient.patch(`/rooms/${roomId}/targets`, settings);
             return transformRoomData(response.data);
         } catch (error) {
             console.error(`Fehler beim Aktualisieren von Raum ${roomId}:`, error);
