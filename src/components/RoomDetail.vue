@@ -182,6 +182,10 @@ export default {
 </script>
 
 <style scoped>
+
+*{
+  font-family: 'BDOGrotesk', system-ui, sans-serif;
+}
 /* Transition für das Overlay */
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.5s ease;
@@ -225,18 +229,12 @@ export default {
   top: 10px;
   right: 20px;
   border: none;
-  font-size: 20px;
+  font-size: 30px;
   cursor: pointer;
-  color: #ffffff;
-  background-color: #007bff;
+  background-color: whitesmoke;
+  color: #000000;
   border-radius: 50%;
   padding: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-.back-button:hover {
-  background-color: #0056b3;
-  color: #ffffff;
 }
 
 /* Raum-Detail Container */
@@ -266,11 +264,12 @@ export default {
 
 /* Bild */
 .room-image {
-  max-width: 45%;
-  max-height: 700px;
+  max-width: 80%;
+  max-height: 900px;
   object-fit: contain;
   border-radius: 15px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 37px;
 }
 
 /* Details-Bereich */
@@ -278,12 +277,12 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  
 }
 
 .temp, .humid {
   font-size: 180%;
-  color: #007bff;
+  color: #0083bc;
 }
 
 .soll {
@@ -292,7 +291,7 @@ export default {
 
 h1 {
   font-size: 35px;
-  color: #007bff;
+  color: #000000;
   margin-bottom: 20px;
 }
 
@@ -300,7 +299,7 @@ h1 {
 button {
   margin: 0 10px;
   padding: 10px 15px;
-  background-color: #007bff;
+  background-color: #0083bc;
   color: whitesmoke;
   border: none;
   border-radius: 25px;
@@ -310,7 +309,6 @@ button {
 }
 
 button:hover {
-  background-color: #0056b3;
   transform: scale(1.1);
 }
 
