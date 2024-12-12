@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@azure/functions": "^4.6.0",
-    "axios": "^1.7.8"
+    "axios": "^1.7.8",
+    "mssql": "^11.0.1"
   },
   "devDependencies": {
     "azure-functions-core-tools": "^4.0.6610"

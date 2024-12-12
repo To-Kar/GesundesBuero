@@ -1,14 +1,16 @@
 // rooms.js
-
+require('dotenv').config();
 const { app } = require('@azure/functions');
 const sql = require('mssql');
 
 // Datenbankkonfiguration
 const config = {
-    server: '',
-    database: '',
-    user: '',
-    password: '',
+
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    server: process.env.DB_SERVER,
+    database: process.env.DB_DATABASE,
+
     options: {
         encrypt: true,
         trustServerCertificate: false,

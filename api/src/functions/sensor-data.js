@@ -1,106 +1,141 @@
-// sensor-data.js
+require('dotenv').config();
 
 const { app } = require('@azure/functions');
 const sql = require('mssql');
+const { checkThresholdsAndNotify } = require('./notifications');
 
-// Datenbankkonfiguration (verwende Umgebungsvariablen für sensible Daten)
+
+// Verbindungsdetails zur Azure SQL-Datenbank
 const config = {
-    server: '',
-    database: '',
-    user: '',
-    password: '', // Passwort aus Umgebungsvariable
+
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    server: process.env.DB_SERVER,
+    database: process.env.DB_DATABASE,
+
     options: {
         encrypt: true,
         trustServerCertificate: false,
     },
-    port: 1433,
 };
 
+// Funktion zum Aktualisieren von Daten
+async function updateSensorData(data) {
+    try {
+        const pool = await sql.connect(config);
+
+        // SQL-Abfrage für die Aktualisierung
+        const updateQuery = `
+            UPDATE SENSOR
+            SET temperature = @temperature,
+                humidity = @humidity,
+                timestamp = @timestamp
+            WHERE sensor_id = @sensor_id
+        `;
+
+        // Parameter binden und Abfrage ausführen
+        const request = pool.request();
+        request.input('sensor_id', sql.VarChar, data.sensor_id);
+        request.input('temperature', sql.Decimal(5, 2), data.temperature);
+        request.input('humidity', sql.Int, data.humidity);
+        request.input('timestamp', sql.DateTime, data.timestamp); 
+
+        await request.query(updateQuery);
+
+        await checkThresholdsAndNotify(data);
+
+        console.log(`Daten erfolgreich für Sensor ${data.sensor_id} aktualisiert:`, data);
+
+        await pool.close();
+    } catch (error) {
+        console.error('Fehler beim Aktualisieren der Tabelle:', error.message);
+        throw new Error(error.message);
+    }
+}
+
+// Funktion zum Abrufen der Einstellungen (Intervall)
+async function fetchIntervalFromSettings() {
+    try {
+        const pool = await sql.connect(config);
+
+        // SQL-Abfrage für das Intervall
+        const selectQuery = `SELECT update_interval FROM Settings WHERE id = 1`; 
+        const result = await pool.request().query(selectQuery);
+
+        // Prüfen, ob Daten vorhanden sind
+        if (result.recordset.length === 0) {
+            throw new Error('Keine Daten in der Tabelle Settings gefunden.');
+        }
+
+        const interval = result.recordset[0].update_interval;
+
+        await pool.close();
+
+        return interval;
+    } catch (error) {
+        console.error('Fehler beim Abrufen des Intervalls:', error.message);
+        throw new Error(error.message);
+    }
+}
+
+
+// REST API
 app.http('sensor-data', {
-    methods: ['GET'],
+    methods: ['PATCH'],
     authLevel: 'anonymous',
-    route: 'sensor-data/{sensorId?}', // Optionaler sensorId-Parameter
+    route: 'sensor/sensor-data',
     handler: async (request, context) => {
-        context.log('Anfrage für sensor-data erhalten');
-
-        const sensorId = request.params.sensorId; // sensorId aus Routenparameter
-        context.log(`Angeforderte sensorId: ${sensorId}`);
-
-        let pool;
+        context.log(`HTTP function processed request for url "${request.url}"`);
+    
         try {
-            // Verbindung zur Datenbank herstellen
-            pool = await sql.connect(config);
-
-            if (!pool.connected) {
+            // JSON aus dem Request lesen
+            const body = await request.json(); 
+    
+            // Body-Parameter auslesen
+            const { sensor_id, temperature, humidity, timestamp } = body;
+    
+            // Logging for Debugging
+            context.log('Request body:', body);
+            context.log('sensor_id:', sensor_id);
+            context.log('temperature:', temperature);
+            context.log('humidity:', humidity);
+            context.log('timestamp:', timestamp);
+    
+            // Validierung
+            if (!sensor_id || temperature === undefined || humidity === undefined) {
+                context.log('Validation failed: Missing required fields.');
                 return {
-                    status: 503,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        error: 'Database Connection Error',
-                        message: 'Could not establish database connection',
-                    }),
+                    status: 400,
+                    jsonBody: { error: 'Fehler: sensor_id, temperature und humidity sind erforderlich.' },
                 };
             }
+    
+            // Daten in die Datenbank schreiben
+            await updateSensorData({
+                sensor_id,
+                temperature,
+                humidity,
+                timestamp,
+            });
 
-            // Abfrage zum Abrufen der Sensordaten
-            let query = `
-                SELECT 
-                    sensor_id,
-                    temperature AS current_temp,
-                    humidity AS current_humidity,
-                    timestamp AS last_updated
-                FROM SENSOR
-            `;
-
-            if (sensorId) {
-                query += ' WHERE sensor_id = @sensorId';
-            }
-
-            const dbRequest = pool.request();
-            if (sensorId) {
-                dbRequest.input('sensorId', sql.VarChar, sensorId);
-            }
-
-            const result = await dbRequest.query(query);
-
-            if (result.recordset.length === 0) {
-                return {
-                    status: 404,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        error: 'Not Found',
-                        message: sensorId ? `Sensordaten für Sensor ${sensorId} nicht gefunden` : 'Keine Sensordaten gefunden',
-                    }),
-                };
-            }
-
-            // Sensordaten zurückgeben
-            const sensors = result.recordset;
-
+            // Intervall aus der Tabelle Settings abrufen
+            const interval = await fetchIntervalFromSettings();
+    
+            context.log('interval:', interval);
             return {
                 status: 200,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type',
+                jsonBody: {
+                    interval: interval,
                 },
-                body: JSON.stringify(sensorId ? sensors[0] : sensors),
             };
         } catch (error) {
-            context.error('Fehler aufgetreten:', error);
+            context.log('Fehler in der API:', error.message);
             return {
                 status: 500,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    error: 'Interner Serverfehler',
-                    message: error.message,
-                }),
+                jsonBody: { error: 'Fehler beim Verarbeiten der Anfrage.' },
             };
-        } finally {
-            if (pool) {
-                await pool.close();
-            }
         }
     },
 });
+
+    
