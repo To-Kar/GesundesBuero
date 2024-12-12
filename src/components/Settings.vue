@@ -5,39 +5,46 @@ export default {
   name: 'Settings',
   data() {
     return {
-      seconds: 0, // Startwert für Sekunden
-      minutes: 0, // Startwert für Minuten
-      showSaveNotification: false // Status für die Speichern-Benachrichtigung
+      seconds: 0, 
+      minutes: 0, 
+      showSaveNotification: false, 
+      sensors: [],
     };
   },
   async mounted() {
   try {
-    const response = await axios.get('http://localhost:7071/api/getSettings');
+    // Intervall abrufen
+    const response = await axios.get('http://localhost:7071/api/settings');
     const { update_interval } = response.data;
 
-    // Setze die empfangenen Daten in die State-Werte
-    this.minutes = Math.floor(update_interval / 60); // Minuten berechnen
-    this.seconds = update_interval % 60; // Sekunden berechnen
+    this.minutes = Math.floor(update_interval / 60);
+    this.seconds = update_interval % 60;
+
+    // Sensor-Daten abrufen
+    const sensorResponse = await axios.get('http://localhost:7071/api/sensors');
+    console.log('Sensor-Daten:', sensorResponse.data); // Debug-Log
+    this.sensors = sensorResponse.data; // Daten setzen
   } catch (error) {
-    console.error('Fehler beim Abrufen des Intervalls:', error.message || error);
+    console.error('Fehler beim Abrufen der Daten:', error.message || error);
   }
-  },
+},
+
   methods: {
     async saveSettings() {
       const totalInterval = Math.floor(this.minutes * 60 + this.seconds);
 
       try {
         // Backend-PATCH-Request, um das Intervall zu speichern
-        await axios.patch('http://localhost:7071/api/updateInterval', {
+        await axios.patch('http://localhost:7071/api/settings/interval', {
           update_interval: totalInterval
         });
 
         console.log(`Einstellungen gespeichert: ${this.minutes} Minuten, ${this.seconds} Sekunden`);
 
-        // Zeige die Speichern-Benachrichtigung an
+
         this.showSaveNotification = true;
 
-        // Blende die Benachrichtigung nach 3 Sekunden aus
+
         setTimeout(() => {
           this.showSaveNotification = false;
         }, 3000);
@@ -45,13 +52,54 @@ export default {
         console.error('Fehler beim Speichern der Einstellungen:', error);
       }
     },
-    // Deine bestehenden Methoden zur Validierung und Aktualisierung der Eingabefelder
+    
+
+
+    validateIp(ip) {
+        const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        
+        return ipRegex.test(ip);
+       
+    },
+    async saveIpAddress(sensor) {
+      console.log('Sende Daten an API:', {
+          sensor_id: sensor.sensor_id,
+          ip_address: sensor.ip_address
+      });
+      if (!this.validateIp(sensor.ip_address)) {
+       
+        this.showErrorNotification = true;
+        setTimeout(() => {
+          this.showErrorNotification = false;
+        }, 3000);
+          return;
+      }
+
+      try {
+          await axios.patch('http://localhost:7071/api/sensors/{sensor_id}/ip', {
+              sensor_id: sensor.sensor_id,
+              ip_address: sensor.ip_address
+          });
+         
+
+          this.showSaveNotification = true;
+
+
+        setTimeout(() => {
+          this.showSaveNotification = false;
+        }, 3000);
+      } catch (error) {
+          console.error('Fehler beim Speichern der IP-Adresse:', error);
+      }
+    },
+
+
     updateSeconds(event) {
       const value = parseInt(event.target.value.trim());
       if (!isNaN(value) && value >= 0 && value <= 59) {
         this.seconds = value;
       } else {
-        event.target.value = this.seconds; // Setze den Wert zurück, wenn die Eingabe ungültig ist
+        event.target.value = this.seconds; 
       }
     },
     updateMinutes(event) {
@@ -59,11 +107,13 @@ export default {
       if (!isNaN(value) && value >= 0 && value <= 60) {
         this.minutes = value;
       } else {
-        event.target.value = this.minutes; // Setze den Wert zurück, wenn die Eingabe ungültig ist
+        event.target.value = this.minutes;
       }
-    }
+    },
+ 
   }
 };
+
 </script>
 
 <template>
@@ -74,47 +124,74 @@ export default {
         <button class="close-button" @click="$emit('close')">×</button>
       </div>
       <div class="modal-body">
-        <div class="settings-item">
-          <p class="interval-title">Intervall-Einstellung</p>
-          <div class="interval-input-container">
-            
-            <div class="input-group">
-              <p class="input-label">Minuten</p>
-              <input
-                type="number"
-                :value="minutes"
-                @input="updateMinutes"
-                min="0"
-                max="60"
-                class="interval-display"
-              />
+
+        <div class="settings-section">
+          <p class="section-title">Intervall-Einstellung</p>
+          <div class="settings-item">
+            <div class="interval-input-container">
+              <div class="input-group">
+                <p class="input-label">Minuten</p>
+                <input
+                  type="number"
+                  :value="minutes"
+                  @input="updateMinutes"
+                  min="0"
+                  max="60"
+                  class="interval-display"
+                />
+              </div>
+              <div class="input-group">
+                <p class="input-label">Sekunden</p>
+                <input
+                  type="number"
+                  :value="seconds"
+                  @input="updateSeconds"
+                  min="0"
+                  max="59"
+                  class="interval-display"
+                /> 
+              </div>
+              <button class="save-button  button-container" @click="saveSettings">Speichern</button>
             </div>
-            
-            <div class="input-group">
-              <p class="input-label">Sekunden</p>
-              <input
-                type="number"
-                :value="seconds"
-                @input="updateSeconds"
-                min="0"
-                max="59"
-                class="interval-display"
-              />
+           
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <p class="section-title">IP-Konfiguration</p>
+          <div class="sensor-settings">
+            <div
+              v-for="sensor in sensors"
+              :key="sensor.sensor_id"
+              class="sensor-settings-item"
+            >
+              <p class="sensor-title">
+                {{ sensor.sensor_id }}
+              </p>
+              <p class="sensor-info">Zugeordneter Raum: {{ sensor.room_id }}</p>
+              <p class="sensor-info">Device ID: {{ sensor.sensor_id }}</p>
+              <div class="sensor-field-row">
+                <label class="input-label">IP-Adresse:</label>
+                <input type="text" v-model="sensor.ip_address" class="ip-input" />
+                <button class="save-button" @click="saveIpAddress(sensor)">Speichern</button>
+              </div>
             </div>
           </div>
-          <button class="save-button" @click="saveSettings">
-            Speichern
-          </button>
         </div>
-      </div>
-      <div v-if="showSaveNotification" class="save-notification">
-        Einstellungen erfolgreich gespeichert!
+
+        <div v-if="showSaveNotification" class="save-notification">
+          Einstellungen erfolgreich gespeichert!
+        </div>
+        <div v-if="showErrorNotification" class="error-notification">
+          Falscher Eingabewert!
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+
 * {
   font-family: 'BDOGrotesk', system-ui, sans-serif;
 }
@@ -142,22 +219,13 @@ body {
 .settings-content {
   background-color: hsl(210, 0%, 100%);
   width: 100%;
-  max-width: 500px;
+  max-width: 600px;
   max-height: 80vh;
-  border-radius: 15px;
+  border-radius: 30px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   position: relative;
-}
-
-.settings-item {
-  color: black;
-  font-size: 18px;
-  line-height: 25.2px;
-  letter-spacing: 0.009em;
-  margin: 0;
-  padding: 12px 0;
 }
 
 .modal-header {
@@ -189,15 +257,93 @@ body {
 .modal-body {
   max-height: calc(80vh - 100px);
   overflow-y: auto;
-  border-radius: 15px;
-  border: 1px solid hsl(210, 0%, 60%);
+  border-radius: 30px;
+  border: 1px solid hsl(0, 0%, 100%);
   padding: 16px;
 }
 
+.section-title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.settings-item,
+.sensor-settings-item {
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  margin-bottom: 15px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.save-button {
+  align-self: center;
+  padding: 8px 16px;
+  font-size: 14px;
+  background-color: hsl(210, 80%, 60%);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.save-button:hover {
+  background-color: hsl(210, 70%, 50%);
+}
+
+
+
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  height: 100%;
+  margin-top: 46px;
+}
+
+.save-notification {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: hsl(120, 70%, 40%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  z-index: 1003;
+  animation: fadeInOut 3s ease-in-out;
+}
+
+.error-notification {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: hsl(20, 100%, 44%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  z-index: 1003;
+  animation: fadeInOut 3s ease-in-out;
+}
+
+/* Settings Intervall */
 .interval-title {
   font-size: 22px;
   font-weight: 600;
   margin-bottom: 16px;
+  padding-left: 24px;
 }
 
 .interval-input-container {
@@ -229,38 +375,49 @@ body {
   color: black;
 }
 
-.save-button {
-  margin-top: 40px;
-  align-self: center;
-  padding: 10px 20px;
-  font-size: 18px;
-  background-color: hsl(210, 80%, 60%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+/* Settings IP */
+.sensor-settings-container {
+  margin-top: 20px;
 }
 
-.save-button:hover {
-  background-color: hsl(210, 70%, 50%);
+.sensor-settings-item {
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  margin-bottom: 15px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-.save-notification {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: hsl(120, 70%, 40%);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-  z-index: 1003;
-  animation: fadeInOut 3s ease-in-out;
+.sensor-title {
+  font-weight: bold;
+  margin-bottom: 5px;
 }
+
+.sensor-info {
+  font-size: 14px;
+  color: #555;
+}
+
+.sensor-field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ip-input {
+  width: 100%;
+  max-width: 150px;
+  padding: 8px;
+  font-size: 14px;
+  height: 30px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+
 
 @keyframes fadeInOut {
   0% {
@@ -276,4 +433,5 @@ body {
     opacity: 0;
   }
 }
+
 </style>

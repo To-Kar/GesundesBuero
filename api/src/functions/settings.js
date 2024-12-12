@@ -14,9 +14,10 @@ const config = {
     port: 1433,
 };
 
-app.http('getSettings', {
+app.http('settings', {
     methods: ['GET'],
     authLevel: 'anonymous',
+    route: 'settings',
     handler: async (req, context) => {
         let pool;
         try {
@@ -49,9 +50,10 @@ app.http('getSettings', {
     }
 });
 
-app.http('updateInterval', {
+app.http('interval', {
   methods: ['PATCH'],
   authLevel: 'anonymous',
+  route: 'settings/interval',
   handler: async (req, context) => {
       let body;
       try {
@@ -120,3 +122,135 @@ app.http('updateInterval', {
       }
   }
 });
+
+
+
+app.http('sensors', {
+    methods: ['GET'],
+    authLevel: 'anonymous',
+    route: 'sensors',
+    handler: async (req, context) => {
+        let pool;
+        try {
+
+            pool = await sql.connect(config);
+
+       
+            const query = `
+                SELECT 
+                    Sensor.sensor_id,
+                    Sensor.ip_address,
+                    ROOM.room_id
+                FROM 
+                    Sensor
+                LEFT JOIN 
+                    ROOM
+                ON 
+                    Sensor.sensor_id = ROOM.sensor_id
+            `;
+
+    
+            const result = await pool.request().query(query);
+
+    
+            if (result.recordset.length === 0) {
+                return {
+                    status: 404,
+                    jsonBody: { error: 'Keine Sensor-Daten gefunden' },
+                };
+            }
+
+      
+            return {
+                status: 200,
+                jsonBody: result.recordset, 
+            };
+        } catch (error) {
+            context.log('Fehler beim Abrufen der Sensor-Daten:', error.message);
+            return {
+                status: 500,
+                jsonBody: { error: 'Fehler beim Abrufen der Sensor-Daten' },
+            };
+        } finally {
+            if (pool) {
+                await pool.close();
+            }
+        }
+    },
+});
+
+
+app.http('ip', {
+    methods: ['PATCH'],
+    authLevel: 'anonymous',
+    route: 'sensors/{sensor_id}/ip',
+    handler: async (req, context) => {
+        let body;
+        try {
+            body = await req.json();
+        } catch (error) {
+            return {
+                status: 400,
+                body: JSON.stringify({ error: 'Ungültiger JSON-Body' })
+            };
+        }
+
+        const { sensor_id, ip_address } = body;
+
+   
+        console.log('Empfangene Daten im Backend:', { sensor_id, ip_address });
+
+        // Validierung der IP-Adresse
+        if (!/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip_address)) {
+            return {
+                status: 400,
+                body: JSON.stringify({ error: 'Ungültige IP-Adresse.' })
+            };
+        }
+
+        if (!sensor_id) {
+            return {
+                status: 400,
+                body: JSON.stringify({ error: 'sensor_id ist erforderlich.' })
+            };
+        }
+
+        let pool;
+        try {
+            pool = await sql.connect(config);
+            const query = `
+                UPDATE SENSOR
+                SET ip_address = @ip_address
+                WHERE sensor_id = @sensor_id
+            `;
+            const request = pool.request();
+            request.input('sensor_id', sql.VarChar, sensor_id);
+            request.input('ip_address', sql.VarChar, ip_address);
+            const result = await request.query(query);
+
+            if (result.rowsAffected[0] === 0) {
+                return {
+                    status: 404,
+                    body: JSON.stringify({ error: 'Sensor nicht gefunden.' })
+                };
+            }
+
+            return {
+                status: 200,
+                body: JSON.stringify({ message: 'IP-Adresse erfolgreich aktualisiert.' })
+            };
+        } catch (error) {
+            context.error('Fehler beim Aktualisieren der IP-Adresse:', error);
+            return {
+                status: 500,
+                body: JSON.stringify({ error: 'Interner Serverfehler.' })
+            };
+        } finally {
+            if (pool) {
+                await pool.close();
+            }
+        }
+    }
+});
+
+
