@@ -57,7 +57,9 @@ export default {
 
     validateIp(ip) {
         const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        
         return ipRegex.test(ip);
+       
     },
     async saveIpAddress(sensor) {
       console.log('Sende Daten an API:', {
@@ -65,7 +67,11 @@ export default {
           ip_address: sensor.ip_address
       });
       if (!this.validateIp(sensor.ip_address)) {
-          alert('Ungültige IP-Adresse.');
+       
+        this.showErrorNotification = true;
+        setTimeout(() => {
+          this.showErrorNotification = false;
+        }, 3000);
           return;
       }
 
@@ -175,6 +181,9 @@ export default {
 
         <div v-if="showSaveNotification" class="save-notification">
           Einstellungen erfolgreich gespeichert!
+        </div>
+        <div v-if="showErrorNotification" class="error-notification">
+          Falscher Eingabewert!
         </div>
       </div>
     </div>
@@ -303,6 +312,22 @@ body {
   left: 50%;
   transform: translateX(-50%);
   background-color: hsl(120, 70%, 40%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  z-index: 1003;
+  animation: fadeInOut 3s ease-in-out;
+}
+
+.error-notification {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: hsl(20, 100%, 44%);
   color: white;
   padding: 8px 16px;
   border-radius: 30px;

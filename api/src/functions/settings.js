@@ -132,10 +132,10 @@ app.http('sensors', {
     handler: async (req, context) => {
         let pool;
         try {
-            // Verbinde mit der Datenbank
+
             pool = await sql.connect(config);
 
-            // SQL-Query, um die benötigten Daten zu holen
+       
             const query = `
                 SELECT 
                     Sensor.sensor_id,
@@ -149,10 +149,10 @@ app.http('sensors', {
                     Sensor.sensor_id = ROOM.sensor_id
             `;
 
-            // Führe die Query aus
+    
             const result = await pool.request().query(query);
 
-            // Prüfe, ob Daten vorhanden sind
+    
             if (result.recordset.length === 0) {
                 return {
                     status: 404,
@@ -160,10 +160,10 @@ app.http('sensors', {
                 };
             }
 
-            // Gib die Ergebnisse zurück
+      
             return {
                 status: 200,
-                jsonBody: result.recordset, // Die Daten als JSON zurückgeben
+                jsonBody: result.recordset, 
             };
         } catch (error) {
             context.log('Fehler beim Abrufen der Sensor-Daten:', error.message);
@@ -187,7 +187,7 @@ app.http('ip', {
     handler: async (req, context) => {
         let body;
         try {
-            body = await req.json(); // JSON-Body auslesen
+            body = await req.json();
         } catch (error) {
             return {
                 status: 400,
@@ -197,7 +197,7 @@ app.http('ip', {
 
         const { sensor_id, ip_address } = body;
 
-        // **Debugging hinzufügen**
+   
         console.log('Empfangene Daten im Backend:', { sensor_id, ip_address });
 
         // Validierung der IP-Adresse
