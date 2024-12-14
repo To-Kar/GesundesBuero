@@ -61,6 +61,8 @@ export default {
       :temperature="room.temperature"
       :humidity="room.humidity"
       :image="room.image"
+      :targetTemperature="room.target_temperature" 
+      :targetHumidity="room.target_humidity" 
       :status="room.status"
       @click="goToRoomDetail(room.image, room.name, room.number, room.temperature, room.humidity)"
 />
