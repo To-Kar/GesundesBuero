@@ -49,7 +49,7 @@ export default {
 
 <template>
   <div class="room-card" @click="$emit('click')">
-    <h2 class="room-title">{{ name }} {{ number }}</h2>
+    <h2 class="room-title">{{ name }}</h2>
     <div class="room-layout">
       <img :src="image" alt="Raum Layout" class="room-image" />
       <div class="metrics">
@@ -87,7 +87,7 @@ export default {
 
 /* Titel */
 .room-title {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   margin-bottom: 1rem;
   text-align: center;
 }
