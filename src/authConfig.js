@@ -8,7 +8,7 @@ const BASE_URL = isProd
 
 const API_URL = isProd
   ? import.meta.env.VITE_API_URL
-  : "http://localhost:7071/api";
+  : import.meta.env.VITE_API_URL || "http://localhost:7071/api";
 
 // Ensure redirect URI matches the current environment
 const redirectUri = `${BASE_URL}${import.meta.env.VITE_REDIRECT_URI}`;
