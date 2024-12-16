@@ -5,7 +5,7 @@ import companyLogo from '../assets/company-logo.png'
 import NotificationCenter from './NotificationCenter.vue';
 import Settings from './Settings.vue';
 import { notificationService } from '../services/notificationService';
-
+import { msalInstance } from '../authConfig';
 
 export default {
  name: 'Navbar',
@@ -98,6 +98,16 @@ export default {
      this.openSettings = false;
      document.body.style.overflow = 'auto';
    },
+   logout() {
+     msalInstance.logoutRedirect({
+       postLogoutRedirectUri: window.location.origin
+     }).then(() => {
+       sessionStorage.clear();
+       this.$router.push('/login');
+     }).catch(error => {
+       console.error('Logout failed:', error);
+     });
+   },
   formatDate(timestamp) {
       try {
         return new Date(timestamp).toLocaleString('de-DE', {
@@ -143,7 +153,7 @@ export default {
      <button class="settings-button" @click="showAllSettings">
        Einstellungen
      </button>
-     <button class="settings-button">
+     <button class="settings-button" @click="logout">
        Abmelden
      </button>
    </div>
