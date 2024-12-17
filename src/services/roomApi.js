@@ -29,6 +29,22 @@ const transformRoomData = (roomData) => ({
 
 // Room API Service
 export const roomApi = {
+      // Räume und Offsets abrufen
+  async getRoomsAndOffsets() {
+    try {
+      // Räume und Sensordaten abrufen
+      const rooms = await this.getAllRoomsWithSensorData();
+
+      // Offsets abrufen
+      const offsetResponse = await apiClient.get('/settings/offsets');
+      const offsets = offsetResponse.data;
+
+      return { rooms, offsets };
+    } catch (error) {
+      console.error('Fehler beim Abrufen der Räume oder Offsets:', error);
+      throw error;
+    }
+  },
     // Alle Räume abrufen
     async getAllRooms() {
         try {

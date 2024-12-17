@@ -18,13 +18,19 @@ export default {
       loading: false,
       temperature: 0,
       humidity: 0,
+      temperatureOffset: 0,
+      humidityOffset: 0,
     };
   },
 
   async created() {
     this.loading = true;
     try {
-      this.rooms = await roomApi.getAllRoomsWithSensorData();
+      // Räume und zugehörige Sensordaten abrufen
+      const { rooms, offsets } = await roomApi.getRoomsAndOffsets();
+      this.rooms = rooms;
+      this.temperatureOffset = offsets.temperature_offset;
+      this.humidityOffset = offsets.humidity_offset;
     } catch (error) {
       this.error = error.message;
       console.error("Fehler beim Laden der Räume:", error);
@@ -61,7 +67,11 @@ export default {
       :temperature="room.temperature"
       :humidity="room.humidity"
       :image="room.image"
+      :targetTemperature="room.target_temperature" 
+      :targetHumidity="room.target_humidity" 
       :status="room.status"
+      :temperatureOffset="temperatureOffset" 
+      :humidityOffset="humidityOffset"
       @click="goToRoomDetail(room.image, room.name, room.number, room.temperature, room.humidity)"
 />
 </div>
