@@ -69,4 +69,19 @@ export const sensorApi = {
             throw error;
         }
     },
+
+    // Alle Sensoren abrufen
+    async getAvailableSensors() {
+        try {
+          const response = await apiClient.get('/sensors');
+          return response.data.map(sensor => ({
+            sensor_id: sensor.sensor_id,
+            ip_address: sensor.ip_address,
+            room_id: sensor.room_id || null,
+          }));
+        } catch (error) {
+          console.error('Fehler beim Abrufen der Sensor-Daten:', error);
+          throw error;
+        }
+      },
 };

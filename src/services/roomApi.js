@@ -58,7 +58,7 @@ export const roomApi = {
         }
     },
 
-    // Neue Methode: Alle Räume mit Sensordaten abrufen
+    // Alle Räume mit Sensordaten abrufen
     async getAllRoomsWithSensorData() {
         try {
             // Räume abrufen
@@ -110,4 +110,38 @@ export const roomApi = {
             throw error;
         }
     },
+
+    // Raum hinzufügen
+    async createRoom(roomData) {
+        try {
+            const response = await apiClient.post('/rooms', roomData);
+            return transformRoomData(response.data);
+        } catch (error) {
+            console.error('Fehler beim Hinzufügen eines Raums:', error);
+            throw error;
+        }
+    },
+
+    // Raum aktualisieren
+    async updateRoom(roomId, roomData) {
+        try {
+            const response = await apiClient.patch(`/rooms/${roomId}`, roomData);
+            return transformRoomData(response.data);
+        } catch (error) {
+            console.error(`Fehler beim Aktualisieren von Raum ${roomId}:`, error);
+            throw error;
+        }
+    },
+
+    // Raum löschen
+    async deleteRoom(roomId) {
+        try {
+            await apiClient.delete(`/rooms/${roomId}`);
+        } catch (error) {
+            console.error(`Fehler beim Löschen von Raum ${roomId}:`, error);
+            throw error;
+        }
+    },
+
+    
 };
