@@ -9,10 +9,36 @@ export default {
       minutes: 0, 
       showSaveNotification: false, 
       sensors: [],
+      rooms: [],
+      currentRoom: {
+        room_id: '',          // Raum-ID
+        name: '',             // Raumname
+        sensor_id: '',        // Sensor-ID
+        imageURL: '',         // Bildpfad
+        target_temp: 22,      // Zieltemperatur
+        target_humidity: 50,  // Ziel-Luftfeuchtigkeit
+      },
+      editMode: false, // Umschalten zwischen Bearbeiten und Hinzufügen
+
+      saveStatus: "", // Status der Speicherung: "success", "error", "loading"
+      saveMessage: "", // Die Nachricht für den Benutzer
     };
   },
   async mounted() {
   try {
+    // Räume abrufen
+    const roomResponse = await axios.get('http://localhost:7071/api/rooms');
+    this.rooms = roomResponse.data;
+
+    // Sensor-Daten für IP-Konfiguration
+    const sensorResponse = await axios.get('http://localhost:7071/api/sensors');
+    this.sensors = sensorResponse.data; // Komplett speichern für IP-Konfiguration
+
+    // Sensor-Daten für Raumzuweisung
+    this.availableSensors = sensorResponse.data.map(sensor => ({
+      sensorId: sensor.sensor_id, // Nur die ID extrahieren
+    }));
+
     // Intervall abrufen
     const response = await axios.get('http://localhost:7071/api/settings');
     const { update_interval } = response.data;
@@ -20,16 +46,17 @@ export default {
     this.minutes = Math.floor(update_interval / 60);
     this.seconds = update_interval % 60;
 
-    // Sensor-Daten abrufen
-    const sensorResponse = await axios.get('http://localhost:7071/api/sensors');
-    console.log('Sensor-Daten:', sensorResponse.data); // Debug-Log
-    this.sensors = sensorResponse.data; // Daten setzen
+
   } catch (error) {
     console.error('Fehler beim Abrufen der Daten:', error.message || error);
   }
+  // Räume abrufen
+  await this.fetchRooms();
 },
 
   methods: {
+    
+    // Methoden zur Intervalleinstellung
     async saveSettings() {
       const totalInterval = Math.floor(this.minutes * 60 + this.seconds);
 
@@ -52,8 +79,25 @@ export default {
         console.error('Fehler beim Speichern der Einstellungen:', error);
       }
     },
-    
 
+    updateSeconds(event) {
+      const value = parseInt(event.target.value.trim());
+      if (!isNaN(value) && value >= 0 && value <= 59) {
+        this.seconds = value;
+      } else {
+        event.target.value = this.seconds; 
+      }
+    },
+    updateMinutes(event) {
+      const value = parseInt(event.target.value.trim());
+      if (!isNaN(value) && value >= 0 && value <= 60) {
+        this.minutes = value;
+      } else {
+        event.target.value = this.minutes;
+      }
+    },
+    
+    // Methoden zur IP-Einstellung
 
     validateIp(ip) {
         const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
@@ -93,25 +137,84 @@ export default {
       }
     },
 
+    // Methoden zur Raumverwaltung
+    
+    async fetchRooms(roomId = null) {
+      const url = "http://localhost:7071/api/rooms"; // Abruf aller Räume
 
-    updateSeconds(event) {
-      const value = parseInt(event.target.value.trim());
-      if (!isNaN(value) && value >= 0 && value <= 59) {
-        this.seconds = value;
-      } else {
-        event.target.value = this.seconds; 
+      try {
+        const response = await axios.get(url);
+        this.rooms = roomId ? [response.data] : response.data;
+      } catch (error) {
+        console.error("Fehler beim Abrufen der Räume:", error);
       }
     },
-    updateMinutes(event) {
-      const value = parseInt(event.target.value.trim());
-      if (!isNaN(value) && value >= 0 && value <= 60) {
-        this.minutes = value;
-      } else {
-        event.target.value = this.minutes;
+
+    // Raum bearbeiten
+    editRoom(room) {
+      this.currentRoom = { ...room }; // Daten des aktuellen Raums setzen
+      this.editMode = true; // Bearbeitungsmodus aktivieren
+    },
+
+    // Raum hinzufügen oder bearbeiten
+    async saveRoom() {
+      try {
+        if (this.editMode) {
+          // Raum bearbeiten
+          await axios.patch(`http://localhost:7071/api/rooms/${this.currentRoom.room_id}`, this.currentRoom);
+          const index = this.rooms.findIndex((r) => r.room_id === this.currentRoom.room_id);
+          if (index !== -1) {
+            this.rooms[index] = { ...this.currentRoom };
+          }
+        } else {
+          // Neuen Raum hinzufügen
+          const response = await axios.post('http://localhost:7071/api/rooms', this.currentRoom);
+          this.rooms.push(response.data);
+        }
+
+        this.resetForm();
+      } catch (error) {
+        console.error('Fehler beim Speichern des Raums:', error);
       }
     },
- 
-  }
+
+    // Formular zurücksetzen
+    resetForm() {
+      this.currentRoom = {
+        room_id: '',
+        name: '',
+        sensor_id: '',
+        imageURL: '',
+        target_temp: 22,
+        target_humidity: 50,
+      };
+      this.editMode = false;
+    },
+
+    async adjustTarget(room, type, change) {
+      // Aktualisierung der Zielwerte lokal
+      if (type === 'temperature') {
+        room.target_temp = Math.max(10, Math.min(room.target_temp + change, 30));
+      } else if (type === 'humidity') {
+        room.target_humidity = Math.max(0, Math.min(room.target_humidity + change, 100));
+      }
+
+      room.updating = true; // Button deaktivieren während des Updates
+      try {
+        const payload = {
+          target_temp: room.target_temp,
+          target_humidity: room.target_humidity,
+        };
+        await axios.patch(`http://localhost:7071/api/rooms/${room.room_id}/targets`, payload);
+      } catch (error) {
+        console.error('Fehler beim Aktualisieren der Zielwerte:', error);
+      } finally {
+        room.updating = false; // Button wieder aktivieren
+      }
+    },
+
+  },
+  
 };
 
 </script>
@@ -177,8 +280,49 @@ export default {
               </div>
             </div>
           </div>
+          
         </div>
 
+   
+        <div class="settings-section">
+    <h3 v-if="editMode">Raum bearbeiten</h3>
+    <h3 v-else>Neuen Raum hinzufügen</h3>
+
+    <div class="room-form">
+      <label>
+        Raum-ID:
+        <input v-model="currentRoom.room_id" type="text" :disabled="editMode" placeholder="Raum-ID" />
+      </label>
+      <label>
+        Raumname:
+        <input v-model="currentRoom.name" type="text" placeholder="Raumname" />
+      </label>
+      <label>
+        Sensor-ID:
+        <select v-model="currentRoom.sensor_id">
+          <option v-for="sensor in availableSensors" :key="sensor.sensorId" :value="sensor.sensorId">
+            {{ sensor.sensorId }}
+          </option>
+        </select>
+      </label>
+      <label>
+        Bildpfad:
+        <input v-model="currentRoom.imageURL" type="text" placeholder="https://static5.depositphotos.com/1010050/513/i/450/depositphotos_5135344-stock-photo-modern-office.jpg" />
+      </label>
+      <label>
+        Zieltemperatur:
+        <input v-model.number="currentRoom.target_temp" type="number" min="10" max="30" />
+      </label>
+      <label>
+        Ziel-Luftfeuchtigkeit:
+        <input v-model.number="currentRoom.target_humidity" type="number" min="0" max="100" />
+      </label>
+      <button @click="saveRoom">{{ editMode ? 'Änderungen speichern' : 'Raum hinzufügen' }}</button>
+      <button @click="resetForm">Abbrechen</button>
+    </div>
+
+
+  </div>
         <div v-if="showSaveNotification" class="save-notification">
           Einstellungen erfolgreich gespeichert!
         </div>
@@ -417,7 +561,65 @@ body {
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+/*Raumverwaltung*/
+.room-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.room-settings-item {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+.room-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  margin-top: 0.5rem;
+}
 
+.adjust-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+button {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+button:hover {
+  background-color: #0056b3;
+}
+button:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.room-form {
+  margin-bottom: 20px;
+}
+.room-form label {
+  display: block;
+  margin-bottom: 10px;
+}
+.room-form input,
+.room-form select {
+  margin-left: 10px;
+}
+.room-list {
+  list-style: none;
+  padding: 0;
+}
+.room-list li {
+  margin-bottom: 10px;
+}
 
 @keyframes fadeInOut {
   0% {
