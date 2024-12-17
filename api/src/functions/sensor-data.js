@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const { app } = require('@azure/functions');
 const sql = require('mssql');
-const { checkThresholdsAndNotify } = require('./notifications');
+//const { checkThresholdsAndNotify } = require('./notifications');
 
 
 // Verbindungsdetails zur Azure SQL-Datenbank
@@ -42,7 +42,7 @@ async function updateSensorData(data) {
 
         await request.query(updateQuery);
 
-        await checkThresholdsAndNotify(data);
+        //await checkThresholdsAndNotify(data);  -> für was verwendet????
 
         console.log(`Daten erfolgreich für Sensor ${data.sensor_id} aktualisiert:`, data);
 
@@ -78,6 +78,30 @@ async function fetchIntervalFromSettings() {
     }
 }
 
+// Middleware zur Validierung des API-Keys
+function validateApiKey(req, context) {
+
+    // Header auslesen
+    const clientApiKey = req.headers.get ? req.headers.get('sensor-api-key') : req.headers['sensor-api-key'];
+    const serverApiKey = process.env.API_KEY;
+
+    if (!clientApiKey) {
+        context.log('API-Key fehlt im Header.');
+        return {
+            status: 401,
+            jsonBody: { error: 'API-Key fehlt. Zugriff verweigert.' },
+        };
+    }
+
+    if (clientApiKey !== serverApiKey) {
+        context.log('Ungültiger API-Key.');
+        return {
+            status: 403,
+            jsonBody: { error: 'Ungültiger API-Key. Zugriff verweigert.' },
+        };
+    }
+    return null; // API-Key validiert, Fehler ist null
+}
 
 // REST API
 app.http('sensor-data', {
@@ -87,6 +111,12 @@ app.http('sensor-data', {
     handler: async (request, context) => {
         context.log(`HTTP function processed request for url "${request.url}"`);
     
+        // API-Key Validierung
+        const apiKeyError = validateApiKey(request, context);
+        if (apiKeyError) {
+            return apiKeyError; // Bei Fehler sofort zurückgeben
+        }
+
         try {
             // JSON aus dem Request lesen
             const body = await request.json(); 

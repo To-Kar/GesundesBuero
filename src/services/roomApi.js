@@ -29,6 +29,22 @@ const transformRoomData = (roomData) => ({
 
 // Room API Service
 export const roomApi = {
+      // Räume und Offsets abrufen
+  async getRoomsAndOffsets() {
+    try {
+      // Räume und Sensordaten abrufen
+      const rooms = await this.getAllRoomsWithSensorData();
+
+      // Offsets abrufen
+      const offsetResponse = await apiClient.get('/settings/offsets');
+      const offsets = offsetResponse.data;
+
+      return { rooms, offsets };
+    } catch (error) {
+      console.error('Fehler beim Abrufen der Räume oder Offsets:', error);
+      throw error;
+    }
+  },
     // Alle Räume abrufen
     async getAllRooms() {
         try {
@@ -42,7 +58,7 @@ export const roomApi = {
         }
     },
 
-    // Neue Methode: Alle Räume mit Sensordaten abrufen
+    // Alle Räume mit Sensordaten abrufen
     async getAllRoomsWithSensorData() {
         try {
             // Räume abrufen
@@ -94,4 +110,38 @@ export const roomApi = {
             throw error;
         }
     },
+
+    // Raum hinzufügen
+    async createRoom(roomData) {
+        try {
+            const response = await apiClient.post('/rooms', roomData);
+            return transformRoomData(response.data);
+        } catch (error) {
+            console.error('Fehler beim Hinzufügen eines Raums:', error);
+            throw error;
+        }
+    },
+
+    // Raum aktualisieren
+    async updateRoom(roomId, roomData) {
+        try {
+            const response = await apiClient.patch(`/rooms/${roomId}`, roomData);
+            return transformRoomData(response.data);
+        } catch (error) {
+            console.error(`Fehler beim Aktualisieren von Raum ${roomId}:`, error);
+            throw error;
+        }
+    },
+
+    // Raum löschen
+    async deleteRoom(roomId) {
+        try {
+            await apiClient.delete(`/rooms/${roomId}`);
+        } catch (error) {
+            console.error(`Fehler beim Löschen von Raum ${roomId}:`, error);
+            throw error;
+        }
+    },
+
+    
 };

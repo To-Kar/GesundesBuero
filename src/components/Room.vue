@@ -22,6 +22,22 @@ export default {
       type: [Number, String],
       required: true,
     },
+    targetTemperature: {
+      type: Number,
+      required: true,
+    },
+    targetHumidity: {
+      type: Number,
+      required: true,
+    },
+    temperatureOffset: {
+      type: Number,
+      required: true,
+    },
+    humidityOffset: {
+      type: Number,
+      required: true,
+    },
     status: {
       type: Object,
       default: () => ({
@@ -33,15 +49,21 @@ export default {
   computed: {
     // Farbe basierend auf der Temperatur
     temperatureColor() {
-      if (this.temperature < 20) return "#87cefa"; // Unter 20°C → Blau
-      if (this.temperature > 24) return "#cd5c5c"; // Über 24°C → Rot
-      return "#3cb371"; // Dazwischen → Grün
+      const lowerThreshold = this.targetTemperature - this.temperatureOffset;
+      const upperThreshold = this.targetTemperature + this.temperatureOffset;
+
+      if (this.temperature < lowerThreshold) return "#87cefa"; // Unter Sollwert → Blau
+      if (this.temperature > upperThreshold) return "#cd5c5c"; // Über Sollwert → Rot
+      return "#3cb371"; // Innerhalb des Bereichs → Grün
     },
     // Farbe basierend auf der Luftfeuchtigkeit
     humidityColor() {
-      if (this.humidity < 45) return "#87cefa"; // Unter 30% → Blau
-      if (this.humidity > 55) return "#cd5c5c"; // Über 60% → Rot
-      return "#3cb371"; // Dazwischen → Grün
+      const lowerThreshold = this.targetHumidity - this.humidityOffset;
+      const upperThreshold = this.targetHumidity + this.humidityOffset;
+
+      if (this.humidity < lowerThreshold) return "#87cefa"; // Unter Sollwert → Blau
+      if (this.humidity > upperThreshold) return "#cd5c5c"; // Über Sollwert → Rot
+      return "#3cb371"; // Innerhalb des Bereichs → Grün
     },
   },
 };
@@ -67,37 +89,47 @@ export default {
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;display=swap');
-
-/* Anwenden des Fonts */
-.room-card {
-  font-family: 'Noto Sans', sans-serif;
+*{
+  font-family: 'BDOGrotesk', system-ui, sans-serif;
 }
 
 /* Hauptcontainer */
+.room-container{
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
 .room-card {
   background-color: #f5f5f5;
   border-radius: 8px;
-  padding: 1rem;
+  padding: 8px;
   width: 100%;
-  max-width: 80%;
   height: auto;
   margin: auto;
 }
 
 /* Titel */
 .room-title {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  text-align: center;
+  font-size: 32px;
+  line-height: 38.4px;
+  margin-bottom: 8px;
+  letter-spacing: -0.68px;
+  font-weight: 700;
+  text-align: left;
+}
+@media screen and (max-width: 768px) {
+  .room-title {
+    font-size: 18px;
+    line-height: 21.6px;
+    letter-spacing: -0.4px;
+  }
 }
 
 /* Bildlayout */
 .room-layout {
   position: relative;
   width: 100%;
-  height: 0;
-  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  padding-top: 56.25%;
 } 
 
 /* Raum-Bild */
