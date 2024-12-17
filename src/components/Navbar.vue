@@ -1,56 +1,54 @@
 <script>
-import settingsImage from '../assets/settings.png'
-import alertImage from '../assets/alert.png'
-import companyLogo from '../assets/company-logo.png'
+import settingsImage from '../assets/settings.png';
+import alertImage from '../assets/alert.png';
+import companyLogo from '../assets/company-logo.png';
 import NotificationCenter from './NotificationCenter.vue';
 import Settings from './Settings.vue';
 import { notificationService } from '../services/notificationService';
 import { msalInstance } from '../authConfig';
 
 export default {
- name: 'Navbar',
- components: {
-   NotificationCenter,
-   Settings
- },
+  name: 'Navbar',
+  components: {
+    NotificationCenter,
+    Settings
+  },
 
- data() {
-   return {
-     settingsImage,
-     alertImage,
-     companyLogo,
+  data() {
+    return {
+      settingsImage,
+      alertImage,
+      companyLogo,
 
-     openSettings: false,
+      openSettings: false,
+      showSettings: false,
+      showNotifications: false,
+      showFullNotifications: false,
+      notifications: [],
+      isLoading: false,
+      error: null
+    };
+  },
 
-     showSettings: false,
+  async mounted() {
+    document.addEventListener('click', this.handleGlobalClick);
 
-     showNotifications: false,    
-     showFullNotifications: false,
-     notifications: [],
-     isLoading: false,
-     error: null
-   }
- },
- async mounted() {
-   document.addEventListener('click', this.handleGlobalClick);
-
-
-   await this.getNotifications();
-   notificationService.startPolling((data) => {
+    await this.getNotifications();
+    notificationService.startPolling((data) => {
       this.notifications = data;
     });
- },
+  },
 
- beforeUnmount() {
-   document.removeEventListener('click', this.handleGlobalClick);
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleGlobalClick);
 
-   notificationService.stopPolling((data) => {
+    notificationService.stopPolling((data) => {
       this.notifications = data;
     });
- },
+  },
 
- methods: {
-  async getNotifications() {
+  methods: {
+    async getNotifications() {
       this.isLoading = true;
       try {
         this.notifications = await notificationService.getNotifications();
@@ -61,54 +59,65 @@ export default {
         this.isLoading = false;
       }
     },
-   handleGlobalClick(event) {
-     const isClickInsideNotifications = event.target.closest('.notifications-content');
-     const isClickInsideSettings = event.target.closest('.settings-content');
-     const isClickOnHeaderButton = event.target.closest('.header-button');
-   
-     if (!isClickInsideNotifications && !isClickInsideSettings && !isClickOnHeaderButton) {
-       this.showSettings = false;
-       this.showNotifications = false;
-     }
-   },
-   handleAlertClick() {
-     this.showNotifications = !this.showNotifications;
-     if (this.showSettings) this.showSettings = false;
-   },
-   handleSettingsClick() {
-     this.showSettings = !this.showSettings
-     if (this.showNotifications) this.showNotifications = false;
-   },
-   showAllNotifications() {
-     this.showFullNotifications = true;
-     this.showNotifications = false;
-     document.body.style.overflow = 'hidden';
-   },
-   handleNotificationCenterClose() {
-    this.showFullNotifications = false;
-    document.body.style.overflow = 'auto';
-  },
-   showAllSettings() {
-     this.openSettings = true;
-     this.showNotifications = false;
-     this.showSettings = false;
-     document.body.style.overflow = 'hidden';
-  },
-   handleShowAllSettingsClose () {
-     this.openSettings = false;
-     document.body.style.overflow = 'auto';
-   },
-   logout() {
-     msalInstance.logoutRedirect({
-       postLogoutRedirectUri: window.location.origin
-     }).then(() => {
-       sessionStorage.clear();
-       this.$router.push('/login');
-     }).catch(error => {
-       console.error('Logout failed:', error);
-     });
-   },
-  formatDate(timestamp) {
+
+    handleGlobalClick(event) {
+      const isClickInsideNotifications = event.target.closest('.notifications-content');
+      const isClickInsideSettings = event.target.closest('.settings-content');
+      const isClickOnHeaderButton = event.target.closest('.header-button');
+
+      if (!isClickInsideNotifications && !isClickInsideSettings && !isClickOnHeaderButton) {
+        this.showSettings = false;
+        this.showNotifications = false;
+      }
+    },
+
+    handleAlertClick() {
+      this.showNotifications = !this.showNotifications;
+      if (this.showSettings) this.showSettings = false;
+    },
+
+    handleSettingsClick() {
+      this.showSettings = !this.showSettings;
+      if (this.showNotifications) this.showNotifications = false;
+      console.log("Token Claims:", msalInstance.getAllAccounts()[0].idTokenClaims);
+
+    },
+
+    showAllNotifications() {
+      this.showFullNotifications = true;
+      this.showNotifications = false;
+      document.body.style.overflow = 'hidden';
+    },
+
+    handleNotificationCenterClose() {
+      this.showFullNotifications = false;
+      document.body.style.overflow = 'auto';
+    },
+
+    showAllSettings() {
+      this.openSettings = true;
+      this.showNotifications = false;
+      this.showSettings = false;
+      document.body.style.overflow = 'hidden';
+    },
+
+    handleShowAllSettingsClose() {
+      this.openSettings = false;
+      document.body.style.overflow = 'auto';
+    },
+
+    logout() {
+      msalInstance.logoutRedirect({
+        postLogoutRedirectUri: window.location.origin
+      }).then(() => {
+        sessionStorage.clear();
+        this.$router.push('/login');
+      }).catch(error => {
+        console.error('Logout failed:', error);
+      });
+    },
+
+    formatDate(timestamp) {
       try {
         return new Date(timestamp).toLocaleString('de-DE', {
           year: 'numeric',
@@ -122,69 +131,96 @@ export default {
         return 'Ungültiges Datum';
       }
     }
- },
- computed: {
-   recentNotifications() {
-     return this.notifications.slice(0, 5);
-   }
- }
+  },
+
+  computed: {
+    recentNotifications() {
+      return this.notifications.slice(0, 5);
+    },
+
+    isAdmin() {
+  const accounts = msalInstance.getAllAccounts();
+  if (accounts.length > 0) {
+    const account = accounts[0];
+    const adminIdentifier = "admin"; // Prüfe auf 'admin' im Namen
+    const displayName = account.idTokenClaims?.name || "";
+    return displayName.toLowerCase().includes(adminIdentifier);
+  }
+  return false;
 }
+
+  }
+};
 </script>
 
 <template>
- <nav class="app-header">
-   <div class="nav-section">
-     <button class="header-button" @click="handleAlertClick">
-       <img :src="alertImage" class="header-icon" />
-     </button>
-   </div>
-  
-   <img :src="companyLogo" class="header-logo" />
-  
-   <div class="nav-section">
-     <button class="header-button" @click="handleSettingsClick">
-       <img :src="settingsImage" class="header-icon" />
-     </button>
-   </div>
- </nav>
+  <nav class="app-header">
+    <div class="nav-section">
+      <button class="header-button" @click="handleAlertClick">
+        <img :src="alertImage" class="header-icon" />
+      </button>
+    </div>
 
- <div v-if="showSettings" class="settings-overlay">
-   <div class="settings-content">
-     <button class="settings-button" @click="showAllSettings">
-       Einstellungen
-     </button>
-     <button class="settings-button" @click="logout">
-       Abmelden
-     </button>
-   </div>
- </div>
+    <img :src="companyLogo" class="header-logo" />
 
- <div v-if="showNotifications" class="notifications-overlay">
-   <div class="notifications-content">
-     <div class="notifications-list">
-       <div v-for="notification in recentNotifications" 
-            :key="notification.id" 
-            class="notification-item">
-         <h3 class="notification-location">{{ notification.room_id }}</h3>
-         <p class="notification-description">{{ notification.description }}</p>
-         <p class="notification-time">{{ formatDate(notification.timestamp) }}</p>
-       </div>
-     </div>
-     <button class="show-more-button" @click="showAllNotifications">
-       Alle Mitteilungen anzeigen
-     </button>
-   </div>
- </div>
+    <div class="nav-section">
+      <button class="header-button" @click="handleSettingsClick">
+        <img :src="settingsImage" class="header-icon" />
+      </button>
+    </div>
+  </nav>
 
- <NotificationCenter 
-   v-if="showFullNotifications"
-   :notifications="notifications"
-   @close="handleNotificationCenterClose"
- />
+  <div v-if="showSettings" class="settings-overlay">
+    <div class="settings-content">
+      <button 
+        class="settings-button" 
+        @click="isAdmin ? showAllSettings() : null"
+        :disabled="!isAdmin"
+        :class="{ 'disabled-button': !isAdmin }"
+      >
+        Einstellungen
+      </button>
+      <button class="settings-button" @click="logout">
+        Abmelden
+      </button>
+    </div>
+  </div>
 
-<Settings v-if="openSettings" @close="openSettings = false" />
+  <div v-if="showNotifications" class="notifications-overlay">
+    <div class="notifications-content">
+      <div class="notifications-list">
+        <div v-for="notification in recentNotifications" 
+             :key="notification.id" 
+             class="notification-item">
+          <h3 class="notification-location">{{ notification.room_id }}</h3>
+          <p class="notification-description">{{ notification.description }}</p>
+          <p class="notification-time">{{ formatDate(notification.timestamp) }}</p>
+        </div>
+      </div>
+      <button class="show-more-button" @click="showAllNotifications">
+        Alle Mitteilungen anzeigen
+      </button>
+    </div>
+  </div>
 
+  <NotificationCenter 
+    v-if="showFullNotifications"
+    :notifications="notifications"
+    @close="handleNotificationCenterClose"
+  />
+
+  <Settings v-if="openSettings" @close="handleShowAllSettingsClose" />
 </template>
+
+<style scoped>
+/* Add your styles here */
+.disabled-button {
+  color: hsl(0, 0%, 50%);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+</style>
+
 
 <style scoped>
 * {
@@ -370,4 +406,11 @@ export default {
 .show-more-button:hover {
  background-color: hsl(210, 0%, 95%);
 }
+
+.disabled-button {
+  color: hsl(0, 0%, 50%);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 </style>

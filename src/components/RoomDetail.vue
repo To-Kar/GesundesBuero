@@ -167,7 +167,7 @@
 <script>
 import { roomApi } from "../services/roomApi";
 import { sensorApi } from '../services/sensorApi';
-
+import { msalInstance } from "../authConfig";
 
 export default {
   props: {
@@ -232,6 +232,18 @@ export default {
     };
   },
   computed: {
+
+    isAdmin() {
+      // Gleiches Prinzip wie in Navbar
+      const accounts = msalInstance.getAllAccounts();
+      if (accounts.length > 0) {
+        const account = accounts[0];
+        const adminIdentifier = "admin";
+        const displayName = account.idTokenClaims?.name || "";
+        return displayName.toLowerCase().includes(adminIdentifier);
+      }
+      return false;
+    },
     temperatureColor() {
       const minTemp = 10; // Minimaltemperatur
       const maxTemp = 30; // Maximaltemperatur
@@ -373,6 +385,12 @@ export default {
   async saveRoom() {
     if (this.showConfirmSwap) return;
 
+    // Nur Admins dürfen einen Raum hinzufügen oder ändern
+    if (!this.isAdmin) {
+        console.warn("Nur Admins dürfen einen Raum hinzufügen oder ändern.");
+        return;
+      }
+
     try {
         const payload = {
             name: this.roomEdit.name,
@@ -497,11 +515,21 @@ export default {
   },
 };
 </script>
+
+
 <style scoped>
 
 *{
   font-family: 'BDOGrotesk', system-ui, sans-serif;
 }
+
+.disabled-button {
+  color: hsl(0, 0%, 50%);
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  background-color: #ccc !important;
+}
+
 /* Transition für das Overlay */
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.5s ease;

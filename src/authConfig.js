@@ -1,3 +1,4 @@
+
 import { PublicClientApplication, LogLevel } from "@azure/msal-browser";
 
 // Environment-aware configuration
@@ -65,6 +66,18 @@ export const environment = {
   baseUrl: BASE_URL,
   apiUrl: API_URL
 };
+
+export function isUserAdmin() {
+  const adminRole = import.meta.env.VITE_ADMIN_ROLE; // Hole Admin-Rolle aus .env
+  const accounts = msalInstance.getAllAccounts();
+  if (accounts.length > 0) {
+    const account = accounts[0];
+    const roles = account.idTokenClaims?.roles || []; // Falls Rollen im Token als `roles` vorhanden
+    return roles.includes(adminRole);
+  }
+  return false;
+}
+
 
 // Initialize MSAL instance
 const msalInstance = new PublicClientApplication(msalConfig);

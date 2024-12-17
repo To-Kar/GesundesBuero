@@ -1,3 +1,4 @@
+import { isUserAdmin } from '../authConfig';
 import { msalInstance, loginRequest } from '../authConfig';
 
 export function registerGuard(router) {
@@ -8,14 +9,16 @@ export function registerGuard(router) {
     if (to.meta.requiresAuth) {
       if (isAuthenticated) {
         try {
-          // Silently acquire token if needed
           await msalInstance.acquireTokenSilent({
             ...loginRequest,
             account: accounts[0]
           });
+          // Admin-Prüfung für spezielle Routen
+          if (to.meta.requiresAdmin && !isUserAdmin()) {
+            return next('/not-authorized'); // Leite zu einer "Zugriff verweigert"-Seite weiter
+          }
           return next();
         } catch (error) {
-          // If silent token acquisition fails, redirect to login
           sessionStorage.setItem('loginRedirect', to.fullPath);
           await msalInstance.loginRedirect(loginRequest);
           return;
