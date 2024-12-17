@@ -16,10 +16,12 @@ const calculateStatus = (current, target, isHumidity = false) => {
 // Private Funktion zur Transformation der Sensordaten
 const transformSensorData = (data) => ({
     sensorId: data.sensor_id,
-    roomId: data.room_id ? data.room_id.toString() : 'N/A', // Stellen Sie sicher, dass roomId ein String ist
+    roomId: data.room_id ? data.room_id.toString() : 'N/A',
     temperature: data.current_temp || data.temperature || 'N/A',
     humidity: data.current_humidity || data.humidity || 'N/A',
     timestamp: new Date(data.last_updated || data.timestamp),
+    // Explizite Konvertierung von is_connected zu Boolean
+    is_connected: data.is_connected === 1,
     status: {
         temp_status: calculateStatus(data.current_temp, data.target_temp),
         humidity_status: calculateStatus(data.current_humidity, data.target_humidity, true),
@@ -44,12 +46,10 @@ export const sensorApi = {
         }
     },
 
-    // Neue Methode: Alle aktuellen Sensordaten abrufen
+    // Alle aktuellen Sensordaten abrufen
     async getAllLatestSensorData() {
         try {
             const response = await apiClient.get('/room-sensor-data');
-            //console.log('Alle Sensordaten:', response.data); // Debugging
-
             return response.data.map(transformSensorData);
         } catch (error) {
             console.error('Fehler beim Abrufen aller Sensordaten:', error);
@@ -73,15 +73,15 @@ export const sensorApi = {
     // Alle Sensoren abrufen
     async getAvailableSensors() {
         try {
-          const response = await apiClient.get('/sensors');
-          return response.data.map(sensor => ({
-            sensor_id: sensor.sensor_id,
-            ip_address: sensor.ip_address,
-            room_id: sensor.room_id || null,
-          }));
+            const response = await apiClient.get('/sensors');
+            return response.data.map(sensor => ({
+                sensor_id: sensor.sensor_id,
+                ip_address: sensor.ip_address,
+                room_id: sensor.room_id || null,
+            }));
         } catch (error) {
-          console.error('Fehler beim Abrufen der Sensor-Daten:', error);
-          throw error;
+            console.error('Fehler beim Abrufen der Sensor-Daten:', error);
+            throw error;
         }
-      },
+    },
 };

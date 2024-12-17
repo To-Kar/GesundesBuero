@@ -44,6 +44,11 @@ export default {
         temp_status: 'unknown',
         humidity_status: 'unknown'
       })
+    },
+    // Fehlendes hinzufügen:
+    is_connected: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
@@ -65,12 +70,24 @@ export default {
       if (this.humidity > upperThreshold) return "#cd5c5c"; // Über Sollwert → Rot
       return "#3cb371"; // Innerhalb des Bereichs → Grün
     },
+    // Fehlendes hinzufügen: Dynamische Klassen basierend auf is_connected
+    cardClasses() {
+      return {
+        'room-card': true,
+        'disconnected': !this.is_connected
+      };
+    }
   },
 };
 </script>
 
 <template>
-  <div class="room-card" @click="$emit('click')">
+  <div :class="cardClasses" @click="$emit('click')">
+    <!-- Overlay anzeigen, wenn nicht verbunden -->
+    <div v-if="!is_connected" class="connection-status">
+      Disconnected
+    </div>
+
     <h2 class="room-title">{{ name }}</h2>
     <div class="room-layout">
       <img :src="image" alt="Raum Layout" class="room-image" />
@@ -106,6 +123,7 @@ export default {
   width: 100%;
   height: auto;
   margin: auto;
+  position: relative;
 }
 
 /* Titel */
@@ -163,5 +181,59 @@ export default {
   min-width: 60px;
   max-width: 100px;
   font-size: calc(0.5rem + 1vw); /* Dynamische Schriftgröße */
+}
+
+/* Overlay anzeigen, wenn disconnected */
+.connection-status {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.7); /* Dunklerer Hintergrund für bessere Lesbarkeit */
+  color: red;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 100; /* Höherer z-index, um über anderen Elementen zu liegen */
+  font-weight: 900;
+  filter: none !important;
+  opacity: 2 !important;
+}
+
+/* Fehlendes hinzufügen: ausgegrauter Zustand bei Disconnected */
+.disconnected {
+  filter: grayscale(100%);
+}
+
+/* Anpassungen für den "Disconnected" Status */
+.connection-status {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  color: #ff0000; /* Rot */
+  padding: 2px 5px;
+  font-size: 0.8em;
+  font-weight: bold; /* Fett */
+  z-index: 100 !important; /* Über allen anderen Elementen */
+  filter: none !important; /* Kein Graustufenfilter */
+  opacity: 1 !important; /* Volle Deckkraft */
+}
+
+/* Entfernen der Opacity aus .disconnected, um den "Disconnected" Text nicht zu beeinflussen */
+.disconnected {
+  filter: grayscale(100%);
+  /* opacity: 0.7; Entfernt */
+}
+
+/* Sicherstellen, dass .connection-status nicht ausgegraut wird */
+.disconnected .connection-status {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+.disconnected .connection-status,
+div.room-card .connection-status {
+  filter: none !important;
+  opacity: 1 !important;
 }
 </style>

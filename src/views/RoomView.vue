@@ -133,6 +133,7 @@ export default {
       :status="room.status"
       :temperatureOffset="temperatureOffset" 
       :humidityOffset="humidityOffset"
+      :is_connected="room.is_connected"
       @click="goToRoomDetail(room.image, room.name, room.number, room.temperature, room.humidity)"
     />
 
