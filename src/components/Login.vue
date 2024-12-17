@@ -13,8 +13,8 @@ export default {
   },
   methods: {
     redirectToAzureSSO() {
-      // Leitet zur Azure SSO-Seite weiter
-      window.location.href = "https://orange-sky-0967a5b03.5.azurestaticapps.net/";
+      // Leitet zu einer anderen Route innerhalb der Anwendung weiter
+      this.$router.push("/room"); // Ersetze "/zielroute" mit der gewünschten Route
     },
   },
 };
@@ -125,7 +125,8 @@ body {
   font-style: normal;
   font-size: 30px; /* Schriftgröße des Slogans */
   color: #000000; /* Weiße Schrift */
-  margin-top: 10px;
+  margin-top: 5px;
+  margin-bottom: 20px;
 }
 
 /* Login-Button */

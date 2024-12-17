@@ -6,7 +6,11 @@ const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
         {
-            path: '/Login',
+            path: '/',
+            redirect: '/login'
+        },
+        {
+            path: '/login',
             name: 'Login',
             component: LoginView,
             meta: { hideNavbar: true}
@@ -15,7 +19,11 @@ const router = createRouter({
             path: '/room',
             name: 'Room',
             component: RoomView,
-
+            meta: { requiresAuth: true }
+        },
+        {
+            path: '/:pathMatch(.*)*',
+            redirect: '/login'
         }
     ],
 }
