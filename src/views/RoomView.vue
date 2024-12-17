@@ -188,9 +188,12 @@ export default {
   flex: 1 1 calc(50% - 1rem);
   max-width: calc(50% - 1rem);
   box-sizing: border-box;
-  border-radius: 35px;
-  aspect-ratio: 1.5 / 1; 
-
+}
+@media screen and (max-width: 768px) {
+  .room-view > * {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
 }
 
 

@@ -89,37 +89,47 @@ export default {
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;display=swap');
-
-/* Anwenden des Fonts */
-.room-card {
-  font-family: 'Noto Sans', sans-serif;
+*{
+  font-family: 'BDOGrotesk', system-ui, sans-serif;
 }
 
 /* Hauptcontainer */
+.room-container{
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
 .room-card {
   background-color: #f5f5f5;
   border-radius: 8px;
-  padding: 1rem;
+  padding: 8px;
   width: 100%;
-  max-width: 80%;
   height: auto;
   margin: auto;
 }
 
 /* Titel */
 .room-title {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  text-align: center;
+  font-size: 32px;
+  line-height: 38.4px;
+  margin-bottom: 8px;
+  letter-spacing: -0.68px;
+  font-weight: 700;
+  text-align: left;
+}
+@media screen and (max-width: 768px) {
+  .room-title {
+    font-size: 18px;
+    line-height: 21.6px;
+    letter-spacing: -0.4px;
+  }
 }
 
 /* Bildlayout */
 .room-layout {
   position: relative;
   width: 100%;
-  height: 0;
-  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  padding-top: 56.25%;
 } 
 
 /* Raum-Bild */
