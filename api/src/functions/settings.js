@@ -254,3 +254,112 @@ app.http('ip', {
 });
 
 
+// Abrufen der Offsets (GET)
+app.http('getOffsets', {
+    methods: ['GET'],
+    authLevel: 'anonymous',
+    route: 'settings/offsets',
+    handler: async (req, context) => {
+      let pool;
+      try {
+        pool = await sql.connect(config);
+        const query = 'SELECT temperature_offset, humidity_offset FROM Settings WHERE id = 1;';
+        const result = await pool.request().query(query);
+  
+        if (result.recordset.length === 0) {
+          return {
+            status: 404,
+            body: JSON.stringify({ error: 'Einstellungen nicht gefunden' }),
+          };
+        }
+  
+        return {
+          status: 200,
+          body: JSON.stringify(result.recordset[0]),
+        };
+      } catch (error) {
+        context.error('Fehler beim Abrufen der Offsets:', error);
+        return {
+          status: 500,
+          body: JSON.stringify({ error: 'Interner Serverfehler' }),
+        };
+      } finally {
+        if (pool) {
+          await pool.close();
+        }
+      }
+    },
+  });
+  
+  // Aktualisieren der Offsets (PATCH)
+  app.http('updateOffsets', {
+    methods: ['PATCH'],
+    authLevel: 'anonymous',
+    route: 'settings/offsets',
+    handler: async (req, context) => {
+      let body;
+      try {
+        body = await req.json();
+      } catch (error) {
+        return {
+          status: 400,
+          body: JSON.stringify({ error: 'Ungültiger JSON-Body' }),
+        };
+      }
+  
+      const { temperature_offset, humidity_offset } = body;
+  
+      // Validierung der Eingabewerte
+      if (
+        temperature_offset === undefined ||
+        humidity_offset === undefined ||
+        typeof temperature_offset !== 'number' ||
+        typeof humidity_offset !== 'number'
+      ) {
+        return {
+          status: 400,
+          body: JSON.stringify({
+            error: 'Ungültige Daten: temperature_offset und humidity_offset sind erforderlich und müssen Zahlen sein.',
+          }),
+        };
+      }
+  
+      let pool;
+      try {
+        pool = await sql.connect(config);
+        const query = `
+          UPDATE Settings
+          SET temperature_offset = @temperature_offset, humidity_offset = @humidity_offset
+          WHERE id = 1;
+        `;
+        const request = pool.request();
+        request.input('temperature_offset', sql.Float, temperature_offset);
+        request.input('humidity_offset', sql.Float, humidity_offset);
+  
+        const result = await request.query(query);
+  
+        if (result.rowsAffected[0] === 0) {
+          return {
+            status: 404,
+            body: JSON.stringify({ error: 'Einstellungen nicht gefunden' }),
+          };
+        }
+  
+        return {
+          status: 200,
+          body: JSON.stringify({ message: 'Offsets erfolgreich aktualisiert' }),
+        };
+      } catch (error) {
+        context.error('Fehler beim Aktualisieren der Offsets:', error);
+        return {
+          status: 500,
+          body: JSON.stringify({ error: 'Interner Serverfehler' }),
+        };
+      } finally {
+        if (pool) {
+          await pool.close();
+        }
+      }
+    },
+  });
+  

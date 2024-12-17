@@ -21,13 +21,13 @@ export default {
       loading: false,
       temperature: 0,
       humidity: 0,
-
       isAdding: false, // Flag, wenn ein neuer Raum hinzugefügt wird.
       saveStatus: "", 
       saveMessage: "", 
-
       updateInterval: 10000, // Intervallzeit aus der Settings-Tabelle
       intervalId: null,     // Speichert die Timer-ID
+      temperatureOffset: 0,
+      humidityOffset: 0,
     };
   },
 
@@ -37,7 +37,11 @@ export default {
     await this.fetchSettingsAndStartInterval();
 
     try {
-      this.rooms = await roomApi.getAllRoomsWithSensorData();
+      // Räume und zugehörige Sensordaten abrufen
+      const { rooms, offsets } = await roomApi.getRoomsAndOffsets();
+      this.rooms = rooms;
+      this.temperatureOffset = offsets.temperature_offset;
+      this.humidityOffset = offsets.humidity_offset;
     } catch (error) {
       this.error = error.message;
       console.error("Fehler beim Laden der Räume:", error);
@@ -172,7 +176,11 @@ export default {
       :temperature="room.temperature"
       :humidity="room.humidity"
       :image="room.image"
+      :targetTemperature="room.target_temperature" 
+      :targetHumidity="room.target_humidity" 
       :status="room.status"
+      :temperatureOffset="temperatureOffset" 
+      :humidityOffset="humidityOffset"
       @click="goToRoomDetail(room.image, room.name, room.number, room.temperature, room.humidity)"
     />
 
@@ -228,9 +236,12 @@ export default {
   flex: 1 1 calc(50% - 1rem);
   max-width: calc(50% - 1rem);
   box-sizing: border-box;
-  border-radius: 35px;
-  aspect-ratio: 1.5 / 1; 
-
+}
+@media screen and (max-width: 768px) {
+  .room-view > * {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
 }
 
 
