@@ -2,6 +2,9 @@
 import Room from "../components/Room.vue";
 import RoomDetail from "../components/RoomDetail.vue";
 import { roomApi } from "../services/roomApi";
+import { settingsService } from "../services/settingsService";
+
+import axios from "axios";
 
 export default {
   name: "RoomView",
@@ -21,14 +24,18 @@ export default {
       isAdding: false, // Flag, wenn ein neuer Raum hinzugefügt wird.
       saveStatus: "", 
       saveMessage: "", 
+      updateInterval: 10000, // Intervallzeit aus der Settings-Tabelle
+      intervalId: null,     // Speichert die Timer-ID
       temperatureOffset: 0,
       humidityOffset: 0,
-
     };
   },
 
   async created() {
     this.loading = true;
+
+    await this.fetchSettingsAndStartInterval();
+
     try {
       // Räume und zugehörige Sensordaten abrufen
       const { rooms, offsets } = await roomApi.getRoomsAndOffsets();
@@ -111,10 +118,51 @@ export default {
       this.saveStatus = "";
       this.saveMessage = "";
     }, 2000);
-  }
+  },
 
-  
-}
+  // Abrufen des Update-Intervalls und Starten des Timers
+  async fetchSettingsAndStartInterval() {
+      try {
+        
+        this.updateInterval =  await settingsService.fetchAndReturnInterval();
+        console.log("Update-Intervall gesetzt auf:", this.updateInterval, "ms");
+
+        // Timer neustarten
+        this.restartUpdateTimer();
+      } catch (error) {
+        console.error("Fehler beim Laden des Intervalls:", error.message);
+      }
+    },
+
+    // Timer neustarten
+    restartUpdateTimer() {
+      if (this.intervalId) clearInterval(this.intervalId); // Vorhandenes Intervall stoppen
+
+      this.intervalId = setInterval(async () => {
+        await this.fetchSensorData(); // Sensordaten aktualisieren
+      }, this.updateInterval);
+
+      console.log("Timer gestartet mit Intervall:", this.updateInterval, "ms");
+    },
+
+    // Sensordaten aus der API abrufen
+    async fetchSensorData() {
+      try {
+        this.rooms = await roomApi.getAllRoomsWithSensorData();
+        console.log("Sensordaten erfolgreich aktualisiert");
+      } catch (error) {
+        console.error("Fehler beim Laden der Sensordaten:", error.message);
+      }
+    },
+
+    // Manuelle Aktualisierung der Sensordaten
+    async manualRefresh() {
+      await this.fetchSettingsAndStartInterval(); // Aktualisiere Intervall und lade Sensordaten neu
+    },
+  },
+  beforeDestroy() {
+    if (this.intervalId) clearInterval(this.intervalId); // Timer stoppen, wenn Komponente zerstört wird
+  },
 };
 </script>
 
