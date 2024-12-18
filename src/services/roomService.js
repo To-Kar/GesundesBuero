@@ -1,7 +1,7 @@
 // roomApi.js
 
 import { apiClient } from './apiClient';
-import { sensorApi } from './sensorApi';
+import { sensorApi } from './sensorService';
 
 // Funktion zur Berechnung des Status basierend auf aktuellen und Zielwerten
 const calculateStatus = (current, target, isHumidity = false) => {
