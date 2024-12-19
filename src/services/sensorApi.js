@@ -13,10 +13,10 @@ const calculateStatus = (current, target, isHumidity = false) => {
     return 'critical';
 };
 
-// Private Funktion zur Transformation der Sensordaten
+// Funktion zur Transformation der Sensordaten
 const transformSensorData = (data) => ({
     sensorId: data.sensor_id,
-    roomId: data.room_id ? data.room_id.toString() : 'N/A', // Stellen Sie sicher, dass roomId ein String ist
+    roomId: data.room_id ? data.room_id.toString() : 'N/A', 
     temperature: data.current_temp || data.temperature || 'N/A',
     humidity: data.current_humidity || data.humidity || 'N/A',
     timestamp: new Date(data.last_updated || data.timestamp),
@@ -44,7 +44,7 @@ export const sensorApi = {
         }
     },
 
-    // Neue Methode: Alle aktuellen Sensordaten abrufen
+    // Alle aktuellen Sensordaten abrufen
     async getAllLatestSensorData() {
         try {
             const response = await apiClient.get('/room-sensor-data');

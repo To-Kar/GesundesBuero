@@ -356,14 +356,14 @@ export default {
       this.isEditing = false; // Bearbeitungsmodus beenden
     },
 
-  // Lokale Anpassung der Zieltemperatur, ohne API-Aufruf
+
   adjustTempLocally(change) {
     let newTemp = this.roomEdit.target_temp + change;
     newTemp = Math.max(10, Math.min(newTemp, 30));
     this.roomEdit.target_temp = newTemp;
   },
 
-  // Lokale Anpassung der Ziel-Luftfeuchtigkeit, ohne API-Aufruf
+
   adjustHumLocally(change) {
     let newHum = this.roomEdit.target_humidity + change;
     newHum = Math.max(0, Math.min(newHum, 100));
@@ -396,7 +396,7 @@ export default {
             this.fetchRoomDetails();
         }
 
-        // Feedback bei Erfolg
+
         this.$emit("save-feedback", {
           status: "success",
           message: "Raum erfolgreich gespeichert!",
@@ -405,7 +405,7 @@ export default {
  
         this.$emit("room-updated");
 
-        // Erfolgreich gespeichert: Aktualisierung mitteilen
+
         this.$emit("update-room", {
           roomId: this.roomId,
           temperature: this.temperature,
@@ -414,7 +414,7 @@ export default {
         
         } catch (error) {
             console.error("Fehler beim Speichern des Raums:", error);
-            // Feedback bei Fehler
+
             this.$emit("save-feedback", {
               status: "error",
               message: "Speichern fehlgeschlagen. Bitte erneut versuchen.",
@@ -426,7 +426,7 @@ export default {
     handleSensorChange() {
       if (this.roomEdit.sensor_id === "") {
         console.log("Kein Sensor ausgewählt");
-        this.currentSensorId = null; // Kein zugewiesener Sensor
+        this.currentSensorId = null; 
         return;
       }
       const selectedSensor = this.availableSensors.find(
@@ -466,10 +466,10 @@ export default {
   
   // Raum löschen
   openDeleteModal() {
-      this.showDeleteModal = true; // Modal anzeigen
+      this.showDeleteModal = true; 
     },
     closeDeleteModal() {
-      this.showDeleteModal = false; // Modal ausblenden
+      this.showDeleteModal = false; 
     },
 
     async confirmDelete() {
@@ -477,7 +477,7 @@ export default {
         await roomApi.deleteRoom(this.roomId);
         this.$emit("room-deleted", this.roomId); // Event an Parent senden
         this.closeDeleteModal(); // Modal schließen
-        this.goBack(); // Zurück zur Hauptansicht
+        this.goBack(); 
       } catch (error) {
         console.error("Fehler beim Löschen des Raums:", error);
       }
@@ -488,10 +488,10 @@ export default {
  mounted() {
     this.isVisible = true;
     if (this.isAdding) {
-        this.isEditing = true; // Automatisch in den Bearbeitungsmodus wechseln
+        this.isEditing = true; 
     }
     
-    this.fetchRoomDetails(); // Raumdetails beim Laden abrufen
+    this.fetchRoomDetails(); 
     
     this.fetchAvailableSensors(); 
   },

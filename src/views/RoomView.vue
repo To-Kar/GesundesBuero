@@ -4,7 +4,7 @@ import RoomDetail from "../components/RoomDetail.vue";
 import { roomApi } from "../services/roomApi";
 import { settingsService } from "../services/settingsService";
 
-import axios from "axios";
+
 
 export default {
   name: "RoomView",
@@ -21,11 +21,11 @@ export default {
       loading: false,
       temperature: 0,
       humidity: 0,
-      isAdding: false, // Flag, wenn ein neuer Raum hinzugefügt wird.
+      isAdding: false,
       saveStatus: "", 
       saveMessage: "", 
-      updateInterval: 10000, // Intervallzeit aus der Settings-Tabelle
-      intervalId: null,     // Speichert die Timer-ID
+      updateInterval: 10000, 
+      intervalId: null,   
       temperatureOffset: 0,
       humidityOffset: 0,
     };
@@ -71,7 +71,7 @@ export default {
     try {
       this.rooms = await roomApi.getAllRoomsWithSensorData();
 
-      // Wenn Detailfenster noch offen ist, aktualisieren wir die Props
+      // Wenn Detailfenster Props aktualisieren
       if (this.showDetail && this.roomId) {
         const updatedRoom = this.rooms.find(r => r.number === this.roomId);
         if (updatedRoom) {
@@ -157,11 +157,11 @@ export default {
 
     // Manuelle Aktualisierung der Sensordaten
     async manualRefresh() {
-      await this.fetchSettingsAndStartInterval(); // Aktualisiere Intervall und lade Sensordaten neu
+      await this.fetchSettingsAndStartInterval(); 
     },
   },
   beforeDestroy() {
-    if (this.intervalId) clearInterval(this.intervalId); // Timer stoppen, wenn Komponente zerstört wird
+    if (this.intervalId) clearInterval(this.intervalId); 
   },
 };
 </script>
