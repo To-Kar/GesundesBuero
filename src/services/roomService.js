@@ -21,6 +21,7 @@ const transformRoomData = (roomData) => ({
     sensor_id: roomData.sensor_id, // Fügen Sie diese Zeile hinzu
     temperature: roomData.current_temp || 'N/A',
     humidity: roomData.current_humidity || 'N/A',
+    co2_detected: roomData.co2_detected === 1 || roomData.co2_detected === true,// Konvertiere zu Boolean
     target_temperature: roomData.target_temp || 'N/A',
     target_humidity: roomData.target_humidity || 'N/A',
     image: roomData.imageURL || `/assets/images/room${roomData.room_id}.jpg`,
@@ -75,6 +76,7 @@ export const roomApi = {
             
                 return {
                     ...room,
+                    co2_detected: sensorData ? sensorData.co2_detected : false,
                     temperature: sensorData ? sensorData.temperature : 'N/A',
                     humidity: sensorData ? sensorData.humidity : 'N/A',
                     status: sensorData

@@ -38,6 +38,10 @@ export default {
       type: Number,
       required: true,
     },
+    co2Detected: {
+        type: Boolean,
+        required: true,
+    },
     status: {
       type: Object,
       default: () => ({
@@ -65,6 +69,10 @@ export default {
       if (this.humidity > upperThreshold) return "#cd5c5c"; // Über Sollwert → Rot
       return "#3cb371"; // Innerhalb des Bereichs → Grün
     },
+    co2Color() {
+    console.log('CO2 Detected:', this.co2Detected); // Debugging
+    return this.co2Detected ? "#cd5c5c" : "#3cb371"; // Rot bei true, Grün bei false
+}
   },
 };
 </script>
@@ -75,6 +83,9 @@ export default {
     <div class="room-layout">
       <img :src="image" alt="Raum Layout" class="room-image" />
       <div class="metrics">
+        <div class="co2-status" :style="{ backgroundColor: co2Color }">
+          {{ co2Detected ? "CO₂ Alarm" : "CO₂ Normal" }}
+        </div>
         <!-- Dynamische Farbe für Temperatur -->
         <div class="temperature" :style="{ backgroundColor: temperatureColor }">
           {{ temperature }}°C
@@ -163,5 +174,16 @@ export default {
   min-width: 60px;
   max-width: 100px;
   font-size: calc(0.5rem + 1vw); /* Dynamische Schriftgröße */
+}
+
+.co2-status {
+    padding: 0.5rem;
+    border-radius: 4px;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    min-width: 60px;
+    max-width: 100px;
+    font-size: calc(0.5rem + 1vw);
 }
 </style>

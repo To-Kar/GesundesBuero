@@ -29,6 +29,7 @@ async function updateSensorData(data) {
             UPDATE SENSOR
             SET temperature = @temperature,
                 humidity = @humidity,
+                co2_detected = @co2_detected,
                 timestamp = @timestamp
             WHERE sensor_id = @sensor_id
         `;
@@ -38,11 +39,10 @@ async function updateSensorData(data) {
         request.input('sensor_id', sql.VarChar, data.sensor_id);
         request.input('temperature', sql.Decimal(5, 2), data.temperature);
         request.input('humidity', sql.Int, data.humidity);
-        request.input('timestamp', sql.DateTime, data.timestamp); 
+        request.input('co2_detected', sql.Bit, data.co2_detected); // Neuer Parameter
+        request.input('timestamp', sql.DateTime, data.timestamp);
 
         await request.query(updateQuery);
-
-        //await checkThresholdsAndNotify(data);  -> für was verwendet????
 
         console.log(`Daten erfolgreich für Sensor ${data.sensor_id} aktualisiert:`, data);
 
@@ -52,6 +52,7 @@ async function updateSensorData(data) {
         throw new Error(error.message);
     }
 }
+
 
 // Funktion zum Abrufen der Einstellungen (Intervall)
 async function fetchIntervalFromSettings() {
@@ -122,7 +123,7 @@ app.http('sensor-data', {
             const body = await request.json(); 
     
             // Body-Parameter auslesen
-            const { sensor_id, temperature, humidity, timestamp } = body;
+            const { sensor_id, temperature, humidity, co2_detected, timestamp } = body;
     
             // Logging for Debugging
             context.log('Request body:', body);
@@ -132,11 +133,11 @@ app.http('sensor-data', {
             context.log('timestamp:', timestamp);
     
             // Validierung
-            if (!sensor_id || temperature === undefined || humidity === undefined) {
+            if (!sensor_id || temperature === undefined || humidity === undefined || co2_detected === undefined) {
                 context.log('Validation failed: Missing required fields.');
                 return {
                     status: 400,
-                    jsonBody: { error: 'Fehler: sensor_id, temperature und humidity sind erforderlich.' },
+                    jsonBody: { error: 'Fehler: sensor_id, temperature, humidity und co2_detected sind erforderlich.' },
                 };
             }
     
@@ -145,6 +146,7 @@ app.http('sensor-data', {
                 sensor_id,
                 temperature,
                 humidity,
+                co2_detected,
                 timestamp,
             });
 

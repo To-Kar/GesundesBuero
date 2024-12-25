@@ -19,6 +19,7 @@ const transformSensorData = (data) => ({
     roomId: data.room_id ? data.room_id.toString() : 'N/A', // Stellen Sie sicher, dass roomId ein String ist
     temperature: data.current_temp || data.temperature || 'N/A',
     humidity: data.current_humidity || data.humidity || 'N/A',
+    co2_detected: data.co2_detected === 1 || data.co2_detected === true, 
     timestamp: new Date(data.last_updated || data.timestamp),
     status: {
         temp_status: calculateStatus(data.current_temp, data.target_temp),

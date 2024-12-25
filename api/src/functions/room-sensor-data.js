@@ -49,6 +49,7 @@ app.http('room-sensor-data', {
                     sensor_id,
                     temperature AS current_temp,
                     humidity AS current_humidity,
+                    co2_detected,
                     timestamp AS last_updated
                 FROM SENSOR
             `;

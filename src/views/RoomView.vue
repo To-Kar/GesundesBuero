@@ -175,6 +175,7 @@ export default {
       :number="room.number"
       :temperature="room.temperature"
       :humidity="room.humidity"
+      :co2Detected="room.co2_detected"
       :image="room.image"
       :targetTemperature="room.target_temperature" 
       :targetHumidity="room.target_humidity" 
