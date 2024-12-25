@@ -1,6 +1,8 @@
 <script>
 import companyLogo from '../assets/systecs-logo.png' // Importiert das Logo-Bild
 import companyVideo from '../assets/companyVideo.mp4' // Importiert das Video
+import { msalInstance, loginRequest } from '../authConfig';
+
 
 export default {
   name: "Login",
@@ -12,10 +14,35 @@ export default {
     };
   },
   methods: {
-    redirectToAzureSSO() {
-      // Leitet zu einer anderen Route innerhalb der Anwendung weiter
-      this.$router.push("/room"); // Ersetze "/zielroute" mit der gewünschten Route
+    async checkAuthentication() {
+      try {
+        // Bearbeitet Redirects und prüft Authentifizierung
+        await msalInstance.handleRedirectPromise();
+
+        const accounts = msalInstance.getAllAccounts();
+        if (accounts.length > 0) {
+          // Leitet direkt zur Room-Seite weiter, wenn eingeloggt
+          this.$router.push('/room');
+        }
+      } catch (error) {
+        console.error('Error during authentication:', error);
+      }
     },
+    async startLogin() {
+      try {
+        this.isLoading = true; // Setzt Ladezustand
+        sessionStorage.setItem('loginRedirect', '/room'); // Speichert Redirect-Path
+        await msalInstance.loginRedirect(loginRequest); // Startet Login-Redirect
+      } catch (error) {
+        console.error('Error during login:', error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+  },
+  mounted() {
+    // Prüft Authentifizierung beim Laden der Komponente
+    this.checkAuthentication();
   },
 };
 </script>
@@ -43,7 +70,7 @@ export default {
           class="login-button"
           @mouseover="isHovered = true"
           @mouseleave="isHovered = false"
-          @click="redirectToAzureSSO"
+          @click="startLogin"
           >
           Anmelden
         </button>
@@ -60,7 +87,7 @@ body {
 
 .dark-overlay {
   position: fixed; /* Deckt den gesamten Viewport ab */
-  top: 0;
+  top: 0; 
   left: 0;
   width: 100%;
   height: 100%;
