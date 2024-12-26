@@ -1,7 +1,7 @@
 <script>
 import Room from "../components/Room.vue";
 import RoomDetail from "../components/RoomDetail.vue";
-import { roomApi } from "../services/roomApi";
+import { roomApi } from "../services/roomService";
 import { settingsService } from "../services/settingsService";
 
 import axios from "axios";

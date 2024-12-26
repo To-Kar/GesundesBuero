@@ -15,7 +15,7 @@ const API_URL = isProd
 const redirectUri = `${BASE_URL}${import.meta.env.VITE_REDIRECT_URI}`;
 
 // Fetch clientId from environment variables
-const clientId = import.meta.env.VITE_CLIENT_ID || "default-client-id";
+const clientId = import.meta.env.VITE_CLIENT_ID;
 const authority = import.meta.env.VITE_AUTHORITY;
 const postLogoutRedirectUri = `${BASE_URL}${import.meta.env.VITE_POST_LOGOUT_REDIRECT_URI}`;
 
