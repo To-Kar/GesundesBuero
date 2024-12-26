@@ -23,7 +23,7 @@ const transformRoomData = (roomData) => ({
     humidity: roomData.current_humidity || 'N/A',
     target_temperature: roomData.target_temp || 'N/A',
     target_humidity: roomData.target_humidity || 'N/A',
-    image: roomData.imageURL || `/assets/images/room${roomData.room_id}.jpg`,
+    image: roomData.imageURL /*|| `/assets/images/room${roomData.room_id}.jpg`*/,
     status: roomData.status || { temp_status: 'unknown', humidity_status: 'unknown' },
 });
 

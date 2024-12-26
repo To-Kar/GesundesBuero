@@ -8,4 +8,4 @@ require('./sensor-data');
 require('./room-sensor-data')
 require('./notifications')
 require('./settings')
-
+require('./roomController')

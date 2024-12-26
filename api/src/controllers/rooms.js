@@ -18,7 +18,7 @@ const config = {
     port: 1433,
 };
 
-// Route zum Abrufen von Raumdaten
+/* Route zum Abrufen von Raumdaten
 app.http('room', {
     methods: ['GET'],
     authLevel: 'anonymous',
@@ -109,7 +109,7 @@ app.http('room', {
         }
     },
 });
-
+*/
 // Neue Route für das Aktualisieren von Sollwerten
 app.http('updateTargets', {
     methods: ['PATCH'],
@@ -207,7 +207,7 @@ app.http('updateTargets', {
         }
     },
 });
-
+/*
 app.http('updateRoom', {
   methods: ['PATCH'],
   authLevel: 'anonymous',
@@ -310,7 +310,7 @@ app.http('updateRoom', {
       if (pool) await pool.close();
     }
   },
-});
+});*/
 
 
 
