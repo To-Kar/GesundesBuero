@@ -165,8 +165,8 @@
 </template>
 
 <script>
-import { roomApi } from "../services/roomApi";
-import { sensorApi } from '../services/sensorApi';
+import { roomApi } from "../services/roomService";
+import { sensorApi } from '../services/sensorService';
 import { msalInstance } from "../authConfig";
 
 export default {
