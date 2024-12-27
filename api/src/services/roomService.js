@@ -1,53 +1,102 @@
 const roomRepository = require('../repository/roomRepository');
+const httpResponses = require('../utils/httpResponse');
+const sql = require('mssql');
+const config = require('../config/dbConfig');
 
 /**
  * Service zur Verwaltung der Raumdaten.
  * Kapselt die Geschäftslogik und trennt die Controller- und Datenbankschichten.
  */
-async function getRooms(roomId = null) {
-    try {
-        const rooms = await roomRepository.fetchRooms(roomId);
+async function getRooms(roomId) {
+    const rooms = await roomRepository.fetchRooms(roomId);
 
-        if (!rooms || rooms.length === 0) {
-            return createErrorResponse(404, 'Not Found', roomId ? `Raum ${roomId} nicht gefunden` : 'Keine Räume gefunden');
-        }
-
-        return createSuccessResponse(200, rooms);
-    } catch (error) {
-        console.error('Fehler in getRooms:', error);
-        return createErrorResponse(500, 'Interner Serverfehler', error.message);
+    if (!rooms || rooms.length === 0) {
+        throw { status: 404, message: roomId ? `Raum ${roomId} nicht gefunden` : 'Keine Räume gefunden' };
     }
+
+    return rooms;
 }
 
-function createSuccessResponse(status, data) {
+
+async function addRoom(roomData) {
+    const result = await roomRepository.saveRoom(roomData);
     return {
-        status,
-        headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-        },
-        body: JSON.stringify(data),
+        status: 201,
+        message: 'Raum erfolgreich hinzugefügt.',
     };
 }
 
-function createErrorResponse(status, error, message) {
-    return {
-        status,
-        headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-        },
-        body: JSON.stringify({
-            error,
-            message,
-        }),
-    };
+
+async function updateRoom(roomId, roomData) {
+    const { name, sensor_id, image_url, target_temp, target_humidity } = roomData;
+  
+    // Wenn Sensor angegeben ist, prüfe, ob er einem anderen Raum zugewiesen ist
+    if (sensor_id) {
+      const assignedRoom = await roomRepository.getRoomBySensor(sensor_id, roomId);
+  
+      if (assignedRoom) {
+        await roomRepository.removeSensorFromRoom(assignedRoom.room_id);
+      }
+    }
+  
+    // Raum aktualisieren
+    const result = await roomRepository.updateRoom(roomId, {
+      name,
+      sensor_id,
+      image_url,
+      target_temp,
+      target_humidity,
+    });
+  
+    if (result.rowsAffected[0] === 0) {
+        const error = new Error('Room not found.');
+        error.status = 404;
+        throw error;
+    }
+  
+    return { message: 'Room updated successfully.' };
+  }
+
+
+  async function deleteRoom(roomId) {
+    // Verknüpfte Benachrichtigungen löschen
+    await roomRepository.deleteNotificationsByRoom(roomId);
+
+    // Raum löschen
+    const result = await roomRepository.deleteRoom(roomId);
+
+    if (result.rowsAffected[0] === 0) {
+        const error = new Error('Room not found.');
+        error.status = 404;
+        throw error;
+    }
+
+    return { message: 'Room and related notifications deleted successfully.' };
 }
+
+
+async function updateRoomTargets(roomId, targets) {
+    // Validierung der Eingabedaten
+    if (!targets || (targets.target_temp === undefined && targets.target_humidity === undefined)) {
+        throw { status: 400, message: 'Kein Sollwert zum Aktualisieren angegeben.' };
+    }
+
+    // Aufruf der Repository-Methode
+    const result = await roomRepository.updateRoomTargets(roomId, targets);
+
+    if (!result || !result.rowsAffected || result.rowsAffected[0] === 0) {
+        throw { status: 404, message: `Raum ${roomId} nicht gefunden` };
+    }
+
+    return { message: 'Sollwerte erfolgreich aktualisiert' };
+}
+
+
 
 module.exports = {
     getRooms,
+    addRoom,
+    updateRoom,
+    deleteRoom,
+    updateRoomTargets
 };
