@@ -11,7 +11,9 @@ async function getRooms(roomId) {
     const rooms = await roomRepository.fetchRooms(roomId);
 
     if (!rooms || rooms.length === 0) {
-        throw { status: 404, message: roomId ? `Raum ${roomId} nicht gefunden` : 'Keine Räume gefunden' };
+         const error = new Error(roomId ? `Raum ${roomId} nicht gefunden` : 'Keine Räume gefunden');
+         error.status = 404;
+         throw error;
     }
 
     return rooms;
@@ -78,14 +80,19 @@ async function updateRoom(roomId, roomData) {
 async function updateRoomTargets(roomId, targets) {
     // Validierung der Eingabedaten
     if (!targets || (targets.target_temp === undefined && targets.target_humidity === undefined)) {
-        throw { status: 400, message: 'Kein Sollwert zum Aktualisieren angegeben.' };
+        const error = new Error('Kein Sollwert zum Aktualisieren angegeben.');
+        error.status = 400;
+        throw error;
     }
 
     // Aufruf der Repository-Methode
     const result = await roomRepository.updateRoomTargets(roomId, targets);
 
-    if (!result || !result.rowsAffected || result.rowsAffected[0] === 0) {
-        throw { status: 404, message: `Raum ${roomId} nicht gefunden` };
+    if (!result || result.rowsAffected[0] === 0) {
+        const error = new Error(`Raum ${roomId} nicht gefunden`);
+        error.status = 404;
+        throw error;
+        
     }
 
     return { message: 'Sollwerte erfolgreich aktualisiert' };

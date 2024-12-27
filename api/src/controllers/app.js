@@ -4,8 +4,8 @@ const { app } = require('@azure/functions');
 
 // Funktionen importieren
 
-require('./sensor-data');
-require('./room-sensor-data')
+require('./sensorController');
+
 require('./notifications')
-require('./settings')
+require('./settingsController')
 require('./roomController')

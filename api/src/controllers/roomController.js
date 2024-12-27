@@ -4,11 +4,12 @@ const roomRepository = require('../repository/roomRepository');
 const httpResponses = require('../utils/httpResponse');
 const errorHandlerWrapper = require('../utils/errorHandler'); 
 
+
 const sql = require('mssql');
 const config = require('../config/dbConfig');
 
 
-// GET - Raumdaten abrufen
+
 app.http('room', {
     methods: ['GET'],
     authLevel: 'anonymous',
@@ -19,8 +20,6 @@ app.http('room', {
         return httpResponses.success(roomId ? rooms[0] : rooms);
     }),
 });
-
-
 
 
 app.http('addRoom', {
