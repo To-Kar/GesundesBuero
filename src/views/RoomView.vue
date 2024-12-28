@@ -1,10 +1,9 @@
 <script>
 import Room from "../components/Room.vue";
 import RoomDetail from "../components/RoomDetail.vue";
-import { roomApi } from "../services/roomApi";
+import { roomApi } from "../services/roomService";
 import { settingsService } from "../services/settingsService";
-
-import axios from "axios";
+import { eventBus } from '../plugins/eventBus';
 
 export default {
   name: "RoomView",
@@ -49,8 +48,15 @@ export default {
       this.loading = false;
     }
   },
+  mounted() {
+    eventBus.on('add-room', this.addRoom);
+  },
+  beforeUnmount() {
+  eventBus.off('add-room', this.addRoom);
+},
+
   methods:{
-  goToRoomDetail(image, name, roomId, temperature, humidity) {
+  goToRoomDetail(image, name, roomId, temperature, humidity, co2) {
     console.log("Raum-ID angeklickt:", roomId);
     if (!roomId) {
       console.error("Kein roomId übergeben!");
@@ -61,6 +67,7 @@ export default {
     this.name = name;
     this.roomId = roomId;
     this.temperature = temperature;
+    this.co2 = co2;
     this.humidity = humidity;
     this.showDetail = true; // Anzeige der Detailansicht
   },
@@ -175,6 +182,7 @@ export default {
       :number="room.number"
       :temperature="room.temperature"
       :humidity="room.humidity"
+      :co2="room.co2"
       :image="room.image"
       :targetTemperature="room.target_temperature" 
       :targetHumidity="room.target_humidity" 
@@ -182,15 +190,10 @@ export default {
       :temperatureOffset="temperatureOffset" 
       :humidityOffset="humidityOffset"
       :is_connected="room.is_connected"
-      @click="goToRoomDetail(room.image, room.name, room.number, room.temperature, room.humidity)"
+      @click="goToRoomDetail(room.image, room.name, room.number, room.temperature, room.humidity, room.co2)"
     />
 
-    <div class="room add-room" @click="addRoom">
-      <div class="add-room-content">
-        <p class="add-room-text">Neuen Raum hinzufügen</p>
-        <p class="add-room-icon">+</p>
-      </div>
-    </div>
+
   </div>
 
   <div v-if="saveStatus" class="save-feedback" :class="saveStatus">
@@ -205,6 +208,10 @@ export default {
         :roomId="roomId"
         :temperature="temperature"
         :humidity="humidity"
+        :co2="co2"
+
+        :temperatureOffset="temperatureOffset" 
+        :humidityOffset="humidityOffset"
 
         :isAdding="isAdding"
 

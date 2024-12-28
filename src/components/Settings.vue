@@ -1,6 +1,6 @@
 <script>
 import axios from 'axios';
-
+import { eventBus } from '../plugins/eventBus';
 export default {
   name: 'Settings',
   data() {
@@ -138,6 +138,11 @@ export default {
         event.target.value = this.minutes;
       }
     },
+    addRoom() {
+    eventBus.emit('add-room');
+    this.$emit('close');
+
+  }
  
   }
 };
@@ -239,6 +244,16 @@ export default {
           </div>
         </div>
 
+        <div class="settings-section">
+          <p class="section-title">Raum hinzufügen</p>
+          <div class="sensor-settings-item">
+            <div class="raum-settings">
+              <label class="offset-label">Einen neuen Raum anlegen:</label>
+              <button class="save-button" @click="addRoom">hinzufügen</button>
+            </div>
+          </div>
+        </div>
+
         <div v-if="showSaveNotification" class="save-notification">
           Einstellungen erfolgreich gespeichert!
         </div>
@@ -250,6 +265,8 @@ export default {
   </div>
 </template>
 
+
+
 <style scoped>
 
 * {
@@ -258,6 +275,13 @@ export default {
 
 body {
   overflow: hidden;
+}
+
+.raum-settings {
+  display: flex;
+  justify-content: space-between;  /* Abstand zwischen Label und Button */
+  align-items: center;  /* Vertikal ausrichten */
+  width: 100%;
 }
 
 .settings-modal {

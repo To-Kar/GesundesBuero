@@ -19,6 +19,7 @@ const transformSensorData = (data) => ({
     roomId: data.room_id ? data.room_id.toString() : 'N/A',
     temperature: data.current_temp || data.temperature || 'N/A',
     humidity: data.current_humidity || data.humidity || 'N/A',
+    co2: data.co2 || 'N/A',
     timestamp: new Date(data.last_updated || data.timestamp),
     // Explizite Konvertierung von is_connected zu Boolean
     is_connected: data.is_connected === 1,
