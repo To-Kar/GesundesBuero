@@ -189,6 +189,8 @@ export default {
       :status="room.status"
       :temperatureOffset="temperatureOffset" 
       :humidityOffset="humidityOffset"
+
+
       @click="goToRoomDetail(room.image, room.name, room.number, room.temperature, room.humidity, room.co2)"
     />
 
@@ -307,7 +309,6 @@ export default {
   background-color: #da0000;
   color: #ffffff;
 }
-
 
 
 </style>

@@ -13,7 +13,6 @@ const config = {
   };
   
   module.exports = config;
-  
 /*
 const config = {
   user: process.env.DB_USER,

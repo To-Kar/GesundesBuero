@@ -1,0 +1,1 @@
+const notificationRepository = require('../repository/notificationRepository');

@@ -1,5 +1,3 @@
-
-
 const { app } = require('@azure/functions');
 const sql = require('mssql');
 const validateApiKey = require('../utils/validateApiKey'); 

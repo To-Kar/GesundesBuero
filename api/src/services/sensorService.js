@@ -1,4 +1,5 @@
 const sensorRepository = require('../repository/sensorRepository');
+const settingsRepository = require('../repository/settingsRepository');
 
 
 const sql = require('mssql');
