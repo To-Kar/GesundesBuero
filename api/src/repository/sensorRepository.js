@@ -39,12 +39,8 @@ async function updateSensorData(data) {
 
 async function fetchSensorData(sensorId) {
     let pool;
-    try {  
+    try {
         pool = await sql.connect(config);
-        
-        const settingsResult = await pool.request()
-            .query('SELECT update_interval FROM SETTINGS WHERE id = 1');
-        const updateInterval = settingsResult.recordset[0]?.update_interval || 300;
         
         const dbRequest = pool.request();
         let query = `
@@ -53,14 +49,7 @@ async function fetchSensorData(sensorId) {
                 temperature AS current_temp,
                 humidity AS current_humidity,
                 timestamp AS last_updated,
-                co2 AS co2,
-                CAST(ABS(DATEDIFF(SECOND, timestamp, GETDATE())) as int) as time_diff,
-                CAST(
-                    CASE 
-                        WHEN ABS(DATEDIFF(SECOND, timestamp, GETDATE())) <= (@updateInterval) THEN 1 
-                        ELSE 0 
-                    END 
-                AS bit) AS is_connected
+                co2 AS co2
             FROM SENSOR
         `;
 
@@ -68,26 +57,9 @@ async function fetchSensorData(sensorId) {
             query += ' WHERE sensor_id = @sensorId';
             dbRequest.input('sensorId', sql.VarChar, sensorId);
         }
-        
-        dbRequest.input('updateInterval', sql.Int, updateInterval);
 
         const result = await dbRequest.query(query);
-        
-        // Enhanced debug logging
-        console.log('Sensor Data with connection status:', result.recordset.map(record => ({
-            sensor_id: record.sensor_id,
-            last_updated: record.last_updated,
-            time_diff: record.get_date,
-            timestamp: record.timestamp,
-            is_connected: Boolean(record.is_connected),
-            updateInterval: updateInterval
-        })));
-        
-        return result.recordset.map(record => ({
-            ...record,
-            is_connected: Boolean(record.is_connected),
-            time_diff: Math.abs(record.time_diff) // Ensure positive time difference
-        }));
+        return result.recordset;
         
     } finally {
         if (pool) {
