@@ -306,7 +306,7 @@ export default {
 
     this.targetTemperature += change;
     this.targetTemperature = Math.max(10, Math.min(this.targetTemperature, 30));
-
+    this.updateGaugeChart('temperatureGauge', this.temperature, this.targetTemperature);  // Gauge updaten
     this.disableHumidityButtons = true; // Feuchtigkeits-Buttons deaktivieren
 
     if (this.debounceTimeoutTemp) {
@@ -323,7 +323,7 @@ export default {
 
     this.targetHumidity += change;
     this.targetHumidity = Math.max(0, Math.min(this.targetHumidity, 100));
-
+    this.updateGaugeChart('humidityGauge', this.humidity, this.targetHumidity); // Gauge updaten
     this.disableTemperatureButtons = true; // Temperatur-Buttons deaktivieren
 
     if (this.debounceTimeoutHumidity) {
@@ -509,8 +509,10 @@ export default {
 
 
     initGauges() {
+      this.$nextTick(() => {
     this.initGaugeChart('temperatureGauge', this.temperature, this.targetTemperature, 10, 30, '°C');
     this.initGaugeChart('humidityGauge', this.humidity, this.targetHumidity, 0, 100, '%');
+  });
     this.initCo2Gauge();
   },
 
@@ -618,13 +620,18 @@ export default {
 
   // Aktualisieren der Gauge-Daten
   updateGaugeChart(refName, value, targetValue) {
+   
   const chart = this.gaugeInstances[refName];
+  
+  if (!chart) {
+    console.error(`Gauge ${refName} nicht gefunden.`);
+    return;
+  }
+
   if (chart) {
     console.log(`Aktualisiere ${refName} mit Wert: ${value}`);
     
-    const dynamicColor = refName === 'co2Gauge' 
-      ? this.getCo2Color(value)  // CO₂ spezifische Farben
-      : this.getDynamicColor(value, targetValue, refName === 'temperatureGauge' ? this.temperatureOffset : this.humidityOffset);
+    const dynamicColor = this.getDynamicColor(value, targetValue, refName === 'temperatureGauge' ? this.temperatureOffset : this.humidityOffset);
 
     chart.setOption({
       series: [
@@ -635,6 +642,9 @@ export default {
               color: dynamicColor
             }
           }
+        },
+        {
+          data: [{ value: targetValue }]
         }
       ]
     });
