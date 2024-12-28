@@ -6,6 +6,6 @@ const { app } = require('@azure/functions');
 
 require('./sensorController');
 
-require('./notifications')
+require('./notificationController')
 require('./settingsController')
 require('./roomController')

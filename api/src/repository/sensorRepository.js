@@ -11,7 +11,8 @@ async function updateSensorData(data) {
             UPDATE SENSOR
             SET temperature = @temperature,
                 humidity = @humidity,
-                timestamp = @timestamp
+                timestamp = @timestamp,
+                co2 = @co2
             WHERE sensor_id = @sensor_id
         `;
 
@@ -21,6 +22,7 @@ async function updateSensorData(data) {
         request.input('temperature', sql.Decimal(5, 2), data.temperature);
         request.input('humidity', sql.Int, data.humidity);
         request.input('timestamp', sql.DateTime, data.timestamp); 
+        request.input('co2', sql.Int, data.co2);
 
         await request.query(updateQuery);
 
@@ -47,7 +49,8 @@ async function fetchSensorData(sensorId) {
                 sensor_id,
                 temperature AS current_temp,
                 humidity AS current_humidity,
-                timestamp AS last_updated
+                timestamp AS last_updated,
+                co2 AS co2
             FROM SENSOR
         `;
 
@@ -88,7 +91,7 @@ async function fetchAllSensors() {
 }
 
 
-// Funktion für den Datenbankzugriff zur IP-Aktualisierung
+// Datenbankzugriff zur IP-Aktualisierung
 async function updateSensorIp(sensor_id, ip_address) {
     let pool;
     try {
