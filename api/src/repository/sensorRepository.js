@@ -1,6 +1,6 @@
 const sql = require('mssql');
 const config = require('../config/dbConfig');
-const { checkExistingSensorData } = require('../controllers/notificationController');
+const { checkExistingSensorData } = require('../services/notificationService');
 
 // Funktion zum Aktualisieren von Daten
 async function updateSensorData(data) {
@@ -119,6 +119,22 @@ async function updateSensorIp(sensor_id, ip_address) {
         }
     }
 }
+async function getSensorsWithRoomData(pool) {
+    const query = `
+        SELECT
+            s.sensor_id,
+            s.temperature,
+            s.humidity, 
+            r.room_id,
+            r.name,
+            r.target_temp,
+            r.target_humidity
+        FROM SENSOR s
+        JOIN ROOM r ON s.sensor_id = r.sensor_id
+    `;
+    const result = await pool.request().query(query);
+    return result.recordset;
+}
 
 
 module.exports = {
@@ -126,6 +142,7 @@ module.exports = {
     fetchSensorData,
     fetchAllSensors,
     updateSensorIp,
+    getSensorsWithRoomData,
 
 
 };

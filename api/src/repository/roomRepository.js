@@ -1,6 +1,6 @@
 const sql = require('mssql');
 const config = require('../config/dbConfig');
-const { checkExistingSensorData } = require('../controllers/notificationController');
+const { checkExistingSensorData } = require('../services/notificationService');
 
 
 async function fetchRooms(roomId) {
