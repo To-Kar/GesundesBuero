@@ -27,12 +27,12 @@ async function getAllNotifications() {
 async function checkSensorData(sensorData, settings) {
     const tempDiff = Math.round(Math.abs(sensorData.temperature - sensorData.target_temp));
     const humidityDiff = Math.round(Math.abs(sensorData.humidity - sensorData.target_humidity));
-    
+   
     if (tempDiff > settings.temperature_offset) {
         const message = `Raum ${sensorData.name}: Temperatur (${sensorData.temperature}°C) weicht um ${tempDiff.toFixed(1)}°C vom Zielwert (${sensorData.target_temp}°C) ab`;
         await createNotification(sensorData.sensor_id, sensorData.room_id, message, 'Temperatur');
     }
-    
+   
     if (humidityDiff > settings.humidity_offset) {
         const message = `Raum ${sensorData.name}: Luftfeuchtigkeit (${sensorData.humidity}%) weicht um ${humidityDiff}% vom Zielwert (${sensorData.target_humidity}%) ab`;
         await createNotification(sensorData.sensor_id, sensorData.room_id, message, 'Feuchtigkeit');
@@ -42,20 +42,21 @@ async function checkSensorData(sensorData, settings) {
 async function checkExistingSensorData() {
     try {
         console.log('Starting checkExistingSensorData...');
-        
+       
         const [settings] = await settingsRepository.fetchOffsets();
         const sensorsWithRoomData = await sensorRepository.getSensorsWithRoomData();
-        
+       
         for (const sensorData of sensorsWithRoomData) {
             await checkSensorData(sensorData, settings);
         }
-        
+       
         console.log('checkExistingSensorData completed');
     } catch (error) {
         console.error('Error in checkExistingSensorData:', error);
         throw error;
     }
 }
+
 
 module.exports = {
     createNotification,
