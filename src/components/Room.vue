@@ -18,6 +18,10 @@ export default {
       type: [Number, String],
       required: true,
     },
+    co2: {
+        type: [Number, String],
+        required: true,
+    },
     number: {
       type: [Number, String],
       required: true,
@@ -47,11 +51,12 @@ export default {
     }
   },
   computed: {
+    
     // Farbe basierend auf der Temperatur
     temperatureColor() {
       const lowerThreshold = this.targetTemperature - this.temperatureOffset;
       const upperThreshold = this.targetTemperature + this.temperatureOffset;
-
+      if (this.temperature == null || isNaN(this.temperature)) return "#b0b0b0";
       if (this.temperature < lowerThreshold) return "#87cefa"; // Unter Sollwert → Blau
       if (this.temperature > upperThreshold) return "#cd5c5c"; // Über Sollwert → Rot
       return "#3cb371"; // Innerhalb des Bereichs → Grün
@@ -60,12 +65,29 @@ export default {
     humidityColor() {
       const lowerThreshold = this.targetHumidity - this.humidityOffset;
       const upperThreshold = this.targetHumidity + this.humidityOffset;
-
+      if (this.humidity == null || isNaN(this.humidity)) return "#b0b0b0";
       if (this.humidity < lowerThreshold) return "#87cefa"; // Unter Sollwert → Blau
       if (this.humidity > upperThreshold) return "#cd5c5c"; // Über Sollwert → Rot
       return "#3cb371"; // Innerhalb des Bereichs → Grün
     },
+    
   },
+
+  methods: {
+  co2Color() {
+    if (this.co2 == null || isNaN(this.co2)) return "#b0b0b0";
+    if (this.co2 < 800) return "#3cb371";  // Grün
+    if (this.co2 > 1000) return "#cd5c5c"; // Rot
+    return "#FFD700";                      // Gelb
+  },
+  co2Text() {
+    if (this.co2 == null || isNaN(this.co2)) return "N/A";
+    if (this.co2 < 800) return "Gut";  // Anzeige für niedrige CO₂-Werte
+    if (this.co2 >= 800 && this.co2 <= 1000) return "Ok";  // Mittlerer Bereich
+    return "Hoch";  // Alarm bei hohen CO₂-Werten
+  }
+}
+  
 };
 </script>
 
@@ -75,6 +97,9 @@ export default {
     <div class="room-layout">
       <img :src="image" alt="Raum Layout" class="room-image" />
       <div class="metrics">
+        <div class="co2-status" :style="{ backgroundColor: co2Color() }">
+          CO₂ {{co2Text()}}
+        </div>
         <!-- Dynamische Farbe für Temperatur -->
         <div class="temperature" :style="{ backgroundColor: temperatureColor }">
           {{ temperature }}°C
@@ -163,5 +188,16 @@ export default {
   min-width: 60px;
   max-width: 100px;
   font-size: calc(0.5rem + 1vw); /* Dynamische Schriftgröße */
+}
+
+.co2-status {
+    padding: 0.5rem;
+    border-radius: 4px;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    min-width: 60px;
+    max-width: 100px;
+    font-size: calc(0.5rem + 1vw);
 }
 </style>
