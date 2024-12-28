@@ -88,6 +88,7 @@ body {
 .dark-overlay {
   position: fixed; /* Deckt den gesamten Viewport ab */
   top: 0; 
+  top: 0; 
   left: 0;
   width: 100%;
   height: 100%;

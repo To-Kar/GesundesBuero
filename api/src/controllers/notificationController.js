@@ -9,7 +9,7 @@ const config = {
     database: process.env.DB_DATABASE,
     options: {
         encrypt: true,
-        trustServerCertificate: false,
+        trustServerCertificate: true,
     },
     port: 1433,
 };
@@ -80,8 +80,19 @@ async function checkExistingSensorData() {
     try {
         pool = await sql.connect(config);
         
+        // Offsets als Schwellenwerte abrufen
+        const offsetQuery = 'SELECT temperature_offset, humidity_offset FROM Settings WHERE id = 1;';
+        const offsetResult = await pool.request().query(offsetQuery);
+        
+        if (offsetResult.recordset.length === 0) {
+            console.error('Keine Offsets gefunden, verwende Standardwerte');
+            var offsets = { temperature_offset: 2, humidity_offset: 5 };
+        } else {
+            var offsets = offsetResult.recordset[0];
+        }
+        
         const query = `
-            SELECT 
+            SELECT
                 s.sensor_id,
                 s.temperature,
                 s.humidity,
@@ -99,14 +110,14 @@ async function checkExistingSensorData() {
             const tempDiff = Math.round(Math.abs(row.temperature - row.target_temp));
             const humidityDiff = Math.round(Math.abs(row.humidity - row.target_humidity));
             
-            // Temperaturabweichung prüfen
-            if (tempDiff > 2) {
+            // Temperaturabweichung mit Offset als Schwellenwert prüfen
+            if (tempDiff > offsets.temperature_offset) {
                 const message = `Raum ${row.name}: Temperatur (${row.temperature}°C) weicht um ${tempDiff.toFixed(1)}°C vom Zielwert (${row.target_temp}°C) ab`;
                 await createNotification(pool, row.sensor_id, row.room_id, message, 'Temperatur');
             }
             
-            // Feuchtigkeitsabweichung prüfen
-            if (humidityDiff > 5) {
+            // Feuchtigkeitsabweichung mit Offset als Schwellenwert prüfen
+            if (humidityDiff > offsets.humidity_offset) {
                 const message = `Raum ${row.name}: Luftfeuchtigkeit (${row.humidity}%) weicht um ${humidityDiff}% vom Zielwert (${row.target_humidity}%) ab`;
                 await createNotification(pool, row.sensor_id, row.room_id, message, 'Feuchtigkeit');
             }
@@ -179,12 +190,10 @@ app.http('notifications', {
     }
 });
 
-// Initialisierung
 checkExistingSensorData().catch(error => {
     console.error('Fehler bei der initialen Prüfung:', error);
 });
 
-// Exportiere die Funktionen für externe Verwendung
 module.exports = {
     createNotification,
     checkExistingSensorData

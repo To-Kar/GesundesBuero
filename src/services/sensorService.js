@@ -19,6 +19,7 @@ const transformSensorData = (data) => ({
     roomId: data.room_id ? data.room_id.toString() : 'N/A', // Stellen Sie sicher, dass roomId ein String ist
     temperature: data.current_temp || data.temperature || 'N/A',
     humidity: data.current_humidity || data.humidity || 'N/A',
+    co2: data.co2 || 'N/A',
     timestamp: new Date(data.last_updated || data.timestamp),
     status: {
         temp_status: calculateStatus(data.current_temp, data.target_temp),
@@ -69,4 +70,19 @@ export const sensorApi = {
             throw error;
         }
     },
+
+    // Alle Sensoren abrufen
+    async getAvailableSensors() {
+        try {
+          const response = await apiClient.get('/sensors');
+          return response.data.map(sensor => ({
+            sensor_id: sensor.sensor_id,
+            ip_address: sensor.ip_address,
+            room_id: sensor.room_id || null,
+          }));
+        } catch (error) {
+          console.error('Fehler beim Abrufen der Sensor-Daten:', error);
+          throw error;
+        }
+      },
 };

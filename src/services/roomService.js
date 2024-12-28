@@ -1,7 +1,7 @@
 // roomApi.js
 
 import { apiClient } from './apiClient';
-import { sensorApi } from './sensorApi';
+import { sensorApi } from './sensorService';
 
 // Funktion zur Berechnung des Status basierend auf aktuellen und Zielwerten
 const calculateStatus = (current, target, isHumidity = false) => {
@@ -16,9 +16,10 @@ const calculateStatus = (current, target, isHumidity = false) => {
 
 // Private Funktion zur Transformation der Raumdaten
 const transformRoomData = (roomData) => ({
-    number: roomData.room_id ? roomData.room_id.toString() : 'N/A', // Stellen Sie sicher, dass number ein String ist
+    number: roomData.room_id ? roomData.room_id.toString() : 'N/A', 
     name: roomData.name || 'Room',
-    sensor_id: roomData.sensor_id, // Fügen Sie diese Zeile hinzu
+    sensor_id: roomData.sensor_id, 
+    co2: roomData.co2 || 'N/A',
     temperature: roomData.current_temp || 'N/A',
     humidity: roomData.current_humidity || 'N/A',
     target_temperature: roomData.target_temp || 'N/A',
@@ -29,6 +30,22 @@ const transformRoomData = (roomData) => ({
 
 // Room API Service
 export const roomApi = {
+      // Räume und Offsets abrufen
+  async getRoomsAndOffsets() {
+    try {
+      // Räume und Sensordaten abrufen
+      const rooms = await this.getAllRoomsWithSensorData();
+
+      // Offsets abrufen
+      const offsetResponse = await apiClient.get('/settings/offsets');
+      const offsets = offsetResponse.data;
+
+      return { rooms, offsets };
+    } catch (error) {
+      console.error('Fehler beim Abrufen der Räume oder Offsets:', error);
+      throw error;
+    }
+  },
     // Alle Räume abrufen
     async getAllRooms() {
         try {
@@ -42,7 +59,7 @@ export const roomApi = {
         }
     },
 
-    // Neue Methode: Alle Räume mit Sensordaten abrufen
+    // Alle Räume mit Sensordaten abrufen
     async getAllRoomsWithSensorData() {
         try {
             // Räume abrufen
@@ -59,6 +76,7 @@ export const roomApi = {
             
                 return {
                     ...room,
+                    co2: sensorData ? sensorData.co2 : 'N/A',
                     temperature: sensorData ? sensorData.temperature : 'N/A',
                     humidity: sensorData ? sensorData.humidity : 'N/A',
                     status: sensorData
@@ -94,4 +112,38 @@ export const roomApi = {
             throw error;
         }
     },
+
+    // Raum hinzufügen
+    async createRoom(roomData) {
+        try {
+            const response = await apiClient.post('/rooms', roomData);
+            return transformRoomData(response.data);
+        } catch (error) {
+            console.error('Fehler beim Hinzufügen eines Raums:', error);
+            throw error;
+        }
+    },
+
+    // Raum aktualisieren
+    async updateRoom(roomId, roomData) {
+        try {
+            const response = await apiClient.patch(`/rooms/${roomId}`, roomData);
+            return transformRoomData(response.data);
+        } catch (error) {
+            console.error(`Fehler beim Aktualisieren von Raum ${roomId}:`, error);
+            throw error;
+        }
+    },
+
+    // Raum löschen
+    async deleteRoom(roomId) {
+        try {
+            await apiClient.delete(`/rooms/${roomId}`);
+        } catch (error) {
+            console.error(`Fehler beim Löschen von Raum ${roomId}:`, error);
+            throw error;
+        }
+    },
+
+    
 };

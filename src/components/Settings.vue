@@ -1,12 +1,14 @@
 <script>
 import axios from 'axios';
-
+import { eventBus } from '../plugins/eventBus';
 export default {
   name: 'Settings',
   data() {
     return {
       seconds: 0, 
       minutes: 0, 
+      temperatureOffset: 0,
+      humidityOffset: 0,
       showSaveNotification: false, 
       sensors: [],
     };
@@ -24,6 +26,12 @@ export default {
     const sensorResponse = await axios.get('http://localhost:7071/api/sensors');
     console.log('Sensor-Daten:', sensorResponse.data); // Debug-Log
     this.sensors = sensorResponse.data; // Daten setzen
+
+    const offsetresponse = await axios.get("http://localhost:7071/api/settings/offsets");
+      const { temperature_offset, humidity_offset } = offsetresponse.data;
+
+      this.temperatureOffset = temperature_offset;
+      this.humidityOffset = humidity_offset;
   } catch (error) {
     console.error('Fehler beim Abrufen der Daten:', error.message || error);
   }
@@ -50,6 +58,26 @@ export default {
         }, 3000);
       } catch (error) {
         console.error('Fehler beim Speichern der Einstellungen:', error);
+      }
+    },
+
+    async saveOffsets() {
+      try {
+        // Speichern der Offsets
+        await axios.patch("http://localhost:7071/api/settings/offsets", {
+          temperature_offset: this.temperatureOffset,
+          humidity_offset: this.humidityOffset,
+        });
+
+        console.log("Offsets erfolgreich gespeichert.");
+
+        this.showSaveNotification = true;
+
+        setTimeout(() => {
+          this.showSaveNotification = false;
+        }, 3000);
+      } catch (error) {
+        console.error("Fehler beim Speichern der Offsets:", error);
       }
     },
     
@@ -110,6 +138,11 @@ export default {
         event.target.value = this.minutes;
       }
     },
+    addRoom() {
+    eventBus.emit('add-room');
+    this.$emit('close');
+
+  }
  
   }
 };
@@ -125,6 +158,7 @@ export default {
       </div>
       <div class="modal-body">
 
+        
         <div class="settings-section">
           <p class="section-title">Intervall-Einstellung</p>
           <div class="settings-item">
@@ -153,10 +187,41 @@ export default {
               </div>
               <button class="save-button  button-container" @click="saveSettings">Speichern</button>
             </div>
-           
           </div>
-        </div>
+          <div class="settings-section">
+            <p class="section-title">Offset-Einstellungen</p>
+            <div class="offset-settings offset-box">
+              <div class="offset-item">
+                <label class="offset-label">Offset für Temperatur:</label>
+                <div class="input-wrapper">
+                  <input
+                    type="number"
+                    v-model="temperatureOffset"
+                    min="-100"
+                    max="100"
+                    class="interval-display"
+                  />
+                  <span class="unit">°C</span>
+                </div>
+              </div>
+              <div class="offset-item">
+                <label class="offset-label">Offset für Luftfeuchtigkeit:</label>
+                <div class="input-wrapper">
+                  <input
+                    type="number"
+                    v-model="humidityOffset"
+                    min="-100"
+                    max="100"
+                    class="interval-display"
+                  />
+                  <span class="unit">%</span>
+                </div>
+                <button class="save-button" @click="saveOffsets">Speichern</button>
+              </div>
+            </div>
+          </div>
 
+        </div>
         <div class="settings-section">
           <p class="section-title">IP-Konfiguration</p>
           <div class="sensor-settings">
@@ -179,6 +244,16 @@ export default {
           </div>
         </div>
 
+        <div class="settings-section">
+          <p class="section-title">Raum hinzufügen</p>
+          <div class="sensor-settings-item">
+            <div class="raum-settings">
+              <label class="offset-label">Einen neuen Raum anlegen:</label>
+              <button class="save-button" @click="addRoom">hinzufügen</button>
+            </div>
+          </div>
+        </div>
+
         <div v-if="showSaveNotification" class="save-notification">
           Einstellungen erfolgreich gespeichert!
         </div>
@@ -190,6 +265,8 @@ export default {
   </div>
 </template>
 
+
+
 <style scoped>
 
 * {
@@ -198,6 +275,13 @@ export default {
 
 body {
   overflow: hidden;
+}
+
+.raum-settings {
+  display: flex;
+  justify-content: space-between;  /* Abstand zwischen Label und Button */
+  align-items: center;  /* Vertikal ausrichten */
+  width: 100%;
 }
 
 .settings-modal {
@@ -417,6 +501,58 @@ body {
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+.offset-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 10px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    background-color: #f9f9f9;
+    position: relative;
+  }
+
+  .offset-items {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .offset-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .offset-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    margin-right: 15px;
+  }
+
+
+  .save-button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  .save-offset-button {
+    padding: 10px 20px;
+    background-color: hsl(120, 60%, 50%);
+    border: none;
+    color: white;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .save-offset-button:hover {
+    background-color: hsl(120, 50%, 40%);
+  }
 
 
 @keyframes fadeInOut {
