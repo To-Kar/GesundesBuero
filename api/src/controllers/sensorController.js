@@ -86,5 +86,5 @@ app.http('room-sensor-data', {
 
         return httpResponses.success(result, 200);
     }),
-});      
-      
+});
+

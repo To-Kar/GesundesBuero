@@ -26,26 +26,38 @@ const transformRoomData = (roomData) => ({
     target_humidity: roomData.target_humidity || 'N/A',
     image: roomData.imageURL || `/assets/images/room${roomData.room_id}.jpg`,
     status: roomData.status || { temp_status: 'unknown', humidity_status: 'unknown' },
+    is_connected: roomData.current_temp !== 'N/A' && 
+                 roomData.current_humidity !== 'N/A' &&
+                 roomData.current_temp != null &&
+                 roomData.current_humidity != null
 });
 
 // Room API Service
 export const roomApi = {
-      // Räume und Offsets abrufen
-  async getRoomsAndOffsets() {
-    try {
-      // Räume und Sensordaten abrufen
-      const rooms = await this.getAllRoomsWithSensorData();
+    // Räume und Offsets abrufen
+    async getRoomsAndOffsets() {
+        try {
+            // Räume und Sensordaten abrufen
+            const rooms = await this.getAllRoomsWithSensorData();
 
-      // Offsets abrufen
-      const offsetResponse = await apiClient.get('/settings/offsets');
-      const offsets = offsetResponse.data;
+            // Offsets abrufen
+            const offsetResponse = await apiClient.get('/settings/offsets');
+            const offsets = offsetResponse.data;
 
-      return { rooms, offsets };
-    } catch (error) {
-      console.error('Fehler beim Abrufen der Räume oder Offsets:', error);
-      throw error;
-    }
-  },
+            // Merging is_connected from sensor data
+            for (const room of rooms) {
+                const sensorData = await sensorApi.getLatestSensorData(room.room_id);
+                if (sensorData) {
+                    room.is_connected = sensorData.is_connected;
+                }
+            }
+
+            return { rooms, offsets };
+        } catch (error) {
+            console.error('Fehler beim Abrufen der Räume oder Offsets:', error);
+            throw error;
+        }
+    },
     // Alle Räume abrufen
     async getAllRooms() {
         try {
@@ -62,27 +74,36 @@ export const roomApi = {
     // Alle Räume mit Sensordaten abrufen
     async getAllRoomsWithSensorData() {
         try {
-            // Räume abrufen
             const rooms = await this.getAllRooms();
-
-            // Alle Sensordaten abrufen
-            const sensorDataArray = await sensorApi.getAllLatestSensorData();
-
-            // Raumdaten mit Sensordaten kombinieren
-            return rooms.map((room) => {
-                // Verwende room.sensor_id für die Zuordnung
-                const sensorData = sensorDataArray.find((sensor) => sensor.sensorId === room.sensor_id);
-                //console.log(`Kombiniere Raum ${room.number} mit Sensordaten:`, sensorData);
+            let sensorDataArray = [];
             
-                return {
+            try {
+                sensorDataArray = await sensorApi.getAllLatestSensorData();
+            } catch (error) {
+                console.warn('Keine Sensordaten verfügbar:', error);
+            }
+
+            return rooms.map((room) => {
+                const sensorData = sensorDataArray.find((sensor) => sensor.sensorId === room.sensor_id);
+                
+                const roomWithSensorData = {
                     ...room,
                     co2: sensorData ? sensorData.co2 : 'N/A',
                     temperature: sensorData ? sensorData.temperature : 'N/A',
                     humidity: sensorData ? sensorData.humidity : 'N/A',
-                    status: sensorData
-                        ? sensorData.status
-                        : { temp_status: 'unknown', humidity_status: 'unknown' },
+                    status: sensorData 
+                        ? sensorData.status 
+                        : { temp_status: 'unknown', humidity_status: 'unknown' }
                 };
+
+                // Setze is_connected basierend auf aktuellen Werten
+                roomWithSensorData.is_connected = 
+                    roomWithSensorData.temperature !== 'N/A' && 
+                    roomWithSensorData.humidity !== 'N/A' &&
+                    roomWithSensorData.temperature != null &&
+                    roomWithSensorData.humidity != null;
+
+                return roomWithSensorData;
             });
             
         } catch (error) {
@@ -144,6 +165,5 @@ export const roomApi = {
             throw error;
         }
     },
-
     
 };

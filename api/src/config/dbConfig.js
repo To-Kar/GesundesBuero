@@ -1,6 +1,7 @@
 const sql = require('mssql');
+require('dotenv').config();
 
-const config = {
+/*const config = {
     user: 'sa',
     password: 'password',
     server: 'localhost',  // Oder IP-Adresse des Servers
@@ -13,8 +14,8 @@ const config = {
   };
   
   module.exports = config;
-  
-/*
+  */
+
 const config = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -34,4 +35,3 @@ const config = {
 };
 
 module.exports = config;
-*/

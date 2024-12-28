@@ -14,20 +14,23 @@ const calculateStatus = (current, target, isHumidity = false) => {
 };
 
 // Private Funktion zur Transformation der Sensordaten
-const transformSensorData = (data) => ({
-    sensorId: data.sensor_id,
-    roomId: data.room_id ? data.room_id.toString() : 'N/A',
-    temperature: data.current_temp || data.temperature || 'N/A',
-    humidity: data.current_humidity || data.humidity || 'N/A',
-    co2: data.co2 || 'N/A',
-    timestamp: new Date(data.last_updated || data.timestamp),
-    // Explizite Konvertierung von is_connected zu Boolean
-    is_connected: data.is_connected === 1,
-    status: {
-        temp_status: calculateStatus(data.current_temp, data.target_temp),
-        humidity_status: calculateStatus(data.current_humidity, data.target_humidity, true),
-    },
-});
+const transformSensorData = (data) => {
+    console.log('Transforming sensor data:', data);
+    return {
+        sensorId: data.sensor_id,
+        roomId: data.room_id ? data.room_id.toString() : 'N/A',
+        temperature: data.current_temp || data.temperature || 'N/A',
+        humidity: data.current_humidity || data.humidity || 'N/A',
+        co2: data.co2 || 'N/A',
+        timestamp: new Date(data.last_updated || data.timestamp),
+        // Explizite Konvertierung von is_connected zu Boolean
+        is_connected: Boolean(data.is_connected),
+        status: {
+            temp_status: calculateStatus(data.current_temp, data.target_temp),
+            humidity_status: calculateStatus(data.current_humidity, data.target_humidity, true),
+        },
+    };
+};
 
 // Sensor API Service
 export const sensorApi = {
@@ -38,9 +41,11 @@ export const sensorApi = {
                 params: { roomId },
             });
             const data = Array.isArray(response.data) ? response.data[0] : response.data;
-            console.log(`Sensordaten für Raum ${roomId}:`, data); // Debugging
-
-            return transformSensorData(data);
+            console.log('raw sensor data:', data);
+            const transformed = transformSensorData(data);
+            console.log('Transformed is_connected:', transformed.is_connected);
+            
+            return transformed;
         } catch (error) {
             console.error(`Fehler beim Abrufen der Sensordaten für Raum ${roomId}:`, error);
             return null; // Bei Fehler null zurückgeben

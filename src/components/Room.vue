@@ -51,8 +51,7 @@ export default {
     },
     // Fehlendes hinzufügen:
     is_connected: {
-      type: Boolean,
-      default: true
+      type: Boolean
     }
   },
   computed: {
@@ -77,9 +76,11 @@ export default {
     },
     // Fehlendes hinzufügen: Dynamische Klassen basierend auf is_connected
     cardClasses() {
+      console.log('Room component is_connected prop:', this.is_connected);
+      console.log('Room component is_connected type:', typeof this.is_connected);
       return {
         'room-card': true,
-        'disconnected': !this.is_connected
+        'disconnected': !this.is_connected // Stellt sicher, dass die Klasse basierend auf is_connected gesetzt wird
       };
     }
     
