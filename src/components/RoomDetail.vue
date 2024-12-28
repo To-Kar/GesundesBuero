@@ -30,7 +30,7 @@
             <template v-else>
               <button class="cancel-button" v-if="isEditing" @click="cancelEdit">Verwerfen</button>
               <button class="save-button" v-if="isEditing" @click="saveRoom">Speichern</button>
-              <button class="edit-button" v-else @click="toggleEditMode">Bearbeiten</button>
+              <button class="edit-button" v-if="isAdmin && !isEditing" @click="toggleEditMode">Bearbeiten</button>
             </template>
             <button  class="back-button" @click="goBack">X</button>
           </div>
