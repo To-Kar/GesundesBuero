@@ -1,5 +1,7 @@
 const sql = require('mssql');
 const config = require('../config/dbConfig');
+const { checkExistingSensorData } = require('../services/notificationService');
+
 
 async function fetchRooms(roomId) {
     let pool;
@@ -122,6 +124,7 @@ async function updateRoom(roomId, roomData) {
     requestDb.input('roomId', sql.VarChar, roomId);
   
     const result = await requestDb.query(query);
+    await checkExistingSensorData(pool);
   
     await pool.close();
     return result;
@@ -182,6 +185,7 @@ async function updateRoomTargets(roomId, targets) {
     query += ' WHERE room_id = @roomId';
 
     const result = await dbRequest.query(query);
+    await checkExistingSensorData(pool);
 
     await pool.close();
     return result;
