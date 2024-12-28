@@ -1,7 +1,5 @@
 const roomRepository = require('../repository/roomRepository');
-const httpResponses = require('../utils/httpResponse');
-const sql = require('mssql');
-const config = require('../config/dbConfig');
+
 
 /**
  * Service zur Verwaltung der Raumdaten.

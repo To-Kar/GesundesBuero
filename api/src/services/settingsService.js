@@ -1,7 +1,5 @@
 const settingsRepository = require('../repository/settingsRepository');
 
-const sql = require('mssql');
-const config = require('../config/dbConfig');
 
 async function getSettings() {
     const settings = await settingsRepository.fetchSettings();

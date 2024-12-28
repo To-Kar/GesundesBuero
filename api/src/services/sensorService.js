@@ -1,8 +1,7 @@
 const sensorRepository = require('../repository/sensorRepository');
+const settingsRepository = require('../repository/settingsRepository');
 
 
-const sql = require('mssql');
-const config = require('../config/dbConfig');
 
 async function updateSensorDataAndFetchInterval(body) {
     const { sensor_id, temperature, humidity, timestamp, co2 } = body;

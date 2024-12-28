@@ -1,12 +1,7 @@
-
-
 const { app } = require('@azure/functions');
-const sql = require('mssql');
 const validateApiKey = require('../utils/validateApiKey'); 
 const errorHandlerWrapper = require('../utils/errorHandler'); 
-const config = require('../config/dbConfig');
-const sensorRepository = require('../repository/sensorRepository');
-const settingsRepository = require('../repository/settingsRepository');
+
 const sensorService = require('../services/sensorService');
 
 

@@ -1,12 +1,8 @@
 const { app } = require('@azure/functions');
 const roomService = require('../services/roomService');
-const roomRepository = require('../repository/roomRepository');
 const httpResponses = require('../utils/httpResponse');
 const errorHandlerWrapper = require('../utils/errorHandler'); 
 
-
-const sql = require('mssql');
-const config = require('../config/dbConfig');
 
 
 
