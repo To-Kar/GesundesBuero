@@ -41,33 +41,55 @@
           <template v-if="!isEditing">
             <!-- Normale Ansicht -->
             <img :src="currentImage" alt="Raum Layout" class="room-image" />
+            
             <div class="details">
-              <p class="temp">Temperatur: {{ temperature }}°C</p>
-              <p class="set-temp">
-                <span class="soll">Solltemperatur: </span>
-                <button @click="adjustTargetTemperature(-1)" :disabled="disableTemperatureButtons">−</button>
-                <span class="target">{{ targetTemperature }}°C</span>
-                <button @click="adjustTargetTemperature(1)" :disabled="disableTemperatureButtons">+</button>
-              </p>
-              <p class="graph">
-                <span
-                  class="graph-bar"
-                  :style="{ backgroundColor: temperatureColor, width: `${temperatureWidth}%` }"
-                ></span>
-              </p>
-              <p class="humid">Luftfeuchtigkeit: {{ humidity }}%</p>
-              <p class="set-humid">
-                <span class="soll">Soll-Luftfeuchtigkeit: </span>
-                <button @click="adjustTargetHumidity(-5)" :disabled="disableHumidityButtons">−</button>
-                <span class="target">{{ targetHumidity }}%</span>
-                <button @click="adjustTargetHumidity(5)" :disabled="disableHumidityButtons">+</button>
-              </p>
-              <p class="graph">
-                <span
-                  class="graph-bar"
-                  :style="{ backgroundColor: humidityColor, width: `${targetHumidity}%` }"
-                ></span>
-              </p>
+
+            <!-- Widgets-->
+            <div class="widget-container">
+              <!-- Temperatur Widget -->
+              <div class="widget">
+                <h2 class="widget-title">Temperatur</h2>
+                <div class="gauge-container">
+                  <div ref="temperatureGauge" class="gauge"></div>
+                </div>
+                <div class="control-overlay">
+                  <h3 class="widget-value">{{ temperature }}°C</h3>
+                  <div class="set-value">
+                    <button class="widget-button" @click="adjustTargetTemperature(-1)">−</button>
+                    <span class="target">{{ targetTemperature }}°C</span>
+                    <button class="widget-button" @click="adjustTargetTemperature(1)">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Luftfeuchtigkeit Widget -->
+              <div class="widget">
+                <h2 class="widget-title">Luftfeuchtigkeit</h2>
+                <div class="gauge-container">
+                  <div ref="humidityGauge" class="gauge"></div>
+                </div>
+                <div class="control-overlay">
+                  <h3 class="widget-value">{{ humidity }}%</h3>
+                  <div class="set-value">
+                    <button class="widget-button" @click="adjustTargetHumidity(-5)">−</button>
+                    <span class="target">{{ targetHumidity }}%</span>
+                    <button class="widget-button" @click="adjustTargetHumidity(5)">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Co2 Widget -->
+              <div class="widget">
+                <h2 class="widget-title">CO₂-Gehalt </h2>
+                <div class="gauge-container">
+                  <div ref="co2Gauge" class="gauge"></div>
+                </div>
+                <div class="control-co2-overlay">
+                  <h3 class="widget-value">{{ co2 !== null ? co2 + ' ppm' : 'N/A' }}</h3>
+                </div>
+              </div>
+
+            </div>
             </div>
           </template>
 
@@ -79,7 +101,7 @@
               
               <form @submit.prevent="saveRoom" class="edit-form">
                 <div>
-                  <p class="set-temp input-label">
+                  <p class="set-value input-label">
                     <span class="soll">Soll-Temperatur: </span>
                     <button type="button" @click="adjustTempLocally(-1)">−</button>
                     <span class="target">{{ roomEdit.target_temp }}°C</span>
@@ -168,6 +190,9 @@
 import { roomApi } from "../services/roomService";
 import { sensorApi } from '../services/sensorService';
 import { msalInstance } from "../authConfig";
+import * as echarts from 'echarts';
+
+
 
 export default {
   props: {
@@ -196,15 +221,30 @@ export default {
       type: Number,
       required: true,
     },
+    co2: {
+      type: Number,
+      required: true,
+    },
+    temperatureOffset: {
+    type: Number,
+    default: 2  // Standardwert, falls nichts übergeben wird
+    },
+    humidityOffset: {
+      type: Number,
+      default: 5
+    }
+
   },
   data() {
     return {
       isVisible: false,
+      
       targetTemperature: null, // Wird dynamisch geladen
       targetHumidity: null, // Wird dynamisch geladen
       debounceTimeout: null,
       disableTemperatureButtons: false,
       disableHumidityButtons: false,
+      gaugeInstances: {},
 
       isEditing: false, // Bearbeitungsstatus
       
@@ -244,41 +284,7 @@ export default {
       }
       return false;
     },
-    temperatureColor() {
-      const minTemp = 10; // Minimaltemperatur
-      const maxTemp = 30; // Maximaltemperatur
-      const percent = Math.min(Math.max((this.targetTemperature - minTemp) / (maxTemp - minTemp), 0), 1);
 
-      const r = percent < 0.5
-        ? Math.round(0 + percent * 2 * 0) // Blau → Grün
-        : Math.round(255 * (percent - 0.5) * 2); // Grün → Rot
-
-      const g = percent < 0.5
-        ? Math.round(255 * percent * 2) // Blau → Grün
-        : Math.round(255 - (percent - 0.5) * 2 * 255); // Grün → Rot
-
-      const b = percent < 0.5
-        ? Math.round(255 - percent * 2 * 255) // Blau → Grün
-        : 0; // Grün → Rot
-
-      return `rgb(${r}, ${g}, ${b})`;
-    },
-    temperatureWidth() {
-      const minTemp = 10;
-      const maxTemp = 30;
-      return Math.min(Math.max(((this.targetTemperature - minTemp) / (maxTemp - minTemp)) * 100, 0), 100);
-    },
-    humidityColor() {
-      const minHumid = 0; // Minimale Luftfeuchtigkeit
-      const maxHumid = 100; // Maximale Luftfeuchtigkeit
-      const percent = Math.min(Math.max(this.targetHumidity / maxHumid, 0), 1);
-
-      const r = Math.round(192 * (1 - percent)); // Grau → Blau → Dunkelblau
-      const g = Math.round(192 * (1 - percent)); // Grau → Blau → Dunkelblau
-      const b = Math.round(255 * percent); // Grau → Blau → Dunkelblau
-
-      return `rgb(${r}, ${g}, ${b})`;
-    },
   },
   methods: {
   async fetchRoomDetails() {
@@ -310,7 +316,7 @@ export default {
     this.debounceTimeoutTemp = setTimeout(() => {
       this.updateTarget("target_temp", this.targetTemperature);
       this.disableHumidityButtons = false; // Feuchtigkeits-Buttons wieder aktivieren
-    }, 1500);
+    }, 500);
   },
   adjustTargetHumidity(change) {
     if (this.disableHumidityButtons) return;
@@ -327,7 +333,7 @@ export default {
     this.debounceTimeoutHumidity = setTimeout(() => {
       this.updateTarget("target_humidity", this.targetHumidity);
       this.disableTemperatureButtons = false; // Temperatur-Buttons wieder aktivieren
-    }, 1500);
+    }, 500);
   },
   async updateTarget(type, value) {
     try {
@@ -501,18 +507,374 @@ export default {
       }
     },
 
+
+    initGauges() {
+    this.initGaugeChart('temperatureGauge', this.temperature, this.targetTemperature, 10, 30, '°C');
+    this.initGaugeChart('humidityGauge', this.humidity, this.targetHumidity, 0, 100, '%');
+    this.initCo2Gauge();
+  },
+
+  // Dispose-Methode, um alte Gauges zu zerstören
+  disposeGauges() {
+  Object.keys(this.gaugeInstances).forEach((key) => {
+    if (this.gaugeInstances[key]) {
+      this.gaugeInstances[key].dispose();
+      delete this.gaugeInstances[key];
+    }
+  });
+},
+
+  // ECharts Initialisierung
+  initGaugeChart(refName, value, targetValue, min, max, unit) {
+    console.log(`Gauge init: ${refName} - Wert: ${value}, Ziel: ${targetValue}`);
+    const gaugeElement = this.$refs[refName];
+    if (!this.$refs[refName]) {
+      console.log(`Ref ${refName} ist nicht verfügbar`);
+      return;
+    }
+
+        
+    if (!gaugeElement) return;
+
+    const chart = echarts.init(gaugeElement);
+
+    const option = {
+      series: [
+        {
+          name: 'Aktueller Wert',
+          type: 'gauge',
+          startAngle: 180,
+          endAngle: 0,
+          min: min,
+          max: max,
+          radius: '100%',
+          center: ['50%', '65%'],
+          axisLine: {
+            roundCap: true,
+            lineStyle: {
+              width: 22,
+              color: [[1, 'rgba(224, 224, 224, 1)']]
+            }
+          },
+          pointer: { show: false },
+          progress: {
+            show: true,
+            width: 22,
+            roundCap: true,
+            itemStyle: {
+              color: this.getDynamicColor(value, targetValue, refName === 'temperatureGauge' ? this.temperatureOffset : this.humidityOffset)
+            }
+          },
+          axisTick: { show: false },
+          splitLine: { show: false },
+          axisLabel: { show: false },
+          detail: {
+            show: false,
+            formatter: `{value}${unit}`,
+            fontSize: 24,
+            offsetCenter: [0, '0%'],
+            color: '#333',
+            fontWeight: 'bold'
+          },
+          data: [{ value: value }]
+        },
+        {
+          name: 'Zielwert',
+          type: 'gauge',
+          startAngle: 180,
+          endAngle: 0,
+          min: min,
+          max: max,
+          radius: '80%',
+          center: ['50%', '65%'],
+          axisLine: {
+            roundCap: true,
+            lineStyle: {
+              width: 7,
+              color: [[1, 'rgba(224, 224, 224, 1)']]
+            }
+          },
+          pointer: { show: false },
+          progress: {
+            show: true,
+            width: 7,
+            roundCap: true,
+            itemStyle: {
+              color: this.getGaugeColor(refName)
+            }
+          },
+          axisTick: { show: false },
+          splitLine: { show: false },
+          axisLabel: { show: false },
+          detail: { show: false },
+          data: [{ value: targetValue }]
+        }
+      ]
+    };
+
+    chart.setOption(option);
+    this.gaugeInstances[refName] = chart;
+  },
+
+  // Aktualisieren der Gauge-Daten
+  updateGaugeChart(refName, value, targetValue) {
+  const chart = this.gaugeInstances[refName];
+  if (chart) {
+    console.log(`Aktualisiere ${refName} mit Wert: ${value}`);
+    
+    const dynamicColor = refName === 'co2Gauge' 
+      ? this.getCo2Color(value)  // CO₂ spezifische Farben
+      : this.getDynamicColor(value, targetValue, refName === 'temperatureGauge' ? this.temperatureOffset : this.humidityOffset);
+
+    chart.setOption({
+      series: [
+        {
+          data: [{ value: value }],
+          progress: {
+            itemStyle: {
+              color: dynamicColor
+            }
+          }
+        }
+      ]
+    });
+  }
+},
+
+
+
+  getGaugeColor(refName) {
+  if (refName === 'temperatureGauge') {
+    return {
+      type: 'linear',
+      x: 0.3,
+      y: 0.7,
+      x2: 1,
+      y2: 1.4,
+      colorStops: [
+        { offset: 0, color: 'rgb(173, 216, 230)' },  // Blau (Kalt)
+        { offset: 0.1, color: 'rgb(152, 251, 152)' }, // Grün (Neutral)
+        { offset: 0.4, color: 'rgb(255, 239, 130)' }, // Gelb (Warm)
+        { offset: 0.5, color: 'rgb(255, 180, 130)' }, // Orange (Heiß)
+        { offset: 1, color: 'rgb(230, 97, 76)' }      // Rot (Sehr heiß)
+      ]
+    };
+  } else if (refName === 'humidityGauge') {
+    return {
+      type: 'linear',
+      x: 0,
+      y: 0,
+      x2: 1,
+      y2: 0,
+      colorStops: [
+        { offset: 0, color: 'rgb(192, 230, 255)' },  // Hellblau (Trocken)
+        { offset: 0.5, color: 'rgb(100, 200, 255)' }, // Blau (Optimal)
+        { offset: 1, color: 'rgb(0, 100, 200)' }      // Dunkelblau (Sehr Feucht)
+      ]
+    };
+  }
+  return 'rgb(224, 224, 224)';  // Fallback-Grau
+},
+getDynamicColor(value, target, offset) {
+  const lowerThreshold = target - offset;
+  const upperThreshold = target + offset;
+  console.log('Wert Offset:', offset);
+
+
+  if (value < lowerThreshold) {
+    // Farbverlauf für kälter als Zielwert (Blau -> Grün)
+    return {
+      type: 'linear',
+      x: 0,
+      y: 0,
+      x2: 1,
+      y2: 0,
+      colorStops: [
+        { offset: 0, color: 'rgb(0, 102, 255)' },  // Dunkelblau
+        { offset: 1, color: 'rgb(173, 216, 230)' } // Hellblau
+      ]
+    };
+  }
   
- },
+  if (value > upperThreshold) {
+    // Farbverlauf für wärmer als Zielwert (Gelb -> Rot)
+    return {
+      type: 'linear',
+      x: 0,
+      y: 0,
+      x2: 1,
+      y2: 0,
+      colorStops: [
+        { offset: 0, color: 'rgb(255, 180, 130)' },  // Orange
+        { offset: 1, color: 'rgb(230, 97, 76)' }     // Rot
+      ]
+    };
+  }
+
+  // Grün für innerhalb des Zielbereichs (statisch oder leicht verlaufend)
+  return {
+    type: 'linear',
+    x: 0,
+    y: 0,
+    x2: 1,
+    y2: 0,
+    colorStops: [
+      { offset: 0, color: 'rgb(76, 175, 80)' },  // Dunkelgrün
+      { offset: 1, color: 'rgb(152, 251, 152)' } // Hellgrün
+    ]
+  };
+},
+initCo2Gauge() {
+  const gaugeElement = this.$refs.co2Gauge;
+  if (!gaugeElement) return;
+
+  const chart = echarts.init(gaugeElement);
+
+  const option = {
+    series: [
+      {
+        name: 'CO₂-Wert',
+        type: 'gauge',
+        startAngle: 220,
+        endAngle: -40,
+        min: 0,
+        max: 2000,
+        radius: '90%',
+        center: ['50%', '60%'],
+        axisLine: {
+          roundCap: true,
+          lineStyle: {
+            width: 16,
+            color: this.getCo2GaugeColor(this.co2)
+          }
+        },
+        pointer: {
+          length: '100%',
+          width: 6,
+          itemStyle: {
+            color: '#666',   // Nadel bleibt dunkelgrau
+            shadowBlur: 10,
+            shadowColor: 'rgba(0, 0, 0, 0.2)'
+          }
+        },
+        progress: { show: false },
+        axisTick: { show: false },
+        splitLine: { show: false },
+        axisLabel: { show: false },
+        detail: {
+          show: false,
+          formatter: '{value} ppm',
+          fontSize: 22,
+          offsetCenter: [0, '60%'],
+          color: '#333',
+          fontWeight: 'bold'
+        },
+        data: [{ value: this.co2 || 0 }]
+      }
+    ]
+  };
+
+  chart.setOption(option);
+  this.gaugeInstances['co2Gauge'] = chart;
+
+  // Aktualisiere Nadel und Linienfarbe bei Datenänderung
+  this.$watch('co2', (newValue) => {
+    chart.setOption({
+      series: [
+        {
+          axisLine: {
+            lineStyle: {
+              color: this.getCo2GaugeColor(newValue)  // Nur Linie färben
+            }
+          },
+          data: [{ value: newValue || 0 }]
+        }
+      ]
+    });
+  });
+},
+
+getCo2GaugeColor(value) {
+  console.log('außerhalb',value)
+  if (value === null || value === undefined || value === 'N/A') {
+    console.log(value)
+    return [
+      [1, '#ddd']  // Die gesamte Linie wird grau (ohne Verlauf)
+    ];
+  }
+  return [
+    [1, {
+      type: 'linear',
+      x: 0,
+      y: 0,
+      x2: 1,
+      y2: 0,
+      colorStops: [
+        { offset: 0, color: 'rgb(0, 204, 102)' },  
+        { offset: 0.2, color: 'rgb(102, 255, 102)' }, 
+        { offset: 0.35, color: 'rgb(255, 239, 130)' },  
+        { offset: 0.5, color: 'rgb(255, 215, 0)' },  
+        { offset: 0.65, color: 'rgb(255, 165, 0)' },  
+        { offset: 0.85, color: 'rgb(255, 99, 71)' },  
+        { offset: 1, color: 'rgb(205, 92, 92)' }
+      ]
+    }]
+  ];
+}
+
+
+
+},
  mounted() {
+  console.log('CO2 Wert beim Laden:', this.co2); 
     this.isVisible = true;
     if (this.isAdding) {
         this.isEditing = true; // Automatisch in den Bearbeitungsmodus wechseln
     }
     
-    this.fetchRoomDetails(); // Raumdetails beim Laden abrufen
+    this.fetchRoomDetails().then(() => {
+    this.$nextTick(() => {
+      this.initGauges();
+      this.updateGaugeChart('co2Gauge', this.co2, 0);  // CO₂ sofort setzen
+    });
+  });
     
     this.fetchAvailableSensors(); 
+
+
+
   },
+  watch: {
+  isVisible(newVal) {
+    if (newVal) {
+      this.$nextTick(() => {
+        this.disposeGauges();
+        this.initGauges();
+      });
+    } else {
+      this.disposeGauges();
+    }
+  },
+  isEditing(newVal) {
+    if (!newVal) {
+      this.$nextTick(() => {
+        this.disposeGauges();
+        this.initGauges();
+      });
+    }
+  },
+  co2(newVal) {
+    console.log('CO2-Wert aktualisiert:', newVal);
+    this.updateGaugeChart('co2Gauge', newVal, 0);  // CO₂ hat keinen Zielwert
+  },
+  targetTemperature(newVal) {
+    this.updateGaugeChart('temperatureGauge', this.temperature, newVal);
+  },
+  targetHumidity(newVal) {
+    this.updateGaugeChart('humidityGauge', this.humidity, newVal);
+  }
+},
+
 };
 </script>
 
@@ -522,6 +884,91 @@ export default {
 *{
   font-family: 'BDOGrotesk', system-ui, sans-serif;
 }
+
+
+
+.widget-container {
+  display: flex;
+  flex-wrap: wrap;          /* Zeilenumbruch, wenn der Platz nicht reicht */
+  justify-content: space-between;  /* Zentrieren der Widgets */
+  gap: 60px;                /* Abstand zwischen den Widgets */
+  padding: 75px;            /* Abstand zum Container-Rand */
+  padding-top: 37px;
+  box-sizing: border-box;   /* Padding wird in die Gesamtbreite eingerechnet */
+}
+
+.widget {
+  background-color: #f9f9f9;
+  border-radius: 25px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 340px;             /* Kleinere Breite der Widgets */
+  height: 340px;            /* Verkleinerung der Höhe */
+  text-align: center;
+  border: 1px solid #ddd;
+  position: relative;
+}
+
+.widget-title {
+  font-size: 22px;         /* Kleinere Schriftgröße für den Titel */
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0px;
+}
+
+.widget-value {
+  font-size: 22px;         /* Anpassung der Werteanzeige */
+  font-weight: bold;
+  color: #333;
+}
+
+.control-overlay {
+  position: absolute;
+  bottom: 40px;            /* Platzierung näher an den unteren Rand */
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 2;
+}
+
+
+.control-co2-overlay {
+  position: absolute;
+  bottom: 14px;            /* Platzierung näher an den unteren Rand */
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 2;
+}
+
+.gauge-container {
+  display: flex;               /* Flexbox für zentrierte Ausrichtung */
+  justify-content: center;     /* Horizontal zentrieren */
+  align-items: center;         /* Vertikal zentrieren */
+  width: 100%;
+  height: 250px;               /* Höhe beibehalten */
+  margin: 0 auto;              /* Zentrierung des Containers */
+  box-sizing: border-box;      /* Padding wird berücksichtigt */
+  position: relative;          /* Bezugspunkt für Gauge */
+}
+
+.gauge {
+display: block;
+  width: 100%;
+  height: 100%;
+   margin: 0 auto;
+}
+
+.widget-button{
+
+
+border-radius: 50px;
+}
+
+
+
+
+
 
 .disabled-button {
   color: hsl(0, 0%, 50%);
@@ -784,7 +1231,7 @@ h1 {
 /* Buttons */
 button {
   margin: 0 10px;
-  padding: 8px 15px;
+  padding: 1px 7px;
   background-color: #0083bc;
   color: whitesmoke;
   border: none;
@@ -798,7 +1245,7 @@ button:hover {
   transform: scale(1.1);
 }
 
-.room-detail .set-temp,
+.room-detail .set-value,
 .room-detail .set-humid {
   display: flex;
   align-items: center;
@@ -826,10 +1273,11 @@ button:hover {
 }
 
 /* Zielwerte */
-.room-detail .set-temp .target,
+.room-detail .set-value .target,
 .room-detail .set-humid .target {
   font-weight: bold;
-  color: #007bff;
+  color: #0083bc;
+  font-size: 22px;
 }
 
 /* Details-Bereich */
@@ -839,6 +1287,11 @@ button:hover {
   flex-direction: column;
   
 }
+
+
+
+
+
 /* Responsive Design: Mobile Ansicht */
 @media screen and (max-width: 768px) {
   .content {

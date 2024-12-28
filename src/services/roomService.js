@@ -16,9 +16,10 @@ const calculateStatus = (current, target, isHumidity = false) => {
 
 // Private Funktion zur Transformation der Raumdaten
 const transformRoomData = (roomData) => ({
-    number: roomData.room_id ? roomData.room_id.toString() : 'N/A', // Stellen Sie sicher, dass number ein String ist
+    number: roomData.room_id ? roomData.room_id.toString() : 'N/A', 
     name: roomData.name || 'Room',
-    sensor_id: roomData.sensor_id, // Fügen Sie diese Zeile hinzu
+    sensor_id: roomData.sensor_id, 
+    co2: roomData.co2 || 'N/A',
     temperature: roomData.current_temp || 'N/A',
     humidity: roomData.current_humidity || 'N/A',
     target_temperature: roomData.target_temp || 'N/A',
@@ -75,6 +76,7 @@ export const roomApi = {
             
                 return {
                     ...room,
+                    co2: sensorData ? sensorData.co2 : 'N/A',
                     temperature: sensorData ? sensorData.temperature : 'N/A',
                     humidity: sensorData ? sensorData.humidity : 'N/A',
                     status: sensorData

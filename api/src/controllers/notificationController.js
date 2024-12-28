@@ -9,7 +9,7 @@ const config = {
     database: process.env.DB_DATABASE,
     options: {
         encrypt: true,
-        trustServerCertificate: false,
+        trustServerCertificate: true,
     },
     port: 1433,
 };
