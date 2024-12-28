@@ -1,13 +1,12 @@
 const sql = require('mssql');
 const config = require('../config/dbConfig');
-const { checkExistingSensorData } = require('../services/notificationService');
 
 // Funktion zum Aktualisieren von Daten
 async function updateSensorData(data) {
     try {
         const pool = await sql.connect(config);
 
-        // SQL-Abfrage für die Aktualisierung
+        // SQL-Abfrage f端r die Aktualisierung
         const updateQuery = `
             UPDATE SENSOR
             SET temperature = @temperature,
@@ -17,7 +16,7 @@ async function updateSensorData(data) {
             WHERE sensor_id = @sensor_id
         `;
 
-        // Parameter binden und Abfrage ausführen
+        // Parameter binden und Abfrage ausf端hren
         const request = pool.request();
         request.input('sensor_id', sql.VarChar, data.sensor_id);
         request.input('temperature', sql.Decimal(5, 2), data.temperature);
@@ -27,9 +26,8 @@ async function updateSensorData(data) {
 
         await request.query(updateQuery);
 
-        await checkExistingSensorData(pool);
 
-        console.log(`Daten erfolgreich für Sensor ${data.sensor_id} aktualisiert:`, data);
+        console.log(`Daten erfolgreich f端r Sensor ${data.sensor_id} aktualisiert:`, data);
 
         await pool.close();
     } catch (error) {
@@ -107,7 +105,7 @@ async function updateSensorIp(sensor_id, ip_address) {
         request.input('ip_address', sql.VarChar, ip_address);
 
         const result = await request.query(query);
-        console.log('SQL Update ausgeführt, Rows Affected:', result.rowsAffected[0]);
+        console.log('SQL Update ausgef端hrt, Rows Affected:', result.rowsAffected[0]);
 
         return result;
     } catch (error) {
@@ -119,21 +117,26 @@ async function updateSensorIp(sensor_id, ip_address) {
         }
     }
 }
-async function getSensorsWithRoomData(pool) {
-    const query = `
-        SELECT
-            s.sensor_id,
-            s.temperature,
-            s.humidity, 
-            r.room_id,
-            r.name,
-            r.target_temp,
-            r.target_humidity
-        FROM SENSOR s
-        JOIN ROOM r ON s.sensor_id = r.sensor_id
-    `;
-    const result = await pool.request().query(query);
-    return result.recordset;
+async function getSensorsWithRoomData() {
+    const pool = await sql.connect(config);
+    try {
+        const query = `
+            SELECT
+                s.sensor_id,
+                s.temperature,
+                s.humidity,
+                r.room_id,
+                r.name,
+                r.target_temp,
+                r.target_humidity
+            FROM SENSOR s
+            JOIN ROOM r ON s.sensor_id = r.sensor_id
+        `;
+        const result = await pool.request().query(query);
+        return result.recordset;
+    } finally {
+        await pool.close();
+    }
 }
 
 
