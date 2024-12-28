@@ -3,7 +3,7 @@ import { apiClient } from './apiClient';
 export const notificationService = {
     pollingInterval: null,
     callbacks: new Set(),
-    currentInterval: 60000, // Default-Wert
+    currentInterval: 60000,
 
     async getNotifications() {
         try {
@@ -27,7 +27,7 @@ export const notificationService = {
             return response.data.update_interval * 1000;
         } catch (error) {
             console.error('Fehler beim Abrufen des Update-Intervalls:', error);
-            return this.currentInterval; // Fallback zum aktuellen Intervall
+            return this.currentInterval;
         }
     },
 

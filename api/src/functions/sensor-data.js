@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const { app } = require('@azure/functions');
 const sql = require('mssql');
-//const { checkThresholdsAndNotify } = require('./notifications');
+const { checkThresholdsAndNotify } = require('./notifications');
 
 
 // Verbindungsdetails zur Azure SQL-Datenbank
@@ -42,7 +42,7 @@ async function updateSensorData(data) {
 
         await request.query(updateQuery);
 
-        //await checkThresholdsAndNotify(data);  -> für was verwendet????
+        await checkExistingSensorData(pool); 
 
         console.log(`Daten erfolgreich für Sensor ${data.sensor_id} aktualisiert:`, data);
 

@@ -75,12 +75,14 @@ async function createNotification(pool, sensorId, roomId, description, type) {
     }
 }
 
-async function checkExistingSensorData() {
+async function checkExistingSensorData(existingPool = null) {
     let pool;
     try {
-        pool = await sql.connect(config);
+        pool = existingPool || await sql.connect(config);
         
-        // Offsets als Schwellenwerte abrufen
+        console.log('Starting checkExistingSensorData...');
+
+        // Offsets abrufen
         const offsetQuery = 'SELECT temperature_offset, humidity_offset FROM Settings WHERE id = 1;';
         const offsetResult = await pool.request().query(offsetQuery);
         
@@ -90,6 +92,7 @@ async function checkExistingSensorData() {
         } else {
             var offsets = offsetResult.recordset[0];
         }
+        console.log('Verwendete Offsets:', offsets);
         
         const query = `
             SELECT
@@ -105,30 +108,34 @@ async function checkExistingSensorData() {
         `;
         
         const result = await pool.request().query(query);
+        console.log('Found sensor data:', result.recordset);
         
         for (const row of result.recordset) {
             const tempDiff = Math.round(Math.abs(row.temperature - row.target_temp));
             const humidityDiff = Math.round(Math.abs(row.humidity - row.target_humidity));
             
+
             // Temperaturabweichung mit Offset als Schwellenwert prüfen
             if (tempDiff > offsets.temperature_offset) {
+                console.log(`Creating temperature notification for room ${row.name}`);
                 const message = `Raum ${row.name}: Temperatur (${row.temperature}°C) weicht um ${tempDiff.toFixed(1)}°C vom Zielwert (${row.target_temp}°C) ab`;
                 await createNotification(pool, row.sensor_id, row.room_id, message, 'Temperatur');
             }
             
             // Feuchtigkeitsabweichung mit Offset als Schwellenwert prüfen
             if (humidityDiff > offsets.humidity_offset) {
+                console.log(`Creating humidity notification for room ${row.name}`);
                 const message = `Raum ${row.name}: Luftfeuchtigkeit (${row.humidity}%) weicht um ${humidityDiff}% vom Zielwert (${row.target_humidity}%) ab`;
                 await createNotification(pool, row.sensor_id, row.room_id, message, 'Feuchtigkeit');
             }
         }
         
-        console.log('Initiale Prüfung der Sensordaten abgeschlossen');
+        console.log('checkExistingSensorData completed');
     } catch (error) {
-        console.error('Fehler bei der initialen Prüfung:', error);
+        console.error('Error in checkExistingSensorData:', error);
         throw error;
     } finally {
-        if (pool) {
+        if (!existingPool && pool) {
             await pool.close();
         }
     }
@@ -138,7 +145,7 @@ async function checkExistingSensorData() {
 app.http('notifications', {
     methods: ['GET'],
     authLevel: 'anonymous',
-    route: 'notifications',  // Explizite Route definiert
+    route: 'notifications', 
     handler: async (request, context) => {
         let pool;
         try {

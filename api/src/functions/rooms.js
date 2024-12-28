@@ -2,6 +2,7 @@
 require('dotenv').config();
 const { app } = require('@azure/functions');
 const sql = require('mssql');
+const { checkExistingSensorData } = require('./notifications');
 
 // Datenbankkonfiguration
 const config = {
@@ -179,6 +180,7 @@ app.http('updateTargets', {
                     }),
                 };
             }
+            await checkExistingSensorData(pool);
 
             return {
                 status: 200,
@@ -295,7 +297,7 @@ app.http('updateRoom', {
           body: { error: 'Room not found.' },
         };
       }
-
+      await checkExistingSensorData(pool);
       return {
         status: 200,
         body: { message: 'Room updated successfully.' },
@@ -346,6 +348,8 @@ app.http('updateRoom', {
         requestDb.input('target_humidity', sql.Float, target_humidity || 50);
   
         await requestDb.query(query);
+
+        await checkExistingSensorData(pool);
   
         return {
           status: 201,
