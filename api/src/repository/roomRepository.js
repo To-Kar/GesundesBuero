@@ -1,6 +1,7 @@
 const sql = require('mssql');
 const config = require('../config/dbConfig');
 
+
 async function fetchRooms(roomId) {
     let pool;
     pool = await sql.connect(config);

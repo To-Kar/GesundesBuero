@@ -174,9 +174,8 @@ export default {
     <div class="settings-content">
       <button 
         class="settings-button" 
-        @click="isAdmin ? showAllSettings() : null"
-        :disabled="!isAdmin"
-        :class="{ 'disabled-button': !isAdmin }"
+        v-if="isAdmin"
+        @click="showAllSettings"
       >
         Einstellungen
       </button>
@@ -212,14 +211,6 @@ export default {
   <Settings v-if="openSettings" @close="handleShowAllSettingsClose" />
 </template>
 
-<style scoped>
-/* Add your styles here */
-.disabled-button {
-  color: hsl(0, 0%, 50%);
-  cursor: not-allowed;
-  pointer-events: none;
-}
-</style>
 
 
 <style scoped>
