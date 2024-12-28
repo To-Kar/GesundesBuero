@@ -745,31 +745,14 @@ initCo2Gauge() {
           roundCap: true,
           lineStyle: {
             width: 16,
-            color: [
-              [1, {
-                type: 'linear',
-                x: 0,
-                y: 0,
-                x2: 1,
-                y2: 0,
-                colorStops: [
-                  { offset: 0, color: 'rgb(0, 204, 102)' },  
-                  { offset: 0.2, color: 'rgb(102, 255, 102)' }, 
-                  { offset: 0.35, color: 'rgb(255, 239, 130)' },  
-                  { offset: 0.5, color: 'rgb(255, 215, 0)' },  
-                  { offset: 0.65, color: 'rgb(255, 165, 0)' },  
-                  { offset: 0.85, color: 'rgb(255, 99, 71)' },  
-                  { offset: 1, color: 'rgb(205, 92, 92)' }   
-                ]
-              }]
-            ]
+            color: this.getCo2GaugeColor(this.co2)
           }
         },
         pointer: {
           length: '100%',
           width: 6,
           itemStyle: {
-            color: '#666',   // Nadel in dunklem Grau
+            color: '#666',   // Nadel bleibt dunkelgrau
             shadowBlur: 10,
             shadowColor: 'rgba(0, 0, 0, 0.2)'
           }
@@ -786,7 +769,7 @@ initCo2Gauge() {
           color: '#333',
           fontWeight: 'bold'
         },
-        data: [{ value: this.co2 }]
+        data: [{ value: this.co2 || 0 }]
       }
     ]
   };
@@ -794,18 +777,50 @@ initCo2Gauge() {
   chart.setOption(option);
   this.gaugeInstances['co2Gauge'] = chart;
 
-  // Aktualisiere Nadel bei Datenänderung
+  // Aktualisiere Nadel und Linienfarbe bei Datenänderung
   this.$watch('co2', (newValue) => {
     chart.setOption({
       series: [
         {
-          data: [{ value: newValue }]
+          axisLine: {
+            lineStyle: {
+              color: this.getCo2GaugeColor(newValue)  // Nur Linie färben
+            }
+          },
+          data: [{ value: newValue || 0 }]
         }
       ]
     });
   });
-}
+},
 
+getCo2GaugeColor(value) {
+  console.log('außerhalb',value)
+  if (value === null || value === undefined || value === 'N/A') {
+    console.log(value)
+    return [
+      [1, '#ddd']  // Die gesamte Linie wird grau (ohne Verlauf)
+    ];
+  }
+  return [
+    [1, {
+      type: 'linear',
+      x: 0,
+      y: 0,
+      x2: 1,
+      y2: 0,
+      colorStops: [
+        { offset: 0, color: 'rgb(0, 204, 102)' },  
+        { offset: 0.2, color: 'rgb(102, 255, 102)' }, 
+        { offset: 0.35, color: 'rgb(255, 239, 130)' },  
+        { offset: 0.5, color: 'rgb(255, 215, 0)' },  
+        { offset: 0.65, color: 'rgb(255, 165, 0)' },  
+        { offset: 0.85, color: 'rgb(255, 99, 71)' },  
+        { offset: 1, color: 'rgb(205, 92, 92)' }
+      ]
+    }]
+  ];
+}
 
 
 
