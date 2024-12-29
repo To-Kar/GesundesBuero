@@ -51,7 +51,8 @@ export default {
     },
     // Fehlendes hinzufügen:
     is_connected: {
-      type: Boolean
+      type: Boolean,
+      required: true,
     }
   },
   computed: {
@@ -107,29 +108,35 @@ export default {
 <template>
   <div :class="cardClasses" @click="$emit('click')">
     <!-- Overlay anzeigen, wenn nicht verbunden -->
-    <div v-if="!is_connected" class="connection-status">
-      Disconnected
-    </div>
+    <div v-if="!is_connected" class="connection-status">Keine Sensor Verbindung!</div>
 
-    <h2 class="room-title">{{ name }}</h2>
+    <h2 class="room-title" :class="{ 'disconnected-title': !is_connected }">{{ name }}</h2>
+
     <div class="room-layout">
-      <img :src="image" alt="Raum Layout" class="room-image" />
+      <div class="room-image-container" :class="{ 'disconnected': !is_connected }">
+        <img :src="image" alt="Raum Layout" class="room-image" />
+        
+        <!-- Overlay nur anzeigen, wenn is_connected false ist -->
+        <div v-if="!is_connected" class="overlay-image"></div>
+      </div>
+
       <div class="metrics">
-        <div class="co2-status" :style="{ backgroundColor: co2Color() }">
-          CO₂ {{co2Text()}}
+        <div class="co2-status" :style="{ backgroundColor: is_connected ? co2Color() : '#b0b0b0' }">
+          CO₂ {{ is_connected ? co2Text() : 'N/A' }}
         </div>
         <!-- Dynamische Farbe für Temperatur -->
-        <div class="temperature" :style="{ backgroundColor: temperatureColor }">
-          {{ temperature }}°C
+        <div class="temperature" :style="{ backgroundColor: is_connected ? temperatureColor : '#b0b0b0' }">
+          {{ is_connected ? temperature + '°C' : 'N/A' }}
         </div>
         <!-- Dynamische Farbe für Luftfeuchtigkeit -->
-        <div class="humidity" :style="{ backgroundColor: humidityColor }">
-          {{ humidity }}%
+        <div class="humidity" :style="{ backgroundColor: is_connected ? humidityColor : '#b0b0b0' }">
+          {{ is_connected ? humidity + '%' : 'N/A' }}
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 *{
@@ -176,6 +183,7 @@ export default {
   padding-top: 56.25%;
 } 
 
+
 /* Raum-Bild */
 .room-image {
   position: absolute;
@@ -184,7 +192,25 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+
 }
+
+.overlay-image {
+  opacity: 1;
+  position: absolute;
+  top: 0px;
+  left: 0;  /* Overlay startet korrekt bei der linken Ecke */
+  width: 100%;
+  height: 100%;
+  background-image: url('https://www.pngitem.com/pimgs/m/379-3794039_no-internet-connection-sketch-brand-graphic-design-no.png');  
+  background-size: contain;  /* Bildgröße wird angepasst, um das gesamte Element zu füllen */
+  background-position: center;  /* Bild wird zentriert */
+  background-repeat: no-repeat; /* Verhindert Wiederholung des Bildes */
+  background-color: rgb(247, 247, 247);  /* Leichtes dunkles Overlay */
+  pointer-events: none;
+
+}
+
 
 /* Temperatur- und Luftfeuchtigkeitsanzeige */
 .metrics {
@@ -209,59 +235,37 @@ export default {
   font-size: calc(0.5rem + 1vw); /* Dynamische Schriftgröße */
 }
 
+
 /* Overlay anzeigen, wenn disconnected */
 .connection-status {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(0,0,0,0.7); /* Dunklerer Hintergrund für bessere Lesbarkeit */
-  color: red;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  z-index: 100; /* Höherer z-index, um über anderen Elementen zu liegen */
-  font-weight: 900;
-  filter: none !important;
-  opacity: 2 !important;
+  background-color: #bdbdbd;
+  border-radius: 9px;
+  padding: 4px 9px;
+  top: 62%;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  color: rgb(255, 255, 255); 
+  font-size: 11px;  
+  z-index: 1;
+  text-align: center;
+  white-space: nowrap;  /* Verhindert Zeilenumbrüche */
 }
 
-/* Fehlendes hinzufügen: ausgegrauter Zustand bei Disconnected */
-.disconnected {
-  filter: grayscale(100%);
+
+
+
+.disconnected-image {
+  filter: grayscale(100%) blur(1.5px); /* Graustufen und Unschärfe */
+  transition: filter 0.3s ease, opacity 0.3s ease; /* Sanfter Übergang */
 }
 
-/* Anpassungen für den "Disconnected" Status */
-.connection-status {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.5);
-  color: #ff0000; /* Rot */
-  padding: 2px 5px;
-  font-size: 0.8em;
-  font-weight: bold; /* Fett */
-  z-index: 100 !important; /* Über allen anderen Elementen */
-  filter: none !important; /* Kein Graustufenfilter */
-  opacity: 1 !important; /* Volle Deckkraft */
+.disconnected-title {
+  color: #666666;
+  opacity: 0.7;
+  transition: color 0.3s ease, opacity 0.3s ease;
 }
 
-/* Entfernen der Opacity aus .disconnected, um den "Disconnected" Text nicht zu beeinflussen */
-.disconnected {
-  filter: grayscale(100%);
-  /* opacity: 0.7; Entfernt */
-}
-
-/* Sicherstellen, dass .connection-status nicht ausgegraut wird */
-.disconnected .connection-status {
-  filter: none !important;
-  opacity: 1 !important;
-}
-
-.disconnected .connection-status,
-div.room-card .connection-status {
-  filter: none !important;
-  opacity: 1 !important;
-}
 
 .co2-status {
     padding: 0.5rem;

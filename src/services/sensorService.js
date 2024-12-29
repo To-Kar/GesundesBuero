@@ -15,7 +15,6 @@ const calculateStatus = (current, target, isHumidity = false) => {
 
 // Private Funktion zur Transformation der Sensordaten
 const transformSensorData = (data) => {
-    console.log('Transforming sensor data:', data);
     return {
         sensorId: data.sensor_id,
         roomId: data.room_id ? data.room_id.toString() : 'N/A',
@@ -24,7 +23,7 @@ const transformSensorData = (data) => {
         co2: data.co2 || 'N/A',
         timestamp: new Date(data.last_updated || data.timestamp),
         // Explizite Konvertierung von is_connected zu Boolean
-        is_connected: Boolean(data.is_connected),
+        is_connected: data.is_connected,
         status: {
             temp_status: calculateStatus(data.current_temp, data.target_temp),
             humidity_status: calculateStatus(data.current_humidity, data.target_humidity, true),
@@ -56,6 +55,7 @@ export const sensorApi = {
     async getAllLatestSensorData() {
         try {
             const response = await apiClient.get('/room-sensor-data');
+
             return response.data.map(transformSensorData);
         } catch (error) {
             console.error('Fehler beim Abrufen aller Sensordaten:', error);
@@ -63,18 +63,6 @@ export const sensorApi = {
         }
     },
 
-    // Historische Sensordaten für einen Raum abrufen (optional)
-    async getHistoricalData(roomId, startDate, endDate) {
-        try {
-            const response = await apiClient.get('/room-sensor-data/history', {
-                params: { roomId, startDate, endDate },
-            });
-            return response.data.map(transformSensorData);
-        } catch (error) {
-            console.error(`Fehler beim Abrufen der historischen Daten für Raum ${roomId}:`, error);
-            throw error;
-        }
-    },
 
     // Alle Sensoren abrufen
     async getAvailableSensors() {

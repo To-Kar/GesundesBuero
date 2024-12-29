@@ -25,11 +25,8 @@ const transformRoomData = (roomData) => ({
     target_temperature: roomData.target_temp || 'N/A',
     target_humidity: roomData.target_humidity || 'N/A',
     image: roomData.imageURL || `/assets/images/room${roomData.room_id}.jpg`,
+    is_connected: roomData.is_connected || false,
     status: roomData.status || { temp_status: 'unknown', humidity_status: 'unknown' },
-    is_connected: roomData.current_temp !== 'N/A' && 
-                 roomData.current_humidity !== 'N/A' &&
-                 roomData.current_temp != null &&
-                 roomData.current_humidity != null
 });
 
 // Room API Service
@@ -47,9 +44,6 @@ export const roomApi = {
             // Merging is_connected from sensor data
             for (const room of rooms) {
                 const sensorData = await sensorApi.getLatestSensorData(room.room_id);
-                if (sensorData) {
-                    room.is_connected = sensorData.is_connected;
-                }
             }
 
             return { rooms, offsets };
@@ -93,16 +87,9 @@ export const roomApi = {
                     humidity: sensorData ? sensorData.humidity : 'N/A',
                     status: sensorData 
                         ? sensorData.status 
-                        : { temp_status: 'unknown', humidity_status: 'unknown' }
+                        : { temp_status: 'unknown', humidity_status: 'unknown' },
+                    is_connected: sensorData ? sensorData.is_connected : room.is_connected
                 };
-
-                // Setze is_connected basierend auf aktuellen Werten
-                roomWithSensorData.is_connected = 
-                    roomWithSensorData.temperature !== 'N/A' && 
-                    roomWithSensorData.humidity !== 'N/A' &&
-                    roomWithSensorData.temperature != null &&
-                    roomWithSensorData.humidity != null;
-
                 return roomWithSensorData;
             });
             

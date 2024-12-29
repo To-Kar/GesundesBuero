@@ -41,7 +41,8 @@ async function updateSensorDataAndFetchInterval(body) {
     return { interval };
 }
 
-// Helper-Funktion zur Prüfung der Sensor-Verfügbarkeit
+
+// Prüfen auf Sensorverfügbarkeit
 function isSensorActive(lastUpdated, timeout) {
     if (!lastUpdated) return false;
 
@@ -49,18 +50,12 @@ function isSensorActive(lastUpdated, timeout) {
     const lastUpdatedTime = new Date(lastUpdated).getTime();
     const currentTime = Date.now();
 
-    const difference = Math.abs(lastUpdatedTime - currentTime);
-    const timeout_computed = timeout * 1000 * 2 + (60 * 60 * 1000);
-
-    console.log(`Sensor geprüft: Last Updated: ${new Date(lastUpdatedTime).toISOString()}, 
-    Current Time (UTC): ${new Date(currentTime).toISOString()}, 
-    Timeout: ${timeout_computed}, Diff: ${difference}ms`);
+    const difference = Math.abs((currentTime + 1000*60*60) - lastUpdatedTime);
+    const timeout_computed = timeout * 1000 * 2;
 
     // Prüfen, ob der Sensor innerhalb des Intervalls aktualisiert wurde
     return difference <= timeout_computed;
 }
-
-
 
 
 // Sensordaten abrufen und Verfügbarkeit prüfen
@@ -75,24 +70,25 @@ async function getSensorData(sensorId) {
                 'Keine Sensordaten gefunden' 
         };
     }
-
-    // Dynamisches Update-Intervall aus der Datenbank abrufen
+    
     const updateInterval = await settingsRepository.fetchIntervalFromSettings();
 
-    // Sensor-Daten transformieren und is_connected prüfen
-    const transformedData = sensors.map(sensor => {
-
+    const transformedData = [];
+    for (const sensor of sensors) {
         const isConnected = isSensorActive(sensor.last_updated, updateInterval);
         console.log(`Sensor ID: ${sensor.sensor_id}, Last Updated: ${sensor.last_updated}, is_connected: ${isConnected}`);
+        
+        // Sensorstatus in der DB aktualisieren
+        await sensorRepository.updateSensorStatus(sensor.sensor_id, isConnected);
 
-        return {
+        transformedData.push({
             ...sensor,
-            is_connected: isConnected
-        };
-    });
-
+        });
+    }
+    
     return sensorId ? transformedData[0] : transformedData;
 }
+
 
 
 
