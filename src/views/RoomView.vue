@@ -183,9 +183,9 @@ export default {
       :key="room.number"
       :name="room.name"
       :number="room.number"
-      :temperature="room.is_connected ? room.temperature : 'N/A'"
-      :humidity="room.is_connected ? room.humidity : 'N/A'"
-      :co2="room.is_connected ? room.co2 : 'N/A'"
+      :temperature=room.temperature
+      :humidity=room.humidity
+      :co2=room.co2
       :image="room.image"
       :targetTemperature="room.target_temperature" 
       :targetHumidity="room.target_humidity" 

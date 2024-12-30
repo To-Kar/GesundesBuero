@@ -122,15 +122,15 @@ export default {
 
       <div class="metrics">
         <div class="co2-status" :style="{ backgroundColor: is_connected ? co2Color() : '#b0b0b0' }">
-          CO₂ {{ is_connected ? co2Text() : 'N/A' }}
+          CO₂ {{ co2Text() }}
         </div>
         <!-- Dynamische Farbe für Temperatur -->
         <div class="temperature" :style="{ backgroundColor: is_connected ? temperatureColor : '#b0b0b0' }">
-          {{ is_connected ? temperature + '°C' : 'N/A' }}
+          {{ temperature + '°C' }}
         </div>
         <!-- Dynamische Farbe für Luftfeuchtigkeit -->
         <div class="humidity" :style="{ backgroundColor: is_connected ? humidityColor : '#b0b0b0' }">
-          {{ is_connected ? humidity + '%' : 'N/A' }}
+          {{ humidity + '%' }}
         </div>
       </div>
     </div>
