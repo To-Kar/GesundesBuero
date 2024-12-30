@@ -185,18 +185,19 @@ export default {
       :number="room.number"
       :temperature=room.temperature
       :humidity=room.humidity
-      :co2=room.co2
+      :co2=room.co2 
       :image="room.image"
       :targetTemperature="room.target_temperature" 
       :targetHumidity="room.target_humidity" 
       :status="room.status"
+      :sensor_id="room.sensor_id"
       :temperatureOffset="temperatureOffset" 
       :humidityOffset="humidityOffset"
       :is_connected="room.is_connected"
       @click="goToRoomDetail(room.image, room.name, room.number, room.temperature, room.humidity, room.co2)"
     />
 
-
+    
   </div>
 
   <div v-if="saveStatus" class="save-feedback" :class="saveStatus">
