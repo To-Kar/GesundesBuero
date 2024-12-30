@@ -161,6 +161,15 @@ export default {
       try {
         this.rooms = await roomApi.getAllRoomsWithSensorData();
         console.log("Sensordaten erfolgreich aktualisiert");
+
+        if (this.showDetail && this.roomId) {
+          const updatedRoom = this.rooms.find(r => r.number === this.roomId);
+          if (updatedRoom) {
+            this.temperature = updatedRoom.temperature;
+            this.humidity = updatedRoom.humidity;
+            this.co2 = updatedRoom.co2;
+          }
+        }
         this.$forceUpdate();
       } catch (error) {
         console.error("Fehler beim Laden der Sensordaten:", error.message);

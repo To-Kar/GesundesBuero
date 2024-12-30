@@ -101,19 +101,19 @@ export default {
   },
 
   methods: {
-  co2Color() {
-    if (!this.is_connected || this.co2 == null || isNaN(this.co2)) return "#b0b0b0";
-    if (this.co2 < 800) return "#3cb371";  // Grün
-    if (this.co2 > 1000) return "#cd5c5c"; // Rot
-    return "#FFD700";                      // Gelb
-  },
-  co2Text() {
-    if (this.co2 == null || isNaN(this.co2)) return "N/A";
-    if (this.co2 < 800) return "Gut";  // Anzeige für niedrige CO₂-Werte
-    if (this.co2 >= 800 && this.co2 <= 1000) return "Ok";  // Mittlerer Bereich
-    return "Hoch";  // Alarm bei hohen CO₂-Werten
+    co2Color() {
+      if (!this.is_connected || this.co2 == null || isNaN(this.co2)) return "#b0b0b0";
+      if (this.co2 < 800) return "#3cb371";  // Grün
+      if (this.co2 > 1000) return "#cd5c5c"; // Rot
+      return "#FFD700";                      // Gelb
+    },
+    co2Text() {
+      if (this.co2 == null || isNaN(this.co2)) return "N/A";
+      if (this.co2 < 800) return "Gut";  // Anzeige für niedrige CO₂-Werte
+      if (this.co2 >= 800 && this.co2 <= 1000) return "Ok";  // Mittlerer Bereich
+      return "Hoch";  // Alarm bei hohen CO₂-Werten
+    }
   }
-}
   
 };
 </script>

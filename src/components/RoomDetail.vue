@@ -191,6 +191,8 @@ import { roomApi } from "../services/roomService";
 import { sensorApi } from '../services/sensorService';
 import { msalInstance } from "../authConfig";
 import * as echarts from 'echarts';
+import { initGaugeChart, getDynamicColor } from '../utils/gaugeUtils';
+
 
 
 
@@ -517,10 +519,36 @@ export default {
 
 
     initGauges() {
-      this.$nextTick(() => {
-    this.initGaugeChart('temperatureGauge', this.temperature, this.targetTemperature, 10, 30, '°C');
-    this.initGaugeChart('humidityGauge', this.humidity, this.targetHumidity, 0, 100, '%');
-  });
+    this.$nextTick(() => {
+      const offsets = {
+        temperatureGauge: this.temperatureOffset,
+        humidityGauge: this.humidityOffset
+      };
+
+      initGaugeChart(
+        this.$refs,
+        this.gaugeInstances,
+        'temperatureGauge',
+        this.temperature,
+        this.targetTemperature,
+        10, 30,
+        '°C',
+        getDynamicColor,
+        offsets
+      );
+
+      initGaugeChart(
+        this.$refs,
+        this.gaugeInstances,
+        'humidityGauge',
+        this.humidity,
+        this.targetHumidity,
+        0, 100,
+        '%',
+        getDynamicColor,
+        offsets
+      );
+    });
     this.initCo2Gauge();
   },
 
@@ -534,97 +562,7 @@ export default {
   });
 },
 
-  // ECharts Initialisierung
-  initGaugeChart(refName, value, targetValue, min, max, unit) {
-    console.log(`Gauge init: ${refName} - Wert: ${value}, Ziel: ${targetValue}`);
-    const gaugeElement = this.$refs[refName];
-    if (!this.$refs[refName]) {
-      console.log(`Ref ${refName} ist nicht verfügbar`);
-      return;
-    }
 
-        
-    if (!gaugeElement) return;
-
-    const chart = echarts.init(gaugeElement);
-
-    const option = {
-      series: [
-        {
-          name: 'Aktueller Wert',
-          type: 'gauge',
-          startAngle: 180,
-          endAngle: 0,
-          min: min,
-          max: max,
-          radius: '100%',
-          center: ['50%', '65%'],
-          axisLine: {
-            roundCap: true,
-            lineStyle: {
-              width: 22,
-              color: [[1, 'rgba(224, 224, 224, 1)']]
-            }
-          },
-          pointer: { show: false },
-          progress: {
-            show: true,
-            width: 22,
-            roundCap: true,
-            itemStyle: {
-              color: this.getDynamicColor(value, targetValue, refName === 'temperatureGauge' ? this.temperatureOffset : this.humidityOffset)
-            }
-          },
-          axisTick: { show: false },
-          splitLine: { show: false },
-          axisLabel: { show: false },
-          detail: {
-            show: false,
-            formatter: `{value}${unit}`,
-            fontSize: 24,
-            offsetCenter: [0, '0%'],
-            color: '#333',
-            fontWeight: 'bold'
-          },
-          data: [{ value: value }]
-        },
-        {
-          name: 'Zielwert',
-          type: 'gauge',
-          startAngle: 180,
-          endAngle: 0,
-          min: min,
-          max: max,
-          radius: '80%',
-          center: ['50%', '65%'],
-          axisLine: {
-            roundCap: true,
-            lineStyle: {
-              width: 7,
-              color: [[1, 'rgba(224, 224, 224, 1)']]
-            }
-          },
-          pointer: { show: false },
-          progress: {
-            show: true,
-            width: 7,
-            roundCap: true,
-            itemStyle: {
-              color: this.getGaugeColor(refName)
-            }
-          },
-          axisTick: { show: false },
-          splitLine: { show: false },
-          axisLabel: { show: false },
-          detail: { show: false },
-          data: [{ value: targetValue }]
-        }
-      ]
-    };
-
-    chart.setOption(option);
-    this.gaugeInstances[refName] = chart;
-  },
 
   // Aktualisieren der Gauge-Daten
   updateGaugeChart(refName, value, targetValue) {
