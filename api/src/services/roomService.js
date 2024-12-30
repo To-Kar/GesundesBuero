@@ -27,18 +27,13 @@ async function addRoom(roomData) {
 
 async function updateRoom(roomId, roomData) {
     const { name, sensor_id, image_url, target_temp, target_humidity } = roomData;
-    
+
     if (sensor_id) {
         const assignedRoom = await roomRepository.getRoomBySensor(sensor_id, roomId);
         if (assignedRoom) {
             await roomRepository.removeSensorFromRoom(assignedRoom.room_id);
         }
-        const assignedRoom = await roomRepository.getRoomBySensor(sensor_id, roomId);
-        if (assignedRoom) {
-            await roomRepository.removeSensorFromRoom(assignedRoom.room_id);
-        }
     }
-
 
     const result = await roomRepository.updateRoom(roomId, {
         name,
