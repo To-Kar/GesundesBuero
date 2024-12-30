@@ -1,6 +1,37 @@
-// repositories/notificationRepository.js
 const sql = require('mssql');
 const config = require('../config/dbConfig');
+
+async function createNotification(notification) {
+    return withConnection(async (pool) => {
+        const request = pool.request();
+        request.input('notification_id', sql.VarChar, notification.notificationId);
+        request.input('sensor_id', sql.VarChar, notification.sensorId);
+        request.input('room_id', sql.VarChar, notification.roomId);
+        request.input('type', sql.VarChar, notification.type);
+        request.input('description', sql.NVarChar, notification.description);
+        request.input('timestamp', sql.DateTime2, notification.timestamp || new Date());
+        
+        await request.query(`
+            INSERT INTO Notification (
+                notification_id,
+                sensor_id,
+                room_id,
+                type,
+                description,
+                status,
+                timestamp
+            ) VALUES (
+                @notification_id,
+                @sensor_id,
+                @room_id,
+                @type,
+                @description,
+                0,
+                @timestamp
+            )
+        `);
+    });
+}
 
 async function withConnection(operation) {
     let pool;
@@ -14,7 +45,6 @@ async function withConnection(operation) {
     }
 }
 
-// Bestehende Repository-Funktionen mit Verbindungshandling
 async function deleteByRoomAndType(roomId, type) {
     return withConnection(async (pool) => {
         const request = pool.request();
@@ -35,34 +65,6 @@ async function getNextNotificationId() {
             FROM Notification
         `);
         return result.recordset[0].next_id.toString();
-    });
-}
-
-async function createNotification(notification) {
-    return withConnection(async (pool) => {
-        const request = pool.request();
-        request.input('notification_id', sql.VarChar, notification.notificationId);
-        request.input('sensor_id', sql.VarChar, notification.sensorId);
-        request.input('room_id', sql.VarChar, notification.roomId);
-        request.input('type', sql.VarChar, notification.type);
-        request.input('description', sql.NVarChar, notification.description);
-        await request.query(`
-            INSERT INTO Notification (
-                notification_id,
-                sensor_id,
-                room_id,
-                type,
-                description,
-                status
-            ) VALUES (
-                @notification_id,
-                @sensor_id,
-                @room_id,
-                @type,
-                @description,
-                0
-            )
-        `);
     });
 }
 

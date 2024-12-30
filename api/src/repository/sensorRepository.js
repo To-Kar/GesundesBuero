@@ -126,6 +126,7 @@ async function getSensorsWithRoomData() {
                 s.sensor_id,
                 s.temperature,
                 s.humidity,
+                s.co2,
                 r.room_id,
                 r.name,
                 r.target_temp,
@@ -139,7 +140,6 @@ async function getSensorsWithRoomData() {
         await pool.close();
     }
 }
-
 // Aktualisieren des is_connected-Status in der Datenbank
 async function updateSensorStatus(sensorId, isConnected) {
     let pool;
@@ -164,7 +164,6 @@ async function updateSensorStatus(sensorId, isConnected) {
         }
     }
 }
-
 
 
 module.exports = {

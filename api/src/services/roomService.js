@@ -2,6 +2,7 @@ const roomRepository = require('../repository/roomRepository');
 const sensorRepository = require('../repository/sensorRepository');
 const settingsRepository = require('../repository/settingsRepository');
 const sensorService = require('./sensorService');
+const notificationService = require('./notificationService');
 
 async function getRooms(roomId) {
     const rooms = await roomRepository.fetchRooms(roomId);
@@ -48,15 +49,9 @@ async function updateRoom(roomId, roomData) {
         throw error;
     }
 
-    // Schwellwerte prüfen falls Zielwerte oder Sensor geändert wurden
+    // Benachrichtigungen prüfen wenn relevant
     if (target_temp !== undefined || target_humidity !== undefined || sensor_id !== undefined) {
-        const [settings] = await settingsRepository.fetchOffsets();
-        const sensorsWithRoomData = await sensorRepository.getSensorsWithRoomData();
-        const updatedRoom = sensorsWithRoomData.find(room => room.room_id === roomId);
-        
-        if (updatedRoom) {
-            await sensorService.checkSensorThresholds(updatedRoom, settings);
-        }
+        await notificationService.checkExistingSensorData();
     }
 
     return { message: 'Room updated successfully.' };
@@ -83,22 +78,15 @@ async function updateRoomTargets(roomId, targets) {
     }
 
     const result = await roomRepository.updateRoomTargets(roomId, targets);
-
     if (!result || result.rowsAffected[0] === 0) {
         const error = new Error(`Raum ${roomId} nicht gefunden`);
         error.status = 404;
         throw error;
     }
 
-    // Schwellwerte nach Update prüfen
-    const [settings] = await settingsRepository.fetchOffsets();
-    const sensorsWithRoomData = await sensorRepository.getSensorsWithRoomData();
-    const updatedRoom = sensorsWithRoomData.find(room => room.room_id === roomId);
+    // Benachrichtigungen nach Update prüfen
+    await notificationService.checkExistingSensorData();
     
-    if (updatedRoom) {
-        await sensorService.checkSensorThresholds(updatedRoom, settings);
-    }
-
     return { message: 'Sollwerte erfolgreich aktualisiert' };
 }
 
