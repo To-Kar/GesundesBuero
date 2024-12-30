@@ -79,6 +79,7 @@ async function checkExistingSensorData() {
     }
 }
 
+
 module.exports = {
     createNotification,
     getAllNotifications,

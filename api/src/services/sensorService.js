@@ -1,9 +1,11 @@
+// services/sensorService.js
 const sensorRepository = require('../repository/sensorRepository');
 const settingsRepository = require('../repository/settingsRepository');
 const notificationService = require('./notificationService');
 
 async function updateSensorDataAndFetchInterval(body) {
     const { sensor_id, temperature, humidity, timestamp, co2 } = body;
+    
    
     if (!sensor_id || temperature === undefined || humidity === undefined) {
         throw { status: 400, message: 'Fehler: sensor_id, temperature und humidity sind erforderlich.' };
@@ -26,9 +28,28 @@ async function updateSensorDataAndFetchInterval(body) {
     return { interval };
 }
 
+
+// Prüfen auf Sensorverfügbarkeit
+function isSensorActive(lastUpdated, timeout) {
+    if (!lastUpdated) return false;
+
+    // Explizite Umwandlung zu UTC, unabhängig von der ursprünglichen Zeitzone
+    const lastUpdatedTime = new Date(lastUpdated).getTime();
+    const currentTime = Date.now();
+
+    const difference = Math.abs((currentTime + 1000*60*60) - lastUpdatedTime);
+    const timeout_computed = timeout * 1000 * 2;
+
+    // Prüfen, ob der Sensor innerhalb des Intervalls aktualisiert wurde
+    return difference <= timeout_computed;
+}
+
+
+// Sensordaten abrufen und Verfügbarkeit prüfen
 async function getSensorData(sensorId) {
     const sensors = await sensorRepository.fetchSensorData(sensorId);
    
+    
     if (!sensors || sensors.length === 0) {
         throw {
             status: 404,
@@ -36,10 +57,35 @@ async function getSensorData(sensorId) {
                 `Sensordaten für Sensor ${sensorId} nicht gefunden` :
                 'Keine Sensordaten gefunden'
         };
+        throw { 
+            status: 404, 
+            message: sensorId ? 
+                `Sensordaten für Sensor ${sensorId} nicht gefunden` : 
+                'Keine Sensordaten gefunden' 
+        };
     }
-   
-    return sensorId ? sensors[0] : sensors;
+    
+    const updateInterval = await settingsRepository.fetchIntervalFromSettings();
+
+    const transformedData = [];
+    for (const sensor of sensors) {
+        const isConnected = isSensorActive(sensor.last_updated, updateInterval);
+        console.log(`Sensor ID: ${sensor.sensor_id}, Last Updated: ${sensor.last_updated}, is_connected: ${isConnected}`);
+        
+        // Sensorstatus in der DB aktualisieren
+        await sensorRepository.updateSensorStatus(sensor.sensor_id, isConnected);
+
+        transformedData.push({
+            ...sensor,
+        });
+    }
+    
+    return sensorId ? transformedData[0] : transformedData;
 }
+
+
+
+
 
 async function getAllSensors() {
     const sensors = await sensorRepository.fetchAllSensors();

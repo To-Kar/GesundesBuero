@@ -27,6 +27,7 @@ export default {
       intervalId: null,     // Speichert die Timer-ID
       temperatureOffset: 0,
       humidityOffset: 0,
+      is_connected: false
     };
   },
 
@@ -50,6 +51,7 @@ export default {
   },
   mounted() {
     eventBus.on('add-room', this.addRoom);
+    eventBus.on('room-created', this.refreshSensorDataAfterRoomCreation);
   },
   beforeUnmount() {
   eventBus.off('add-room', this.addRoom);
@@ -157,6 +159,7 @@ export default {
       try {
         this.rooms = await roomApi.getAllRoomsWithSensorData();
         console.log("Sensordaten erfolgreich aktualisiert");
+        this.$forceUpdate();
       } catch (error) {
         console.error("Fehler beim Laden der Sensordaten:", error.message);
       }
@@ -180,15 +183,16 @@ export default {
       :key="room.number"
       :name="room.name"
       :number="room.number"
-      :temperature="room.temperature"
-      :humidity="room.humidity"
-      :co2="room.co2"
+      :temperature="room.is_connected ? room.temperature : 'N/A'"
+      :humidity="room.is_connected ? room.humidity : 'N/A'"
+      :co2="room.is_connected ? room.co2 : 'N/A'"
       :image="room.image"
       :targetTemperature="room.target_temperature" 
       :targetHumidity="room.target_humidity" 
       :status="room.status"
       :temperatureOffset="temperatureOffset" 
       :humidityOffset="humidityOffset"
+      :is_connected="room.is_connected"
       @click="goToRoomDetail(room.image, room.name, room.number, room.temperature, room.humidity, room.co2)"
     />
 
@@ -213,6 +217,7 @@ export default {
         :humidityOffset="humidityOffset"
 
         :isAdding="isAdding"
+        :is_connected="is_connected"
 
         @close="showDetail = false"
 

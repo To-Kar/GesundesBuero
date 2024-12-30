@@ -33,7 +33,12 @@ async function updateRoom(roomId, roomData) {
         if (assignedRoom) {
             await roomRepository.removeSensorFromRoom(assignedRoom.room_id);
         }
+        const assignedRoom = await roomRepository.getRoomBySensor(sensor_id, roomId);
+        if (assignedRoom) {
+            await roomRepository.removeSensorFromRoom(assignedRoom.room_id);
+        }
     }
+
 
     const result = await roomRepository.updateRoom(roomId, {
         name,
