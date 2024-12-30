@@ -86,6 +86,7 @@ export default {
         if (updatedRoom) {
           this.temperature = updatedRoom.temperature;
           this.humidity = updatedRoom.humidity;
+          this.co2 = updatedRoom.co2;
         }
       }
     } catch (error) {
@@ -109,6 +110,7 @@ export default {
     if (room) {
       room.temperature = updatedRoom.temperature;
       room.humidity = updatedRoom.humidity;
+      room.co2 = updatedRoom.co2;
     }
   },
   

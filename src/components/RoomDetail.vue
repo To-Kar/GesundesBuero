@@ -440,6 +440,7 @@ export default {
           roomId: this.roomId,
           temperature: this.temperature,
           humidity: this.humidity,
+          co2: this.co2
         });
 
    
@@ -890,6 +891,14 @@ getCo2GaugeColor(value) {
   },
   targetHumidity(newVal) {
     this.updateGaugeChart('humidityGauge', this.humidity, newVal);
+  },
+  temperature(newVal) {
+    console.log('Temperatur aktualisiert:', newVal);
+    this.updateGaugeChart('temperatureGauge', newVal, this.targetTemperature);
+  },
+  humidity(newVal) {
+    console.log('Luftfeuchtigkeit aktualisiert:', newVal);
+    this.updateGaugeChart('humidityGauge', newVal, this.targetHumidity);
   }
 },
 
