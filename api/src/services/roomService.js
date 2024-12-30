@@ -18,12 +18,22 @@ async function getRooms(roomId) {
 }
 
 async function addRoom(roomData) {
+    const { room_id, sensor_id } = roomData;  // sensor_id hier extrahieren
+
     await roomRepository.saveRoom(roomData);
+
+    if (sensor_id) {
+        const assignedRoom = await roomRepository.getRoomBySensor(sensor_id, room_id);  // room_id übergeben
+        if (assignedRoom) {
+            await roomRepository.removeSensorFromRoom(assignedRoom.room_id);
+        }
+    }
     return {
         status: 201,
         message: 'Raum erfolgreich hinzugefügt.',
     };
 }
+
 
 async function updateRoom(roomId, roomData) {
     const { name, sensor_id, image_url, target_temp, target_humidity } = roomData;
