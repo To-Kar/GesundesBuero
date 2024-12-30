@@ -12,7 +12,7 @@ async function createNotification(sensorId, roomId, description, type) {
             roomId,
             type,
             description,
-            timestamp: new Date() // Explizit einen Timestamp setzen
+            timestamp: new Date()
         });
     } catch (error) {
         console.error('Fehler beim Erstellen der Benachrichtigung:', error);
@@ -32,7 +32,7 @@ function checkCO2Level(co2Value) {
 }
 
 async function checkSensorData(sensorData, settings) {
-    // Temperatur- und Feuchtigkeitsprüfung wie bisher
+    // Temperatur- und Feuchtigkeitsprüfung
     const tempDiff = Math.round(Math.abs(sensorData.temperature - sensorData.target_temp));
     const humidityDiff = Math.round(Math.abs(sensorData.humidity - sensorData.target_humidity));
    
