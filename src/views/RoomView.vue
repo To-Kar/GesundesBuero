@@ -183,20 +183,21 @@ export default {
       :key="room.number"
       :name="room.name"
       :number="room.number"
-      :temperature="room.is_connected ? room.temperature : 'N/A'"
-      :humidity="room.is_connected ? room.humidity : 'N/A'"
-      :co2="room.is_connected ? room.co2 : 'N/A'"
+      :temperature=room.temperature
+      :humidity=room.humidity
+      :co2=room.co2 
       :image="room.image"
       :targetTemperature="room.target_temperature" 
       :targetHumidity="room.target_humidity" 
       :status="room.status"
+      :sensor_id="room.sensor_id"
       :temperatureOffset="temperatureOffset" 
       :humidityOffset="humidityOffset"
       :is_connected="room.is_connected"
       @click="goToRoomDetail(room.image, room.name, room.number, room.temperature, room.humidity, room.co2)"
     />
 
-
+    
   </div>
 
   <div v-if="saveStatus" class="save-feedback" :class="saveStatus">

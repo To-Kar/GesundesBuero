@@ -53,7 +53,11 @@ export default {
     is_connected: {
       type: Boolean,
       required: true,
-    }
+    },
+    sensor_id: {
+    type: String,  // Sensor-ID kann eine Zahl oder String sein
+    default: null  // Standardwert null
+    },
   },
   computed: {
     
@@ -61,7 +65,7 @@ export default {
     temperatureColor() {
       const lowerThreshold = this.targetTemperature - this.temperatureOffset;
       const upperThreshold = this.targetTemperature + this.temperatureOffset;
-      if (this.temperature == null || isNaN(this.temperature)) return "#b0b0b0";
+      if (!this.is_connected || this.temperature == null || isNaN(this.temperature)) return "#b0b0b0";
       if (this.temperature < lowerThreshold) return "#87cefa"; // Unter Sollwert → Blau
       if (this.temperature > upperThreshold) return "#cd5c5c"; // Über Sollwert → Rot
       return "#3cb371"; // Innerhalb des Bereichs → Grün
@@ -70,26 +74,35 @@ export default {
     humidityColor() {
       const lowerThreshold = this.targetHumidity - this.humidityOffset;
       const upperThreshold = this.targetHumidity + this.humidityOffset;
-      if (this.humidity == null || isNaN(this.humidity)) return "#b0b0b0";
+      if (!this.is_connected || this.humidity == null || isNaN(this.humidity)) return "#b0b0b0";
       if (this.humidity < lowerThreshold) return "#87cefa"; // Unter Sollwert → Blau
       if (this.humidity > upperThreshold) return "#cd5c5c"; // Über Sollwert → Rot
       return "#3cb371"; // Innerhalb des Bereichs → Grün
     },
-    // Fehlendes hinzufügen: Dynamische Klassen basierend auf is_connected
+    // Dynamische Klassen basierend auf is_connected
     cardClasses() {
       console.log('Room component is_connected prop:', this.is_connected);
       console.log('Room component is_connected type:', typeof this.is_connected);
       return {
         'room-card': true,
-        'disconnected': !this.is_connected // Stellt sicher, dass die Klasse basierend auf is_connected gesetzt wird
+        'disconnected': !this.is_connected 
       };
-    }
-    
+    },
+    connectionMessage() {
+      if (this.sensor_id == null) {
+        return "Kein Sensor zugewiesen!";
+      }
+      if (!this.is_connected) {
+        return "Keine Sensor Verbindung!";
+      }
+      return "";
+    },
+      
   },
 
   methods: {
   co2Color() {
-    if (this.co2 == null || isNaN(this.co2)) return "#b0b0b0";
+    if (!this.is_connected || this.co2 == null || isNaN(this.co2)) return "#b0b0b0";
     if (this.co2 < 800) return "#3cb371";  // Grün
     if (this.co2 > 1000) return "#cd5c5c"; // Rot
     return "#FFD700";                      // Gelb
@@ -108,7 +121,7 @@ export default {
 <template>
   <div :class="cardClasses" @click="$emit('click')">
     <!-- Overlay anzeigen, wenn nicht verbunden -->
-    <div v-if="!is_connected" class="connection-status">Keine Sensor Verbindung!</div>
+    <div v-if="!is_connected || sensor_id == null" class="connection-status">{{ connectionMessage }}</div>
 
     <h2 class="room-title" :class="{ 'disconnected-title': !is_connected }">{{ name }}</h2>
 
@@ -121,16 +134,15 @@ export default {
       </div>
 
       <div class="metrics">
-        <div class="co2-status" :style="{ backgroundColor: is_connected ? co2Color() : '#b0b0b0' }">
-          CO₂ {{ is_connected ? co2Text() : 'N/A' }}
+        <div class="co2-status" :style="{ backgroundColor: co2Color() }">
+          CO₂ {{ co2Text() }}
         </div>
         <!-- Dynamische Farbe für Temperatur -->
-        <div class="temperature" :style="{ backgroundColor: is_connected ? temperatureColor : '#b0b0b0' }">
-          {{ is_connected ? temperature + '°C' : 'N/A' }}
+        <div class="temperature" :style="{ backgroundColor: temperatureColor }">
+          {{ temperature + '°C' }}
         </div>
-        <!-- Dynamische Farbe für Luftfeuchtigkeit -->
-        <div class="humidity" :style="{ backgroundColor: is_connected ? humidityColor : '#b0b0b0' }">
-          {{ is_connected ? humidity + '%' : 'N/A' }}
+        <div class="humidity" :style="{ backgroundColor: humidityColor }">
+          {{ humidity + '%' }}
         </div>
       </div>
     </div>
@@ -252,9 +264,6 @@ export default {
   white-space: nowrap;  /* Verhindert Zeilenumbrüche */
 }
 
-
-
-
 .disconnected-image {
   filter: grayscale(100%) blur(1.5px); /* Graustufen und Unschärfe */
   transition: filter 0.3s ease, opacity 0.3s ease; /* Sanfter Übergang */
@@ -265,7 +274,6 @@ export default {
   opacity: 0.7;
   transition: color 0.3s ease, opacity 0.3s ease;
 }
-
 
 .co2-status {
     padding: 0.5rem;
