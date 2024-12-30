@@ -3,38 +3,24 @@ const sensorRepository = require('../repository/sensorRepository');
 const settingsRepository = require('../repository/settingsRepository');
 const notificationService = require('./notificationService');
 
-async function checkSensorThresholds(sensorData, settings) {
-    const tempDiff = Math.round(Math.abs(sensorData.temperature - sensorData.target_temp));
-    const humidityDiff = Math.round(Math.abs(sensorData.humidity - sensorData.target_humidity));
-    
-    if (tempDiff > settings.temperature_offset) {
-        const message = `Raum ${sensorData.name}: Temperatur (${sensorData.temperature}°C) weicht um ${tempDiff.toFixed(1)}°C vom Zielwert (${sensorData.target_temp}°C) ab`;
-        await notificationService.createNotification(sensorData.sensor_id, sensorData.room_id, message, 'Temperatur');
-    }
-    
-    if (humidityDiff > settings.humidity_offset) {
-        const message = `Raum ${sensorData.name}: Luftfeuchtigkeit (${sensorData.humidity}%) weicht um ${humidityDiff}% vom Zielwert (${sensorData.target_humidity}%) ab`;
-        await notificationService.createNotification(sensorData.sensor_id, sensorData.room_id, message, 'Feuchtigkeit');
-    }
-}
-
 async function updateSensorDataAndFetchInterval(body) {
     const { sensor_id, temperature, humidity, timestamp, co2 } = body;
     
+   
     if (!sensor_id || temperature === undefined || humidity === undefined) {
         throw { status: 400, message: 'Fehler: sensor_id, temperature und humidity sind erforderlich.' };
     }
-
+    
     // Daten in der DB aktualisieren
     await sensorRepository.updateSensorData({ sensor_id, temperature, humidity, timestamp, co2 });
-    
-    // Schwellwerte prüfen
+   
+    // Benachrichtigungen prüfen
     const [settings] = await settingsRepository.fetchOffsets();
     const sensorsWithRoomData = await sensorRepository.getSensorsWithRoomData();
     const sensorData = sensorsWithRoomData.find(s => s.sensor_id === sensor_id);
-    
+   
     if (sensorData) {
-        await checkSensorThresholds(sensorData, settings);
+        await notificationService.checkExistingSensorData();
     }
 
     const interval = await settingsRepository.fetchIntervalFromSettings();
@@ -61,13 +47,14 @@ function isSensorActive(lastUpdated, timeout) {
 // Sensordaten abrufen und Verfügbarkeit prüfen
 async function getSensorData(sensorId) {
     const sensors = await sensorRepository.fetchSensorData(sensorId);
+   
     
     if (!sensors || sensors.length === 0) {
-        throw { 
-            status: 404, 
-            message: sensorId ? 
-                `Sensordaten für Sensor ${sensorId} nicht gefunden` : 
-                'Keine Sensordaten gefunden' 
+        throw {
+            status: 404,
+            message: sensorId ?
+                `Sensordaten für Sensor ${sensorId} nicht gefunden` :
+                'Keine Sensordaten gefunden'
         };
     }
     
@@ -108,12 +95,11 @@ async function handleIpUpdate(sensor_id, ip_address) {
     if (!sensor_id) {
         throw { status: 400, message: 'sensor_id ist erforderlich.' };
     }
-
     const result = await sensorRepository.updateSensorIp(sensor_id, ip_address);
     if (result.rowsAffected[0] === 0) {
         throw { status: 404, message: 'Sensor nicht gefunden.' };
     }
-    
+   
     return { message: 'IP-Adresse erfolgreich aktualisiert.' };
 }
 
@@ -126,6 +112,5 @@ module.exports = {
     updateSensorDataAndFetchInterval,
     getSensorData,
     getAllSensors,
-    handleIpUpdate,
-    checkSensorThresholds
+    handleIpUpdate
 };

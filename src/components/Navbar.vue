@@ -191,7 +191,7 @@ export default {
         <div v-for="notification in recentNotifications" 
              :key="notification.id" 
              class="notification-item">
-          <h3 class="notification-location">{{ notification.room_id }}</h3>
+          <h3 class="notification-location">{{ notification.room_name }}</h3>
           <p class="notification-description">{{ notification.description }}</p>
           <p class="notification-time">{{ formatDate(notification.timestamp) }}</p>
         </div>

@@ -1,7 +1,7 @@
 const sql = require('mssql');
 require('dotenv').config();
 
-const config = {
+/*const config = {
     user: 'sa',
     password: 'password',
     server: 'localhost',  // Oder IP-Adresse des Servers
@@ -13,17 +13,18 @@ const config = {
     port: 1433
   };
   
-  module.exports = config;
+  module.exports = config;*/
   
 
-/*const config = {
+const config = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   server: process.env.DB_SERVER,
   database: process.env.DB_DATABASE,
   options: {
     encrypt: true, // Use encryption
-    enableArithAbort: true
+    enableArithAbort: true,
+    trustServerCertificate: true
   },
   pool: {
     max: 10,
@@ -34,4 +35,4 @@ const config = {
   requestTimeout: 30000 // Increase request timeout to 30 seconds
 };
 
-module.exports = config;*/
+module.exports = config;
