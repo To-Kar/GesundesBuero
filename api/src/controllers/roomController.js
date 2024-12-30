@@ -5,7 +5,30 @@ const errorHandlerWrapper = require('../utils/errorHandler');
 
 
 
-
+/**
+ * @swagger
+ * /rooms/{roomId?}:
+ *   get:
+ *     summary: Räume abrufen
+ *     tags:
+ *       - Räume
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: ID eines spezifischen Raums
+ *     responses:
+ *       200:
+ *         description: Erfolgreich abgerufen
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Room'
+ */
 app.http('room', {
     methods: ['GET'],
     authLevel: 'anonymous',
@@ -17,7 +40,30 @@ app.http('room', {
     }),
 });
 
-
+/**
+ * @swagger
+ * /rooms:
+ *   post:
+ *     summary: Raum hinzufügen
+ *     tags:
+ *       - Räume
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Room'
+ *     responses:
+ *       201:
+ *         description: Raum erfolgreich hinzugefügt
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 app.http('addRoom', {
     methods: ['POST'],
     authLevel: 'anonymous',
@@ -37,7 +83,44 @@ app.http('addRoom', {
 });
 
 
-
+/**
+ * @swagger
+ * /rooms/{roomId}:
+ *   patch:
+ *     summary: Raum aktualisieren
+ *     tags:
+ *       - Räume
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID des Raums, der aktualisiert werden soll
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               target_temp:
+ *                 type: number
+ *               target_humidity:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Raum erfolgreich aktualisiert
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 app.http('updateRoom', {
     methods: ['PATCH'],
     authLevel: 'anonymous',
@@ -58,7 +141,31 @@ app.http('updateRoom', {
   });
 
 
-
+/**
+ * @swagger
+ * /rooms/{roomId}:
+ *   delete:
+ *     summary: Raum löschen
+ *     tags:
+ *       - Räume
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID des Raums, der gelöscht werden soll
+ *     responses:
+ *       200:
+ *         description: Raum erfolgreich gelöscht
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
   app.http('deleteRoom', {
     methods: ['DELETE'],
     route: 'rooms/{roomId}',
@@ -76,7 +183,42 @@ app.http('updateRoom', {
 });
 
 
-
+/**
+ * @swagger
+ * /rooms/{roomId}/targets:
+ *   patch:
+ *     summary: Zielwerte für Temperatur und Luftfeuchtigkeit aktualisieren
+ *     tags:
+ *       - Räume
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID des Raums, dessen Zielwerte aktualisiert werden sollen
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               target_temp:
+ *                 type: number
+ *               target_humidity:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Zielwerte erfolgreich aktualisiert
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 app.http('updateTargets', {
     methods: ['PATCH'],
     route: 'rooms/{roomId}/targets',

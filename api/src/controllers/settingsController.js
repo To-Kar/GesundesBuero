@@ -3,7 +3,26 @@ const errorHandlerWrapper = require('../utils/errorHandler');
 const httpResponses = require('../utils/httpResponse');
 const settingsService = require('../services/settingsService');
 
-
+/**
+ * @swagger
+ * /settings:
+ *   get:
+ *     summary: Abrufen der Anwendungseinstellungen
+ *     tags:
+ *       - Einstellungen
+ *     responses:
+ *       200:
+ *         description: Erfolgreich die Einstellungen abgerufen
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 interval:
+ *                   type: number
+ *                 offsets:
+ *                   type: object
+ */
 app.http('settings', {
     methods: ['GET'],
     authLevel: 'anonymous',
@@ -14,7 +33,34 @@ app.http('settings', {
     }),
 });
 
-
+/**
+ * @swagger
+ * /settings/interval:
+ *   patch:
+ *     summary: Aktualisieren des Abfrageintervalls
+ *     tags:
+ *       - Einstellungen
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               interval:
+ *                 type: number
+ *                 description: Das neue Intervall in Minuten
+ *     responses:
+ *       200:
+ *         description: Intervall erfolgreich aktualisiert
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 app.http('interval', {
     methods: ['PATCH'],
     authLevel: 'anonymous',
@@ -28,7 +74,26 @@ app.http('interval', {
     }),
 });
 
-
+/**
+ * @swagger
+ * /settings/offsets:
+ *   get:
+ *     summary: Abrufen der aktuellen Offsetwerte
+ *     tags:
+ *       - Einstellungen
+ *     responses:
+ *       200:
+ *         description: Erfolgreich die Offsetwerte abgerufen
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 temperature_offset:
+ *                   type: number
+ *                 humidity_offset:
+ *                   type: number
+ */
 app.http('getOffsets', {
     methods: ['GET'],
     authLevel: 'anonymous',
@@ -41,7 +106,37 @@ app.http('getOffsets', {
 
 
 
-// PATCH - Offsets aktualisieren
+/**
+ * @swagger
+ * /settings/offsets:
+ *   patch:
+ *     summary: Aktualisieren der Offsetwerte
+ *     tags:
+ *       - Einstellungen
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               temperature_offset:
+ *                 type: number
+ *                 description: Temperatur-Offset in Grad
+ *               humidity_offset:
+ *                 type: number
+ *                 description: Luftfeuchtigkeits-Offset in Prozent
+ *     responses:
+ *       200:
+ *         description: Offsetwerte erfolgreich aktualisiert
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 app.http('updateOffsets', {
     methods: ['PATCH'],
     authLevel: 'anonymous',
