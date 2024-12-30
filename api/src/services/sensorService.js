@@ -20,7 +20,6 @@ async function updateSensorDataAndFetchInterval(body) {
     const sensorData = sensorsWithRoomData.find(s => s.sensor_id === sensor_id);
    
     if (sensorData) {
-        // Nutze direkt checkExistingSensorData statt checkSensorThresholds
         await notificationService.checkExistingSensorData();
     }
 
@@ -56,12 +55,6 @@ async function getSensorData(sensorId) {
             message: sensorId ?
                 `Sensordaten für Sensor ${sensorId} nicht gefunden` :
                 'Keine Sensordaten gefunden'
-        };
-        throw { 
-            status: 404, 
-            message: sensorId ? 
-                `Sensordaten für Sensor ${sensorId} nicht gefunden` : 
-                'Keine Sensordaten gefunden' 
         };
     }
     
