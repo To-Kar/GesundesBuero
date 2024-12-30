@@ -236,7 +236,8 @@ export default {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 1rem;
+  gap: 1.8rem;
+  padding: 1.8rem;
 }
 
 .room-view > * {
@@ -252,35 +253,6 @@ export default {
 }
 
 
-/* Neuen Raum hinzufügen Button Styles */
-.room.add-room {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f1f1f1;
-  border-radius: 35px;
-
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-  flex: 1 1 calc(50% - 1rem);
-  max-width: calc(50% - 1rem);
-  aspect-ratio: 1.5 / 1; 
-
-}
-.room.add-room:hover {
-  background-color: #dbdbdb;
-}
-.add-room-icon {
-  font-size: 48px;
-  color: #929292;
-  margin: 0;
-}
-.add-room-text {
-  font-size: 30px;
-  color: #929292;
-  margin: 0;
-}
 
 
 /* Styles für Benachrichtigung speichern/bearbeiten*/

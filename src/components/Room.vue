@@ -51,35 +51,32 @@ export default {
     }
   },
   computed: {
-    
-    // Farbe basierend auf der Temperatur
+  // Farbe basierend auf der Temperatur
     temperatureColor() {
       const lowerThreshold = this.targetTemperature - this.temperatureOffset;
       const upperThreshold = this.targetTemperature + this.temperatureOffset;
-      if (this.temperature == null || isNaN(this.temperature)) return "#b0b0b0";
-      if (this.temperature < lowerThreshold) return "#87cefa"; // Unter Sollwert → Blau
-      if (this.temperature > upperThreshold) return "#cd5c5c"; // Über Sollwert → Rot
-      return "#3cb371"; // Innerhalb des Bereichs → Grün
+      if (this.temperature == null || isNaN(this.temperature)) return "#d3d3d3"; // Neutral Grau
+      if (this.temperature < lowerThreshold) return "linear-gradient(135deg, #aecde0, #5a8da4)"; // Unter Sollwert → Subtiles Blau
+      if (this.temperature > upperThreshold) return "linear-gradient(135deg, #e8a6a6, #b34646)"; // Über Sollwert → Subtiles Rot
+      return "linear-gradient(135deg, #a8d5a6, #5b9d68)"; // Innerhalb des Bereichs → Subtiles Grün
     },
     // Farbe basierend auf der Luftfeuchtigkeit
     humidityColor() {
       const lowerThreshold = this.targetHumidity - this.humidityOffset;
       const upperThreshold = this.targetHumidity + this.humidityOffset;
-      if (this.humidity == null || isNaN(this.humidity)) return "#b0b0b0";
-      if (this.humidity < lowerThreshold) return "#87cefa"; // Unter Sollwert → Blau
-      if (this.humidity > upperThreshold) return "#cd5c5c"; // Über Sollwert → Rot
-      return "#3cb371"; // Innerhalb des Bereichs → Grün
-    },
-    
+    if (this.humidity == null || isNaN(this.humidity)) return "#d3d3d3"; // Neutral Grau
+    if (this.humidity < lowerThreshold) return "linear-gradient(135deg, #aecde0, #5a8da4)"; // Unter Sollwert → Subtiles Blau
+    if (this.humidity > upperThreshold) return "linear-gradient(135deg, #e8a6a6, #b34646)"; // Über Sollwert → Subtiles Rot
+      return "linear-gradient(135deg, #a8d5a6, #5b9d68)"; // Innerhalb des Bereichs → Subtiles Grün
   },
-
-  methods: {
+},
+ methods: {
   co2Color() {
-    if (this.co2 == null || isNaN(this.co2)) return "#b0b0b0";
-    if (this.co2 < 800) return "#3cb371";  // Grün
-    if (this.co2 > 1000) return "#cd5c5c"; // Rot
-    return "#FFD700";                      // Gelb
-  },
+    if (this.co2 == null || isNaN(this.co2)) return "#d3d3d3"; // Neutral Grau
+    if (this.co2 < 800) return "linear-gradient(135deg, #a8d5a6, #5b9d68)"; // Subtiles Grün
+    if (this.co2 > 1000) return "linear-gradient(135deg, #e8a6a6, #b34646)"; // Subtiles Rot
+    return "linear-gradient(135deg, #f5d19e, #d8a972)"; // Elegantes Gelb
+    },
   co2Text() {
     if (this.co2 == null || isNaN(this.co2)) return "N/A";
     if (this.co2 < 800) return "Gut";  // Anzeige für niedrige CO₂-Werte
@@ -87,6 +84,7 @@ export default {
     return "Hoch";  // Alarm bei hohen CO₂-Werten
   }
 }
+
   
 };
 </script>
@@ -97,15 +95,15 @@ export default {
     <div class="room-layout">
       <img :src="image" alt="Raum Layout" class="room-image" />
       <div class="metrics">
-        <div class="co2-status" :style="{ backgroundColor: co2Color() }">
+        <div class="co2-status" :style="{ background: co2Color() }">
           CO₂ {{co2Text()}}
         </div>
         <!-- Dynamische Farbe für Temperatur -->
-        <div class="temperature" :style="{ backgroundColor: temperatureColor }">
+        <div class="temperature" :style="{ background: temperatureColor }">
           {{ temperature }}°C
         </div>
         <!-- Dynamische Farbe für Luftfeuchtigkeit -->
-        <div class="humidity" :style="{ backgroundColor: humidityColor }">
+        <div class="humidity" :style="{ background: humidityColor }">
           {{ humidity }}%
         </div>
       </div>
@@ -118,86 +116,118 @@ export default {
   font-family: 'BDOGrotesk', system-ui, sans-serif;
 }
 
+
 /* Hauptcontainer */
-.room-container{
+.room-container {
   display: flex;
   justify-content: center;
+  align-items: center;
   width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  padding: 20px;
 }
+
+/* Raumkarte */
 .room-card {
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  padding: 8px;
-  width: 100%;
-  height: auto;
-  margin: auto;
+  background: #fff;
+  backface-visibility: hidden;
+  will-change: transform, box-shadow;
+  border-radius: 18px;
+  padding: 0px;
+  box-shadow: 2px 4px 12px #00000014;
+  backdrop-filter: blur(15px);
+  width: 300px;
+  max-width: 90%;
+  position: relative;
+  transform-origin: center;
+  transition: all .3s cubic-bezier(0,0,.5,1);
+  will-change: transform; /* Für optimiertes Rendering */
+}
+
+.room-card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25); /* Weicher Schatten */
 }
 
 /* Titel */
 .room-title {
+  color: #000000;
+  margin-bottom: 20px;
+  text-align: center;
   font-size: 32px;
   line-height: 38.4px;
-  margin-bottom: 8px;
   letter-spacing: -0.68px;
   font-weight: 700;
-  text-align: left;
-}
-@media screen and (max-width: 768px) {
-  .room-title {
-    font-size: 18px;
-    line-height: 21.6px;
-    letter-spacing: -0.4px;
-  }
 }
 
-/* Bildlayout */
+/* Raum-Layout */
 .room-layout {
   position: relative;
   width: 100%;
-  padding-top: 56.25%;
-} 
+  padding-top: 56.25%; /* Verhältnis 16:9 */
+  overflow: hidden;
+}
 
 /* Raum-Bild */
 .room-image {
+  border-radius: 0 0 18px 18px;
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  filter: grayscale(20%) contrast(1.2);
+  transition: filter 0.3s ease;
 }
 
-/* Temperatur- und Luftfeuchtigkeitsanzeige */
+
+/* Metriken */
 .metrics {
   position: absolute;
-  right: 0;
-  bottom: 0;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
 }
 
-/* Dynamische Anzeige für Temperatur und Luftfeuchtigkeit */
+/* Dynamische Anzeige für Temperatur, Luftfeuchtigkeit und CO2 */
 .temperature,
-.humidity {
-  padding: 0.5rem;
-  border-radius: 4px;
-  color: white; /* Textfarbe immer weiß */
+.humidity,
+.co2-status {
+  flex: 1 1 calc(33.333% - 10px);
+  padding: 10px;
+  border-radius: 10px;
   text-align: center;
   font-weight: bold;
-  min-width: 60px;
-  max-width: 100px;
-  font-size: calc(0.5rem + 1vw); /* Dynamische Schriftgröße */
+  color: #fff;
+  font-size: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.co2-status {
-    padding: 0.5rem;
-    border-radius: 4px;
-    color: white;
-    text-align: center;
-    font-weight: bold;
-    min-width: 60px;
-    max-width: 100px;
-    font-size: calc(0.5rem + 1vw);
+/* Responsivität */
+@media (max-width: 768px) {
+  .room-card {
+    width: 100%;
+  }
+
+  .room-title {
+    font-size: 20px;
+  }
+
+  .metrics {
+    gap: 5px;
+  }
+
+  .temperature,
+  .humidity,
+  .co2-status {
+    font-size: 14px;
+  }
 }
+
 </style>
