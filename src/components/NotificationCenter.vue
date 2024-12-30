@@ -7,6 +7,24 @@ export default {
     }
   },
   emits: ['close'],
+  computed: {
+    groupedNotifications() {
+      const grouped = {};
+      this.notifications.forEach(notification => {
+        const roomName = notification.room_name;
+        if (!grouped[roomName]) {
+          grouped[roomName] = [];
+        }
+        grouped[roomName].push(notification);
+      });
+      return Object.keys(grouped)
+        .sort()
+        .reduce((acc, key) => {
+          acc[key] = grouped[key];
+          return acc;
+        }, {});
+    }
+  },
   methods: {
     formatDate(timestamp) {
       try {
@@ -34,17 +52,24 @@ export default {
         <button class="close-button" @click="$emit('close')">×</button>
       </div>
       <div class="modal-body">
-        <div v-for="notification in notifications"
-             :key="notification.notification_id"
-             class="notification-item">
-          <div class="notification-header">
-            <span class="notification-type">{{ notification.type }}</span>
-            <span class="notification-time">{{ formatDate(notification.timestamp) }}</span>
-          </div>
-          <p class="notification-message">{{ notification.description }}</p>
-          <div class="notification-details">
-            <small>Raum: {{ notification.room_id }}</small>
-            <small>Sensor: {{ notification.sensor_id }}</small>
+        <div v-for="(notifications, roomName) in groupedNotifications" 
+             :key="roomName" 
+             class="room-group">
+          <h2 class="room-header">{{ roomName }}</h2>
+          <div class="room-notifications">
+            <div v-for="notification in notifications"
+                 :key="notification.notification_id"
+                 class="notification-item">
+              <div class="notification-header">
+                <span class="notification-type">{{ notification.type }}</span>
+                <span class="notification-time">{{ formatDate(notification.timestamp) }}</span>
+              </div>
+              <p class="notification-message">{{ notification.description }}</p>
+              <div class="notification-details">
+                <small>Raum: {{ notification.room_id }}</small>
+                <small>Sensor: {{ notification.sensor_id }}</small>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -54,7 +79,7 @@ export default {
 
 <style scoped>
 * {
- font-family: 'BDOGrotesk', system-ui, sans-serif;
+  font-family: 'BDOGrotesk', system-ui, sans-serif;
 }
 
 .notification-modal {
@@ -84,15 +109,6 @@ export default {
   flex-direction: column;
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding-bottom: 12px;
-  position: relative;
-}
-
 .modal-header h2 {
   font-size: 32px;
   line-height: 38.4px;
@@ -100,6 +116,24 @@ export default {
   letter-spacing: -0.68px;
   font-weight: 700;
   color: black;
+}
+
+.room-header {
+  font-size: 22px;
+  line-height: 25.2px;
+  letter-spacing: 0.009em;
+  margin: 0;
+  padding: 8px 24px;
+  font-weight: 700;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 24px;
+  position: relative;
 }
 
 .close-button {
@@ -117,12 +151,24 @@ export default {
 .modal-body {
   max-height: calc(80vh - 100px);
   overflow-y: auto;
-  border-radius: 30px;
+}
+
+.room-group {
+  margin-bottom: 24px;
+}
+
+.room-group:last-child {
+  margin-bottom: 0;
+}
+
+.room-notifications {
   border: 1px solid hsl(210, 0%, 80%);
+  border-radius: 30px;
+  overflow: hidden;
 }
 
 .notification-item {
-  border-bottom: 1px solid hsl(210, 0%, 80%);
+  border-bottom: 1px solid hsl(210, 0%, 90%);
   color: black;
   font-size: 18px;
   line-height: 25.2px;
@@ -130,9 +176,11 @@ export default {
   margin: 0;
   padding: 12px 24px;
 }
+
 .notification-item:last-child {
- border-bottom: none;
+  border-bottom: none;
 }
+
 .notification-header {
   display: flex;
   justify-content: space-between;

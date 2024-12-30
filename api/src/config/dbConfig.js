@@ -23,7 +23,8 @@ const config = {
   database: process.env.DB_DATABASE,
   options: {
     encrypt: true, // Use encryption
-    enableArithAbort: true
+    enableArithAbort: true,
+    trustServerCertificate: true
   },
   pool: {
     max: 10,
