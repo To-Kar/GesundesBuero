@@ -191,7 +191,7 @@ import { roomApi } from "../services/roomService";
 import { sensorApi } from '../services/sensorService';
 import { msalInstance } from "../authConfig";
 import * as echarts from 'echarts';
-import { initGaugeChart, getDynamicColor } from '../utils/gaugeUtils';
+import { initCo2Gauge, initGaugeChart, getDynamicColor } from '../utils/gaugeUtils';
 
 
 
@@ -199,33 +199,14 @@ import { initGaugeChart, getDynamicColor } from '../utils/gaugeUtils';
 export default {
   props: {
 
+    room: {
+      type: Object,
+      required: true,
+      default: () => ({})
+    },
     isAdding: {
     type: Boolean,
     default: false,
-    },
-    image: {
-      type: String,
-      required: true
-    },
-    name: {
-      type: String,
-      default: "Büroraum",
-    },
-    roomId: {
-      type: String,
-      required: true,
-    },
-    temperature: {
-      type: Number,
-      required: true,
-    },
-    humidity: {
-      type: Number,
-      required: true,
-    },
-    co2: {
-      type: Number,
-      required: true,
     },
     temperatureOffset: {
     type: Number,
@@ -234,10 +215,6 @@ export default {
     humidityOffset: {
       type: Number,
       default: 5
-    },
-    is_connected: {
-      type: Boolean,
-      default: false
     }
 
   },
@@ -289,6 +266,27 @@ export default {
         return displayName.toLowerCase().includes(adminIdentifier);
       }
       return false;
+    },
+    image() {
+      return this.room.image || "";
+    },
+    name() {
+      return this.room.name || "Büroraum";
+    },
+    roomId() {
+      return this.room.number || "";
+    },
+    temperature() {
+      return this.room.temperature || 0;
+    },
+    humidity() {
+      return this.room.humidity || 0;
+    },
+    co2() {
+      return this.room.co2 || "N/A";
+    },
+    is_connected() {
+      return this.room.is_connected || false;
     },
 
   },
@@ -519,38 +517,50 @@ export default {
 
 
     initGauges() {
-    this.$nextTick(() => {
-      const offsets = {
-        temperatureGauge: this.temperatureOffset,
-        humidityGauge: this.humidityOffset
-      };
+  this.$nextTick(() => {
+    const offsets = {
+      temperatureGauge: this.temperatureOffset,
+      humidityGauge: this.humidityOffset
+    };
 
-      initGaugeChart(
-        this.$refs,
-        this.gaugeInstances,
-        'temperatureGauge',
-        this.temperature,
-        this.targetTemperature,
-        10, 30,
-        '°C',
-        getDynamicColor,
-        offsets
-      );
+    initGaugeChart(
+      this.$refs,
+      this.gaugeInstances,
+      'temperatureGauge',
+      this.temperature,
+      this.targetTemperature,
+      10, 30,
+      '°C',
+      getDynamicColor,
+      offsets
+    );
 
-      initGaugeChart(
-        this.$refs,
-        this.gaugeInstances,
-        'humidityGauge',
-        this.humidity,
-        this.targetHumidity,
-        0, 100,
-        '%',
-        getDynamicColor,
-        offsets
-      );
+    initGaugeChart(
+      this.$refs,
+      this.gaugeInstances,
+      'humidityGauge',
+      this.humidity,
+      this.targetHumidity,
+      0, 100,
+      '%',
+      getDynamicColor,
+      offsets
+    );
+
+    // CO2 Gauge initialisieren
+    const updateCo2Gauge = initCo2Gauge(
+      this.$refs,
+      this.gaugeInstances,
+      this.co2,
+      this.getCo2GaugeColor
+    );
+
+    // Reaktive Aktualisierung für co2
+    this.$watch('co2', (newValue) => {
+      updateCo2Gauge(newValue);
     });
-    this.initCo2Gauge();
-  },
+  });
+},
 
   // Dispose-Methode, um alte Gauges zu zerstören
   disposeGauges() {
@@ -577,7 +587,7 @@ export default {
   if (chart) {
     console.log(`Aktualisiere ${refName} mit Wert: ${value}`);
     
-    const dynamicColor = this.getDynamicColor(value, targetValue, refName === 'temperatureGauge' ? this.temperatureOffset : this.humidityOffset);
+    const dynamicColor = getDynamicColor(value, targetValue, refName === 'temperatureGauge' ? this.temperatureOffset : this.humidityOffset);
 
     chart.setOption({
       series: [
@@ -599,156 +609,7 @@ export default {
 
 
 
-  getGaugeColor(refName) {
-  if (refName === 'temperatureGauge') {
-    return {
-      type: 'linear',
-      x: 0.3,
-      y: 0.7,
-      x2: 1,
-      y2: 1.4,
-      colorStops: [
-        { offset: 0, color: 'rgb(173, 216, 230)' },  // Blau (Kalt)
-        { offset: 0.1, color: 'rgb(152, 251, 152)' }, // Grün (Neutral)
-        { offset: 0.4, color: 'rgb(255, 239, 130)' }, // Gelb (Warm)
-        { offset: 0.5, color: 'rgb(255, 180, 130)' }, // Orange (Heiß)
-        { offset: 1, color: 'rgb(230, 97, 76)' }      // Rot (Sehr heiß)
-      ]
-    };
-  } else if (refName === 'humidityGauge') {
-    return {
-      type: 'linear',
-      x: 0,
-      y: 0,
-      x2: 1,
-      y2: 0,
-      colorStops: [
-        { offset: 0, color: 'rgb(192, 230, 255)' },  // Hellblau (Trocken)
-        { offset: 0.5, color: 'rgb(100, 200, 255)' }, // Blau (Optimal)
-        { offset: 1, color: 'rgb(0, 100, 200)' }      // Dunkelblau (Sehr Feucht)
-      ]
-    };
-  }
-  return 'rgb(224, 224, 224)';  // Fallback-Grau
-},
-getDynamicColor(value, target, offset) {
-  const lowerThreshold = target - offset;
-  const upperThreshold = target + offset;
-  console.log('Wert Offset:', offset);
 
-
-  if (value < lowerThreshold) {
-    // Farbverlauf für kälter als Zielwert (Blau -> Grün)
-    return {
-      type: 'linear',
-      x: 0,
-      y: 0,
-      x2: 1,
-      y2: 0,
-      colorStops: [
-        { offset: 0, color: 'rgb(0, 102, 255)' },  // Dunkelblau
-        { offset: 1, color: 'rgb(173, 216, 230)' } // Hellblau
-      ]
-    };
-  }
-  
-  if (value > upperThreshold) {
-    // Farbverlauf für wärmer als Zielwert (Gelb -> Rot)
-    return {
-      type: 'linear',
-      x: 0,
-      y: 0,
-      x2: 1,
-      y2: 0,
-      colorStops: [
-        { offset: 0, color: 'rgb(255, 180, 130)' },  // Orange
-        { offset: 1, color: 'rgb(230, 97, 76)' }     // Rot
-      ]
-    };
-  }
-
-  // Grün für innerhalb des Zielbereichs (statisch oder leicht verlaufend)
-  return {
-    type: 'linear',
-    x: 0,
-    y: 0,
-    x2: 1,
-    y2: 0,
-    colorStops: [
-      { offset: 0, color: 'rgb(76, 175, 80)' },  // Dunkelgrün
-      { offset: 1, color: 'rgb(152, 251, 152)' } // Hellgrün
-    ]
-  };
-},
-initCo2Gauge() {
-  const gaugeElement = this.$refs.co2Gauge;
-  if (!gaugeElement) return;
-
-  const chart = echarts.init(gaugeElement);
-
-  const option = {
-    series: [
-      {
-        name: 'CO₂-Wert',
-        type: 'gauge',
-        startAngle: 220,
-        endAngle: -40,
-        min: 0,
-        max: 2000,
-        radius: '90%',
-        center: ['50%', '60%'],
-        axisLine: {
-          roundCap: true,
-          lineStyle: {
-            width: 16,
-            color: this.getCo2GaugeColor(this.co2)
-          }
-        },
-        pointer: {
-          length: '100%',
-          width: 6,
-          itemStyle: {
-            color: '#666',   // Nadel bleibt dunkelgrau
-            shadowBlur: 10,
-            shadowColor: 'rgba(0, 0, 0, 0.2)'
-          }
-        },
-        progress: { show: false },
-        axisTick: { show: false },
-        splitLine: { show: false },
-        axisLabel: { show: false },
-        detail: {
-          show: false,
-          formatter: '{value} ppm',
-          fontSize: 22,
-          offsetCenter: [0, '60%'],
-          color: '#333',
-          fontWeight: 'bold'
-        },
-        data: [{ value: this.co2 || 0 }]
-      }
-    ]
-  };
-
-  chart.setOption(option);
-  this.gaugeInstances['co2Gauge'] = chart;
-
-  // Aktualisiere Nadel und Linienfarbe bei Datenänderung
-  this.$watch('co2', (newValue) => {
-    chart.setOption({
-      series: [
-        {
-          axisLine: {
-            lineStyle: {
-              color: this.getCo2GaugeColor(newValue)  // Nur Linie färben
-            }
-          },
-          data: [{ value: newValue || 0 }]
-        }
-      ]
-    });
-  });
-},
 
 getCo2GaugeColor(value) {
   console.log('außerhalb',value)

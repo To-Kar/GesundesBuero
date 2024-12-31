@@ -91,41 +91,77 @@ export function initGaugeChart(refs, gaugeInstances, refName, value, targetValue
 }
 
 
-
-
+export function initCo2Gauge(refs, gaugeInstances, co2, getCo2GaugeColor) {
+    const gaugeElement = refs.co2Gauge;
+    if (!gaugeElement) return;
   
-  export function getGaugeColor(refName) {
-    if (refName === 'temperatureGauge') {
-      return {
-        type: 'linear',
-        x: 0.3,
-        y: 0.7,
-        x2: 1,
-        y2: 1.4,
-        colorStops: [
-          { offset: 0, color: 'rgb(173, 216, 230)' },  // Blau (Kalt)
-          { offset: 0.1, color: 'rgb(152, 251, 152)' }, // Grün (Neutral)
-          { offset: 0.4, color: 'rgb(255, 239, 130)' }, // Gelb (Warm)
-          { offset: 0.5, color: 'rgb(255, 180, 130)' }, // Orange (Heiß)
-          { offset: 1, color: 'rgb(230, 97, 76)' }      // Rot (Sehr heiß)
+    const chart = echarts.init(gaugeElement);
+  
+    const option = {
+      series: [
+        {
+          name: 'CO₂-Wert',
+          type: 'gauge',
+          startAngle: 220,
+          endAngle: -40,
+          min: 0,
+          max: 2000,
+          radius: '90%',
+          center: ['50%', '60%'],
+          axisLine: {
+            roundCap: true,
+            lineStyle: {
+              width: 16,
+              color: getCo2GaugeColor(co2)
+            }
+          },
+          pointer: {
+            length: '100%',
+            width: 6,
+            itemStyle: {
+              color: '#666',
+              shadowBlur: 10,
+              shadowColor: 'rgba(0, 0, 0, 0.2)'
+            }
+          },
+          progress: { show: false },
+          axisTick: { show: false },
+          splitLine: { show: false },
+          axisLabel: { show: false },
+          detail: {
+            show: false,
+            formatter: '{value} ppm',
+            fontSize: 22,
+            offsetCenter: [0, '60%'],
+            color: '#333',
+            fontWeight: 'bold'
+          },
+          data: [{ value: co2 || 0 }]
+        }
+      ]
+    };
+  
+    chart.setOption(option);
+    gaugeInstances['co2Gauge'] = chart;
+  
+    // Aktualisieren der Linie bei Änderungen von co2
+    return (newValue) => {
+      chart.setOption({
+        series: [
+          {
+            axisLine: {
+              lineStyle: {
+                color: getCo2GaugeColor(newValue)
+              }
+            },
+            data: [{ value: newValue || 0 }]
+          }
         ]
-      };
-    } else if (refName === 'humidityGauge') {
-      return {
-        type: 'linear',
-        x: 0,
-        y: 0,
-        x2: 1,
-        y2: 0,
-        colorStops: [
-          { offset: 0, color: 'rgb(192, 230, 255)' },  // Hellblau (Trocken)
-          { offset: 0.5, color: 'rgb(100, 200, 255)' }, // Blau (Optimal)
-          { offset: 1, color: 'rgb(0, 100, 200)' }      // Dunkelblau (Sehr Feucht)
-        ]
-      };
-    }
-    return 'rgb(224, 224, 224)';  // Fallback-Grau
+      });
+    };
   }
+
+
 
 
  export function getDynamicColor(value, target, offset) {

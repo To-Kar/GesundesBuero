@@ -162,14 +162,7 @@ export default {
         this.rooms = await roomApi.getAllRoomsWithSensorData();
         console.log("Sensordaten erfolgreich aktualisiert");
 
-        if (this.showDetail && this.roomId) {
-          const updatedRoom = this.rooms.find(r => r.number === this.roomId);
-          if (updatedRoom) {
-            this.temperature = updatedRoom.temperature;
-            this.humidity = updatedRoom.humidity;
-            this.co2 = updatedRoom.co2;
-          }
-        }
+        
         this.$forceUpdate();
       } catch (error) {
         console.error("Fehler beim Laden der Sensordaten:", error.message);
@@ -218,18 +211,12 @@ export default {
   <div class="room-detail-view">
       <RoomDetail
         v-if="showDetail"
-        :image="image"
-        :name="name"
-        :roomId="roomId"
-        :temperature="temperature"
-        :humidity="humidity"
-        :co2="co2"
+        :room="rooms.find(r => r.number === roomId)"
 
         :temperatureOffset="temperatureOffset" 
         :humidityOffset="humidityOffset"
 
         :isAdding="isAdding"
-        :is_connected="is_connected"
 
         @close="showDetail = false"
 

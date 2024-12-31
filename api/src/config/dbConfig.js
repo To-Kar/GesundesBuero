@@ -2,22 +2,15 @@ const sql = require('mssql');
 require('dotenv').config();
 
 const config = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  server: process.env.DB_SERVER,
-  database: process.env.DB_DATABASE,
+  user: 'sa',
+  password: 'password',
+  server: 'localhost',  // Oder IP-Adresse des Servers
+  database: 'GesundesBuero',
   options: {
-    encrypt: true, 
-    enableArithAbort: true,
-    trustServerCertificate: true
+    encrypt: true,  // Verschlüsselung für Azure SQL, bei lokalem SQL auf false setzen
+    trustServerCertificate: true  // Erforderlich für self-signed certificates
   },
-  pool: {
-    max: 10,
-    min: 0,
-    idleTimeoutMillis: 30000
-  },
-  connectionTimeout: 30000, 
-  requestTimeout: 30000 
+  port: 1433
 };
 
 module.exports = config;
