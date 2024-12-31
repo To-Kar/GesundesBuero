@@ -282,4 +282,38 @@ export function initCo2Gauge(refs, gaugeInstances, co2, getCo2GaugeColor) {
       }
     });
   }
+
+
+  export function updateGaugeChart(gaugeInstances, refName, value, targetValue, temperatureOffset, humidityOffset) {
+    const chart = gaugeInstances[refName];
+  
+    if (!chart) {
+      console.error(`Gauge ${refName} nicht gefunden.`);
+      return;
+    }
+  
+    console.log(`Aktualisiere ${refName} mit Wert: ${value}`);
+  
+    const dynamicColor = getDynamicColor(
+      value,
+      targetValue,
+      refName === 'temperatureGauge' ? temperatureOffset : humidityOffset
+    );
+  
+    chart.setOption({
+      series: [
+        {
+          data: [{ value: value }],
+          progress: {
+            itemStyle: {
+              color: dynamicColor
+            }
+          }
+        },
+        {
+          data: [{ value: targetValue }]
+        }
+      ]
+    });
+  }
   

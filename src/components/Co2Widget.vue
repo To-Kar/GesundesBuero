@@ -1,37 +1,34 @@
 <template>
-    <div class="widget">
-      <h2 class="widget-title">CO₂-Gehalt</h2>
-      <div class="gauge-container">
-        <!-- Ganz wichtig: ref="co2Gauge" damit der Parent später initCo2Gauge() aufrufen kann. -->
-        <div ref="co2Gauge" class="gauge"></div>
-      </div>
-      <div class="control-co2-overlay">
-        <!-- Zeigt den aktuellen CO2-Wert an (oder 'N/A') -->
-        <h3 class="widget-value">{{ co2Display }}</h3>
-      </div>
+  <div class="widget">
+    <h2 class="widget-title">CO₂-Gehalt</h2>
+    <div class="gauge-container">
+      <div ref="co2Gauge" class="gauge"></div>
     </div>
-  </template>
-  
-  <script>
-  import { initCo2Gauge, getCo2GaugeColor } from '../utils/gaugeUtils';
+    <div class="control-co2-overlay">
+      <h3 class="widget-value">{{ co2Display }}</h3>
+    </div>
+  </div>
+</template>
 
-  export default {
-    name: 'Co2Widget',
-    props: {
-      /** Aktueller CO2-Wert (ppm) **/
-      co2: {
-        type: Number,
-        default: 0
-      },
-      maxValue: {
-        type: Number,
-        default: 2000
-        }
+<script>
+import { initCo2Gauge, getCo2GaugeColor } from '../utils/gaugeUtils';
+
+export default {
+  name: 'Co2Widget',
+  props: {
+    co2: {
+      type: Number,
+      default: 0
     },
-    data() {
+    maxValue: {
+      type: Number,
+      default: 2000
+    }
+  },
+  data() {
     return {
       gaugeInstance: null,
-      updateFn: null // Falls du die Rückgabe von initCo2Gauge speichern möchtest
+      updateFn: null
     };
   },
   computed: {
@@ -50,7 +47,6 @@
   methods: {
     initGauge() {
       this.$nextTick(() => {
-        // initCo2Gauge gibt oft eine update-Funktion zurück
         this.updateFn = initCo2Gauge(
           this.$refs,
           { co2Gauge: this.gaugeInstance },
@@ -60,25 +56,83 @@
       });
     },
     updateGauge(newVal) {
-      // Nur wenn initCo2Gauge() erfolgreich war:
       if (this.updateFn) {
         this.updateFn(newVal);
       }
     }
   }
 };
-  </script>
-  
-  <style scoped>
+</script>
 
-  
-  .control-co2-overlay {
-    position: absolute;
-    bottom: 14px;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    z-index: 2;
-  }
-  </style>
-  
+<style scoped>
+.widget-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 60px;
+  padding: 75px;
+  padding-top: 37px;
+  box-sizing: border-box;
+}
+
+.widget {
+  background-color: #f9f9f9;
+  border-radius: 25px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 340px;
+  height: 340px;
+  text-align: center;
+  border: 1px solid #ddd;
+  position: relative;
+}
+
+.widget-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0px;
+}
+
+.widget-value {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+}
+
+.control-overlay {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 2;
+}
+
+.control-co2-overlay {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 2;
+}
+
+.gauge-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 250px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.gauge {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+}
+</style>

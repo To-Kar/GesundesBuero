@@ -19,8 +19,8 @@ export default {
       required: true,
     },
     co2: {
-        type: [Number, String],
-        required: true,
+      type: [Number, String],
+      required: true,
     },
     number: {
       type: [Number, String],
@@ -55,12 +55,12 @@ export default {
       required: true,
     },
     sensor_id: {
-    type: String,  // Sensor-ID kann eine Zahl oder String sein
-    default: null  // Standardwert null
+      type: String,  // Sensor-ID kann eine Zahl oder String sein
+      default: null  // Standardwert null
     },
   },
   computed: {
-    
+
     // Farbe basierend auf der Temperatur
     temperatureColor() {
       const lowerThreshold = this.targetTemperature - this.temperatureOffset;
@@ -85,7 +85,7 @@ export default {
       console.log('Room component is_connected type:', typeof this.is_connected);
       return {
         'room-card': true,
-        'disconnected': !this.is_connected 
+        'disconnected': !this.is_connected
       };
     },
     connectionMessage() {
@@ -97,7 +97,7 @@ export default {
       }
       return "";
     },
-      
+
   },
 
   methods: {
@@ -114,7 +114,7 @@ export default {
       return "Hoch";  // Alarm bei hohen CO₂-Werten
     }
   }
-  
+
 };
 </script>
 
@@ -128,7 +128,7 @@ export default {
     <div class="room-layout">
       <div class="room-image-container" :class="{ 'disconnected': !is_connected }">
         <img :src="image" alt="Raum Layout" class="room-image" />
-        
+
         <!-- Overlay nur anzeigen, wenn is_connected false ist -->
         <div v-if="!is_connected" class="overlay-image"></div>
       </div>
@@ -151,16 +151,17 @@ export default {
 
 
 <style scoped>
-*{
+* {
   font-family: 'BDOGrotesk', system-ui, sans-serif;
 }
 
 /* Hauptcontainer */
-.room-container{
+.room-container {
   display: flex;
   justify-content: center;
   width: 100%;
 }
+
 .room-card {
   background-color: #f5f5f5;
   border-radius: 8px;
@@ -180,6 +181,7 @@ export default {
   font-weight: 700;
   text-align: left;
 }
+
 @media screen and (max-width: 768px) {
   .room-title {
     font-size: 18px;
@@ -193,7 +195,7 @@ export default {
   position: relative;
   width: 100%;
   padding-top: 56.25%;
-} 
+}
 
 
 /* Raum-Bild */
@@ -211,14 +213,19 @@ export default {
   opacity: 1;
   position: absolute;
   top: 0px;
-  left: 0;  /* Overlay startet korrekt bei der linken Ecke */
+  left: 0;
+  /* Overlay startet korrekt bei der linken Ecke */
   width: 100%;
   height: 100%;
-  background-image: url('https://www.pngitem.com/pimgs/m/379-3794039_no-internet-connection-sketch-brand-graphic-design-no.png');  
-  background-size: contain;  /* Bildgröße wird angepasst, um das gesamte Element zu füllen */
-  background-position: center;  /* Bild wird zentriert */
-  background-repeat: no-repeat; /* Verhindert Wiederholung des Bildes */
-  background-color: rgb(247, 247, 247);  /* Leichtes dunkles Overlay */
+  background-image: url('https://www.pngitem.com/pimgs/m/379-3794039_no-internet-connection-sketch-brand-graphic-design-no.png');
+  background-size: contain;
+  /* Bildgröße wird angepasst, um das gesamte Element zu füllen */
+  background-position: center;
+  /* Bild wird zentriert */
+  background-repeat: no-repeat;
+  /* Verhindert Wiederholung des Bildes */
+  background-color: rgb(247, 247, 247);
+  /* Leichtes dunkles Overlay */
   pointer-events: none;
 
 }
@@ -239,12 +246,14 @@ export default {
 .humidity {
   padding: 0.5rem;
   border-radius: 4px;
-  color: white; /* Textfarbe immer weiß */
+  color: white;
+  /* Textfarbe immer weiß */
   text-align: center;
   font-weight: bold;
   min-width: 60px;
   max-width: 100px;
-  font-size: calc(0.5rem + 1vw); /* Dynamische Schriftgröße */
+  font-size: calc(0.5rem + 1vw);
+  /* Dynamische Schriftgröße */
 }
 
 
@@ -256,17 +265,20 @@ export default {
   padding: 4px 9px;
   top: 62%;
   left: 50%;
-  transform: translate(-50%, -50%); 
-  color: rgb(255, 255, 255); 
-  font-size: 11px;  
+  transform: translate(-50%, -50%);
+  color: rgb(255, 255, 255);
+  font-size: 11px;
   z-index: 1;
   text-align: center;
-  white-space: nowrap;  /* Verhindert Zeilenumbrüche */
+  white-space: nowrap;
+  /* Verhindert Zeilenumbrüche */
 }
 
 .disconnected-image {
-  filter: grayscale(100%) blur(1.5px); /* Graustufen und Unschärfe */
-  transition: filter 0.3s ease, opacity 0.3s ease; /* Sanfter Übergang */
+  filter: grayscale(100%) blur(1.5px);
+  /* Graustufen und Unschärfe */
+  transition: filter 0.3s ease, opacity 0.3s ease;
+  /* Sanfter Übergang */
 }
 
 .disconnected-title {
@@ -276,13 +288,13 @@ export default {
 }
 
 .co2-status {
-    padding: 0.5rem;
-    border-radius: 4px;
-    color: white;
-    text-align: center;
-    font-weight: bold;
-    min-width: 60px;
-    max-width: 100px;
-    font-size: calc(0.5rem + 1vw);
+  padding: 0.5rem;
+  border-radius: 4px;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  min-width: 60px;
+  max-width: 100px;
+  font-size: calc(0.5rem + 1vw);
 }
 </style>

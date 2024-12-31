@@ -151,6 +151,17 @@ export const roomApi = {
             console.error(`Fehler beim Löschen von Raum ${roomId}:`, error);
             throw error;
         }
-    },
+    },  
     
+    async updateTarget(roomId, type, value) {
+        try {
+          const settings = { [type]: value };
+          await roomApi.updateRoomSettings(roomId, settings);
+        } catch (error) {
+          console.error(`Fehler beim Speichern des Sollwerts für ${type}:`, error);
+          throw error;  // Fehler weiterwerfen, damit die Komponente darauf reagieren kann
+        }
+      },
 };
+
+
