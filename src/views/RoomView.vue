@@ -1,7 +1,7 @@
 <script>
 import Room from "../components/Room.vue";
 import RoomDetail from "../components/RoomDetail.vue";
-import { roomApi } from "../services/roomService";
+import { roomService } from "../services/roomService";
 import { settingsService } from "../services/settingsService";
 import { eventBus } from '../plugins/eventBus';
 
@@ -38,7 +38,7 @@ export default {
 
     try {
       // Räume und zugehörige Sensordaten abrufen
-      const { rooms, offsets } = await roomApi.getRoomsAndOffsets();
+      const { rooms, offsets } = await roomService.getRoomsAndOffsets();
       this.rooms = rooms;
       this.temperatureOffset = offsets.temperature_offset;
       this.humidityOffset = offsets.humidity_offset;
@@ -78,7 +78,7 @@ export default {
   async refreshRooms() {
     
     try {
-      this.rooms = await roomApi.getAllRoomsWithSensorData();
+      this.rooms = await roomService.getAllRoomsWithSensorData();
 
       // Wenn Detailfenster noch offen ist, aktualisieren wir die Props
       if (this.showDetail && this.roomId) {
@@ -159,7 +159,7 @@ export default {
     // Sensordaten aus der API abrufen
     async fetchSensorData() {
       try {
-        this.rooms = await roomApi.getAllRoomsWithSensorData();
+        this.rooms = await roomService.getAllRoomsWithSensorData();
         console.log("Sensordaten erfolgreich aktualisiert");
 
         

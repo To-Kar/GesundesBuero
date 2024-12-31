@@ -1,7 +1,7 @@
 <script>
 import { eventBus } from '../plugins/eventBus';
 import { settingsService } from '../services/settingsService';
-import { sensorApi } from '../services/sensorService';
+import { sensorService } from '../services/sensorService';
 export default {
   name: 'Settings',
   data() {
@@ -93,7 +93,7 @@ export default {
         return;
       }
       try {
-        await sensorApi.updateSensorIp(sensor);
+        await sensorService.updateSensorIp(sensor);
 
         this.showSaveNotification = true;
         setTimeout(() => {

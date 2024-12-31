@@ -60,8 +60,8 @@
 </template>
 
 <script>
-import { roomApi } from "../services/roomService";
-import { sensorApi } from '../services/sensorService';
+import { roomService } from "../services/roomService";
+import { sensorService } from '../services/sensorService';
 import { msalInstance } from "../authConfig";
 import { updateGaugeChart, disposeGauges, initGaugeChart, getDynamicColor } from '../utils/gaugeUtils';
 import RoomEdit from './RoomEdit.vue';
@@ -164,7 +164,7 @@ export default {
   methods: {
     async fetchRoomDetails() {
       try {
-        const room = await roomApi.getRoomById(this.roomId);
+        const room = await roomService.getRoomById(this.roomId);
         this.targetTemperature = room.target_temperature;
         this.targetHumidity = room.target_humidity;
         this.currentSensorId = room.sensor_id;
@@ -187,7 +187,7 @@ export default {
       }
       this.debounceTimeoutTemp = setTimeout(async () => {
         try {
-          await roomApi.updateTarget(this.roomId, "target_temp", this.targetTemperature);
+          await roomService.updateTarget(this.roomId, "target_temp", this.targetTemperature);
         } catch (error) {
           console.error("Fehler beim Speichern der Zieltemperatur:", error);
         } finally {
@@ -207,7 +207,7 @@ export default {
       }
       this.debounceTimeoutHumidity = setTimeout(async () => {
         try {
-          await roomApi.updateTarget(this.roomId, "target_humidity", this.targetHumidity);
+          await roomService.updateTarget(this.roomId, "target_humidity", this.targetHumidity);
         } catch (error) {
           console.error("Fehler beim Speichern der Ziel-Luftfeuchtigkeit:", error);
         } finally {
@@ -263,12 +263,12 @@ export default {
         };
         if (this.isAdding) {
           // Raum hinzufügen (POST)
-          await roomApi.createRoom(payload);
+          await roomService.createRoom(payload);
           console.log("Raum erfolgreich hinzugefügt.");
           this.goBack();
         } else {
           // Raum aktualisieren (PATCH)
-          await roomApi.updateRoom(this.roomId, payload);
+          await roomService.updateRoom(this.roomId, payload);
           console.log("Raum erfolgreich aktualisiert.");
           this.cancelEdit();
           this.fetchRoomDetails();
@@ -321,7 +321,7 @@ export default {
     },
     async fetchAvailableSensors() {
       try {
-        this.availableSensors = await sensorApi.getAvailableSensors();
+        this.availableSensors = await sensorService.getAvailableSensors();
         console.log('Verfügbare Sensoren:', this.availableSensors);
       } catch (error) {
         console.error('Fehler beim Abrufen der Sensor-Daten:', error);
@@ -342,7 +342,7 @@ export default {
     },
     async confirmDelete() {
       try {
-        await roomApi.deleteRoom(this.roomId);
+        await roomService.deleteRoom(this.roomId);
         this.$emit("room-deleted", this.roomId); // Event an Parent senden
         this.closeDeleteModal(); // Modal schließen
         this.goBack(); // Zurück zur Hauptansicht

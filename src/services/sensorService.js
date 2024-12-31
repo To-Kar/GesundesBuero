@@ -1,4 +1,4 @@
-// sensorApi.js
+// sensorService.js
 
 import { apiClient } from './apiClient';
 
@@ -32,7 +32,7 @@ const transformSensorData = (data) => {
 };
 
 // Sensor API Service
-export const sensorApi = {
+export const sensorService = {
     // Aktuelle Sensordaten für einen Raum abrufen
     async getLatestSensorData(roomId) {
         try {
