@@ -1,7 +1,7 @@
-// roomApi.js
+// roomService.js
 
 import { apiClient } from './apiClient';
-import { sensorApi } from './sensorService';
+import { sensorService } from './sensorService';
 
 // Funktion zur Berechnung des Status basierend auf aktuellen und Zielwerten
 const calculateStatus = (current, target, isHumidity = false) => {
@@ -30,7 +30,7 @@ const transformRoomData = (roomData) => ({
 });
 
 // Room API Service
-export const roomApi = {
+export const roomService = {
     // Räume und Offsets abrufen
     async getRoomsAndOffsets() {
         try {
@@ -43,7 +43,7 @@ export const roomApi = {
 
             // Merging is_connected from sensor data
             for (const room of rooms) {
-                const sensorData = await sensorApi.getLatestSensorData(room.room_id);
+                const sensorData = await sensorService.getLatestSensorData(room.room_id);
             }
 
             return { rooms, offsets };
@@ -72,7 +72,7 @@ export const roomApi = {
             let sensorDataArray = [];
             
             try {
-                sensorDataArray = await sensorApi.getAllLatestSensorData();
+                sensorDataArray = await sensorService.getAllLatestSensorData();
             } catch (error) {
                 console.warn('Keine Sensordaten verfügbar:', error);
             }
@@ -151,6 +151,17 @@ export const roomApi = {
             console.error(`Fehler beim Löschen von Raum ${roomId}:`, error);
             throw error;
         }
-    },
+    },  
     
+    async updateTarget(roomId, type, value) {
+        try {
+          const settings = { [type]: value };
+          await roomService.updateRoomSettings(roomId, settings);
+        } catch (error) {
+          console.error(`Fehler beim Speichern des Sollwerts für ${type}:`, error);
+          throw error;  // Fehler weiterwerfen, damit die Komponente darauf reagieren kann
+        }
+      },
 };
+
+
