@@ -74,7 +74,7 @@ export function initGaugeChart(refs, gaugeInstances, refName, value, targetValue
           width: 7,
           roundCap: true,
           itemStyle: {
-            color: getDynamicColor(targetValue, targetValue, offsets[refName])
+            color: getGaugeColor(refName)
           }
         },
         axisTick: { show: false },
@@ -161,8 +161,34 @@ export function initCo2Gauge(refs, gaugeInstances, co2, getCo2GaugeColor) {
     };
   }
 
-
-
+  
+  export function getCo2GaugeColor(value) {
+    console.log('außerhalb',value)
+    if (value === null || value === undefined || value === 'N/A') {
+      console.log(value)
+      return [
+        [1, '#ddd']  // Die gesamte Linie wird grau (ohne Verlauf)
+      ];
+    }
+    return [
+      [1, {
+        type: 'linear',
+        x: 0,
+        y: 0,
+        x2: 1,
+        y2: 0,
+        colorStops: [
+          { offset: 0, color: 'rgb(0, 204, 102)' },  
+          { offset: 0.2, color: 'rgb(102, 255, 102)' }, 
+          { offset: 0.35, color: 'rgb(255, 239, 130)' },  
+          { offset: 0.5, color: 'rgb(255, 215, 0)' },  
+          { offset: 0.65, color: 'rgb(255, 165, 0)' },  
+          { offset: 0.85, color: 'rgb(255, 99, 71)' },  
+          { offset: 1, color: 'rgb(205, 92, 92)' }
+        ]
+      }]
+    ];
+  }
 
  export function getDynamicColor(value, target, offset) {
     const lowerThreshold = target - offset;
@@ -213,3 +239,47 @@ export function initCo2Gauge(refs, gaugeInstances, co2, getCo2GaugeColor) {
       ]
     };
   }
+
+  export function getGaugeColor(refName) {
+    if (refName === 'temperatureGauge') {
+      return {
+        type: 'linear',
+        x: 0.3,
+        y: 0.7,
+        x2: 1,
+        y2: 1.4,
+        colorStops: [
+          { offset: 0, color: 'rgb(173, 216, 230)' },
+          { offset: 0.1, color: 'rgb(152, 251, 152)' },
+          { offset: 0.4, color: 'rgb(255, 239, 130)' },
+          { offset: 0.5, color: 'rgb(255, 180, 130)' },
+          { offset: 1, color: 'rgb(230, 97, 76)' }
+        ]
+      };
+    } else if (refName === 'humidityGauge') {
+      return {
+        type: 'linear',
+        x: 0,
+        y: 0,
+        x2: 1,
+        y2: 0,
+        colorStops: [
+          { offset: 0, color: 'rgb(192, 230, 255)' },
+          { offset: 0.5, color: 'rgb(100, 200, 255)' },
+          { offset: 1, color: 'rgb(0, 100, 200)' }
+        ]
+      };
+    }
+    return 'rgb(224, 224, 224)';
+  }
+
+
+  export function disposeGauges(gaugeInstances) {
+    Object.keys(gaugeInstances).forEach((key) => {
+      if (gaugeInstances[key]) {
+        gaugeInstances[key].dispose();
+        delete gaugeInstances[key];
+      }
+    });
+  }
+  

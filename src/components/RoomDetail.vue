@@ -190,8 +190,7 @@
 import { roomApi } from "../services/roomService";
 import { sensorApi } from '../services/sensorService';
 import { msalInstance } from "../authConfig";
-import * as echarts from 'echarts';
-import { initCo2Gauge, initGaugeChart, getDynamicColor } from '../utils/gaugeUtils';
+import { getCo2GaugeColor, disposeGauges, initCo2Gauge, initGaugeChart, getDynamicColor } from '../utils/gaugeUtils';
 
 
 
@@ -517,61 +516,50 @@ export default {
 
 
     initGauges() {
-  this.$nextTick(() => {
-    const offsets = {
-      temperatureGauge: this.temperatureOffset,
-      humidityGauge: this.humidityOffset
-    };
+      this.$nextTick(() => {
+        const offsets = {
+          temperatureGauge: this.temperatureOffset,
+          humidityGauge: this.humidityOffset
+      };
 
-    initGaugeChart(
-      this.$refs,
-      this.gaugeInstances,
-      'temperatureGauge',
-      this.temperature,
-      this.targetTemperature,
-      10, 30,
-      '°C',
-      getDynamicColor,
-      offsets
-    );
+      initGaugeChart(
+        this.$refs,
+        this.gaugeInstances,
+        'temperatureGauge',
+        this.temperature,
+        this.targetTemperature,
+        10, 30,
+        '°C',
+        getDynamicColor,
+        offsets
+      );
 
-    initGaugeChart(
-      this.$refs,
-      this.gaugeInstances,
-      'humidityGauge',
-      this.humidity,
-      this.targetHumidity,
-      0, 100,
-      '%',
-      getDynamicColor,
-      offsets
-    );
+      initGaugeChart(
+        this.$refs,
+        this.gaugeInstances,
+        'humidityGauge',
+        this.humidity,
+        this.targetHumidity,
+        0, 100,
+        '%',
+        getDynamicColor,
+        offsets
+      );
 
-    // CO2 Gauge initialisieren
-    const updateCo2Gauge = initCo2Gauge(
-      this.$refs,
-      this.gaugeInstances,
-      this.co2,
-      this.getCo2GaugeColor
-    );
+      // CO2 Gauge initialisieren
+      const updateCo2Gauge = initCo2Gauge(
+        this.$refs,
+        this.gaugeInstances,
+        this.co2,
+        getCo2GaugeColor
+      );
 
-    // Reaktive Aktualisierung für co2
-    this.$watch('co2', (newValue) => {
-      updateCo2Gauge(newValue);
+      // Reaktive Aktualisierung für co2
+      this.$watch('co2', (newValue) => {
+        updateCo2Gauge(newValue);
+      });
     });
-  });
-},
-
-  // Dispose-Methode, um alte Gauges zu zerstören
-  disposeGauges() {
-  Object.keys(this.gaugeInstances).forEach((key) => {
-    if (this.gaugeInstances[key]) {
-      this.gaugeInstances[key].dispose();
-      delete this.gaugeInstances[key];
-    }
-  });
-},
-
+  },
 
 
   // Aktualisieren der Gauge-Daten
@@ -608,39 +596,6 @@ export default {
 },
 
 
-
-
-
-getCo2GaugeColor(value) {
-  console.log('außerhalb',value)
-  if (value === null || value === undefined || value === 'N/A') {
-    console.log(value)
-    return [
-      [1, '#ddd']  // Die gesamte Linie wird grau (ohne Verlauf)
-    ];
-  }
-  return [
-    [1, {
-      type: 'linear',
-      x: 0,
-      y: 0,
-      x2: 1,
-      y2: 0,
-      colorStops: [
-        { offset: 0, color: 'rgb(0, 204, 102)' },  
-        { offset: 0.2, color: 'rgb(102, 255, 102)' }, 
-        { offset: 0.35, color: 'rgb(255, 239, 130)' },  
-        { offset: 0.5, color: 'rgb(255, 215, 0)' },  
-        { offset: 0.65, color: 'rgb(255, 165, 0)' },  
-        { offset: 0.85, color: 'rgb(255, 99, 71)' },  
-        { offset: 1, color: 'rgb(205, 92, 92)' }
-      ]
-    }]
-  ];
-}
-
-
-
 },
  mounted() {
   console.log('CO2 Wert beim Laden:', this.co2); 
@@ -655,28 +610,24 @@ getCo2GaugeColor(value) {
       this.updateGaugeChart('co2Gauge', this.co2, 0);  // CO₂ sofort setzen
     });
   });
-    
     this.fetchAvailableSensors(); 
-
-
-
   },
+
   watch: {
-    
   isVisible(newVal) {
     if (newVal) {
       this.$nextTick(() => {
-        this.disposeGauges();
+        disposeGauges(this.gaugeInstances);
         this.initGauges();
       });
     } else {
-      this.disposeGauges();
+      disposeGauges(this.gaugeInstances);
     }
   },
   isEditing(newVal) {
     if (!newVal) {
       this.$nextTick(() => {
-        this.disposeGauges();
+        disposeGauges(this.gaugeInstances);
         this.initGauges();
       });
     }
