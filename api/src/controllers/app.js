@@ -8,3 +8,4 @@ require('./sensorController');
 require('./notificationController')
 require('./settingsController')
 require('./roomController')
+require('./historyController')
