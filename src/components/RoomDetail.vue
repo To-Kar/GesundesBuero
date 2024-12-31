@@ -232,6 +232,10 @@ export default {
     humidityOffset: {
       type: Number,
       default: 5
+    },
+    is_connected: {
+      type: Boolean,
+      default: false
     }
 
   },
@@ -372,6 +376,7 @@ export default {
   },
   cancelEdit() {
       this.isEditing = false; // Bearbeitungsmodus beenden
+   
     },
 
   // Lokale Anpassung der Zieltemperatur, ohne API-Aufruf
@@ -426,7 +431,8 @@ export default {
           message: "Raum erfolgreich gespeichert!",
         });
 
- 
+   
+
         this.$emit("room-updated");
 
         // Erfolgreich gespeichert: Aktualisierung mitteilen
@@ -434,8 +440,10 @@ export default {
           roomId: this.roomId,
           temperature: this.temperature,
           humidity: this.humidity,
+          co2: this.co2
         });
-        
+
+   
         } catch (error) {
             console.error("Fehler beim Speichern des Raums:", error);
             // Feedback bei Fehler
@@ -855,6 +863,7 @@ getCo2GaugeColor(value) {
 
   },
   watch: {
+    
   isVisible(newVal) {
     if (newVal) {
       this.$nextTick(() => {
@@ -882,6 +891,14 @@ getCo2GaugeColor(value) {
   },
   targetHumidity(newVal) {
     this.updateGaugeChart('humidityGauge', this.humidity, newVal);
+  },
+  temperature(newVal) {
+    console.log('Temperatur aktualisiert:', newVal);
+    this.updateGaugeChart('temperatureGauge', newVal, this.targetTemperature);
+  },
+  humidity(newVal) {
+    console.log('Luftfeuchtigkeit aktualisiert:', newVal);
+    this.updateGaugeChart('humidityGauge', newVal, this.targetHumidity);
   }
 },
 

@@ -49,7 +49,8 @@ async function fetchSensorData(sensorId) {
                 temperature AS current_temp,
                 humidity AS current_humidity,
                 timestamp AS last_updated,
-                co2 AS co2
+                co2 AS co2,
+                is_connected
             FROM SENSOR
         `;
 
@@ -125,6 +126,7 @@ async function getSensorsWithRoomData() {
                 s.sensor_id,
                 s.temperature,
                 s.humidity,
+                s.co2,
                 r.room_id,
                 r.name,
                 r.target_temp,
@@ -138,6 +140,30 @@ async function getSensorsWithRoomData() {
         await pool.close();
     }
 }
+// Aktualisieren des is_connected-Status in der Datenbank
+async function updateSensorStatus(sensorId, isConnected) {
+    let pool;
+    try {
+        pool = await sql.connect(config);
+        const query = `
+            UPDATE SENSOR
+            SET is_connected = @isConnected
+            WHERE sensor_id = @sensorId
+        `;
+        const request = pool.request();
+        request.input('sensorId', sql.VarChar, sensorId);
+        request.input('isConnected', sql.Bit, isConnected ? 1 : 0);
+        
+        await request.query(query);
+        console.log(`Sensor ${sensorId} erfolgreich aktualisiert. Status: ${isConnected}`);
+    } catch (error) {
+        console.error(`Fehler beim Aktualisieren des Sensors ${sensorId}:`, error);
+    } finally {
+        if (pool) {
+            await pool.close();
+        }
+    }
+}
 
 
 module.exports = {
@@ -146,6 +172,7 @@ module.exports = {
     fetchAllSensors,
     updateSensorIp,
     getSensorsWithRoomData,
+    updateSensorStatus,
 
 
 };

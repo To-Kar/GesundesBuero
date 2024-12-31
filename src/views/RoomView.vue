@@ -27,6 +27,7 @@ export default {
       intervalId: null,     // Speichert die Timer-ID
       temperatureOffset: 0,
       humidityOffset: 0,
+      is_connected: false
     };
   },
 
@@ -50,6 +51,7 @@ export default {
   },
   mounted() {
     eventBus.on('add-room', this.addRoom);
+    eventBus.on('room-created', this.refreshSensorDataAfterRoomCreation);
   },
   beforeUnmount() {
   eventBus.off('add-room', this.addRoom);
@@ -84,6 +86,7 @@ export default {
         if (updatedRoom) {
           this.temperature = updatedRoom.temperature;
           this.humidity = updatedRoom.humidity;
+          this.co2 = updatedRoom.co2;
         }
       }
     } catch (error) {
@@ -107,6 +110,7 @@ export default {
     if (room) {
       room.temperature = updatedRoom.temperature;
       room.humidity = updatedRoom.humidity;
+      room.co2 = updatedRoom.co2;
     }
   },
   
@@ -157,6 +161,7 @@ export default {
       try {
         this.rooms = await roomApi.getAllRoomsWithSensorData();
         console.log("Sensordaten erfolgreich aktualisiert");
+        this.$forceUpdate();
       } catch (error) {
         console.error("Fehler beim Laden der Sensordaten:", error.message);
       }
@@ -180,19 +185,21 @@ export default {
       :key="room.number"
       :name="room.name"
       :number="room.number"
-      :temperature="room.temperature"
-      :humidity="room.humidity"
-      :co2="room.co2"
+      :temperature=room.temperature
+      :humidity=room.humidity
+      :co2=room.co2 
       :image="room.image"
       :targetTemperature="room.target_temperature" 
       :targetHumidity="room.target_humidity" 
       :status="room.status"
+      :sensor_id="room.sensor_id"
       :temperatureOffset="temperatureOffset" 
       :humidityOffset="humidityOffset"
+      :is_connected="room.is_connected"
       @click="goToRoomDetail(room.image, room.name, room.number, room.temperature, room.humidity, room.co2)"
     />
 
-
+    
   </div>
 
   <div v-if="saveStatus" class="save-feedback" :class="saveStatus">
@@ -213,6 +220,7 @@ export default {
         :humidityOffset="humidityOffset"
 
         :isAdding="isAdding"
+        :is_connected="is_connected"
 
         @close="showDetail = false"
 
