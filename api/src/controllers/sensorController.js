@@ -41,12 +41,6 @@ app.http('ip', {
 });
 
 
-
-
-
-
-
-
 // gemessene Sensor-Daten aktualisieren
 app.http('sensor-data', {
     methods: ['PATCH'],
@@ -84,6 +78,29 @@ app.http('room-sensor-data', {
 
         const result = await sensorService.getSensorData(sensorId);
 
+        return httpResponses.success(result, 200);
+    }),
+});
+
+
+app.http('addSensor', {
+    methods: ['POST'],
+    authLevel: 'anonymous',
+    route: 'sensors',
+    handler: errorHandlerWrapper(async (req) => {
+        const body = await req.json();
+        const result = await sensorService.addSensor(body);
+        return httpResponses.success(result, 201);
+    }),
+});
+
+app.http('deleteSensor', {
+    methods: ['DELETE'],
+    authLevel: 'anonymous',
+    route: 'sensors/{sensor_id}',
+    handler: errorHandlerWrapper(async (req) => {
+        const sensor_id = req.params.sensor_id;
+        const result = await sensorService.deleteSensor(sensor_id);
         return httpResponses.success(result, 200);
     }),
 });

@@ -91,7 +91,27 @@ export const sensorService = {
           console.error('Fehler beim Aktualisieren der IP-Adresse:', error);
           throw error;
         }
+      },
+
+      async addSensor(sensor) {
+        const response = await apiClient.post('http://localhost:7071/api/sensors', {
+          sensor_id: sensor.sensor_id,
+          ip_address: sensor.ip_address
+        });
+    
+        return response.data;
+      },
+
+      async deleteSensor(sensorId) {
+        try {
+          await apiClient.delete(`/sensors/${sensorId}`);
+          console.log(`Sensor ${sensorId} erfolgreich gelöscht.`);
+        } catch (error) {
+          console.error(`Fehler beim Löschen des Sensors ${sensorId}:`, error);
+          throw error;
+        }
       }
+      
 };
 
 

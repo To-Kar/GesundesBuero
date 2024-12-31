@@ -2,10 +2,19 @@
 import { eventBus } from '../plugins/eventBus';
 import { settingsService } from '../services/settingsService';
 import { sensorService } from '../services/sensorService';
+import DeleteModal from '../components/DeleteModal.vue';
+import SensorList from '../components/SensorList.vue';
 export default {
   name: 'Settings',
+  components: { DeleteModal, SensorList },
   data() {
     return {
+      showDeleteModal: false,
+      selectedSensor: null,
+      newSensor: {
+        sensor_id: '',
+        ip_address: ''
+      },
       seconds: 0,
       minutes: 0,
       temperatureOffset: 0,
@@ -36,6 +45,20 @@ export default {
 
 
   methods: {
+    openDeleteModal(sensor) {
+      this.selectedSensor = sensor;
+      this.showDeleteModal = true;
+    },
+    async confirmDelete() {
+      try {
+        await sensorService.deleteSensor(this.selectedSensor.sensor_id);
+        this.sensors = this.sensors.filter(s => s.sensor_id !== this.selectedSensor.sensor_id);
+        this.showDeleteModal = false;
+        console.log(`Sensor ${this.selectedSensor.sensor_id} erfolgreich gelöscht.`);
+      } catch (error) {
+        console.error('Fehler beim Löschen des Sensors:', error);
+      }
+    },
     async saveSettings() {
       const totalInterval = Math.floor(this.minutes * 60 + this.seconds);
 
@@ -123,12 +146,39 @@ export default {
     addRoom() {
       eventBus.emit('add-room');
       this.$emit('close');
-    }
+    },
+
+
+    async addSensorFromList(newSensor) {
+      if (!newSensor.sensor_id || !this.validateIp(newSensor.ip_address)) {
+        this.showErrorNotification = true;
+        setTimeout(() => (this.showErrorNotification = false), 3000);
+        return;
+      }
+
+      try {
+        const addedSensor = await sensorService.addSensor(newSensor);
+
+        this.sensors.push({
+          sensor_id: addedSensor.sensor_id,
+          ip_address: addedSensor.ip_address || newSensor.ip_address,
+          room_id: addedSensor.room_id || 'N/A'
+        });
+
+        this.showSaveNotification = true;
+
+        setTimeout(() => (this.showSaveNotification = false), 3000);
+      } catch (error) {
+        console.error('Fehler beim Hinzufügen des Sensors:', error);
+        this.showErrorNotification = true;
+        setTimeout(() => (this.showErrorNotification = false), 3000);
+      }
+    },
+
   }
 };
 
 </script>
-
 <template>
   <div class="settings-modal" @click="$emit('close')">
     <div class="settings-content" @click.stop>
@@ -175,36 +225,24 @@ export default {
               </div>
             </div>
           </div>
-
-        </div>
-        <div class="settings-section">
-          <p class="section-title">IP-Konfiguration</p>
-          <div class="sensor-settings">
-            <div v-for="sensor in sensors" :key="sensor.sensor_id" class="sensor-settings-item">
-              <p class="sensor-title">
-                {{ sensor.sensor_id }}
-              </p>
-              <p class="sensor-info">Zugeordneter Raum: {{ sensor.room_id }}</p>
-              <p class="sensor-info">Device ID: {{ sensor.sensor_id }}</p>
-              <div class="sensor-field-row">
-                <label class="input-label">IP-Adresse:</label>
-                <input type="text" v-model="sensor.ip_address" class="ip-input" />
-                <button class="save-button" @click="saveIpAddress(sensor)">Speichern</button>
+          <div class="settings-section">
+            <p class="section-title">Raum hinzufügen</p>
+            <div class="sensor-settings-item">
+              <div class="raum-settings">
+                <label class="offset-label">Einen neuen Raum anlegen:</label>
+                <button class="save-button" @click="addRoom">hinzufügen</button>
               </div>
             </div>
           </div>
         </div>
-
         <div class="settings-section">
-          <p class="section-title">Raum hinzufügen</p>
-          <div class="sensor-settings-item">
-            <div class="raum-settings">
-              <label class="offset-label">Einen neuen Raum anlegen:</label>
-              <button class="save-button" @click="addRoom">hinzufügen</button>
-            </div>
-          </div>
+          <p class="section-title">Sensorverwaltung</p>
+          <SensorList :sensors="sensors" @save-ip="saveIpAddress" @open-delete="openDeleteModal"
+            @add-sensor="addSensorFromList" />
         </div>
-
+        <DeleteModal :visible="showDeleteModal" :title="'Sensor löschen'"
+          :message="`Möchten Sie den Sensor ${selectedSensor?.sensor_id} wirklich löschen?`" @confirm="confirmDelete"
+          @cancel="showDeleteModal = false" />
         <div v-if="showSaveNotification" class="save-notification">
           Einstellungen erfolgreich gespeichert!
         </div>
@@ -325,6 +363,8 @@ body {
   margin-left: auto;
 }
 
+
+
 .save-button:hover {
   background-color: hsl(210, 70%, 50%);
 }
@@ -406,46 +446,12 @@ body {
   color: black;
 }
 
-/* Settings IP */
-.sensor-settings-container {
-  margin-top: 20px;
-}
 
-.sensor-settings-item {
-  border: 1px solid #ccc;
-  border-radius: 25px;
-  padding: 20px;
-  background-color: #f9f9f9;
-  margin-bottom: 15px;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.sensor-title {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.sensor-info {
-  font-size: 14px;
-  color: #555;
-}
 
 .sensor-field-row {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.ip-input {
-  width: 100%;
-  max-width: 150px;
-  padding: 8px;
-  font-size: 14px;
-  height: 30px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .offset-settings {
