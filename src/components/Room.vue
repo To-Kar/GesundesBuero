@@ -56,26 +56,26 @@ export default {
       const lowerThreshold = this.targetTemperature - this.temperatureOffset;
       const upperThreshold = this.targetTemperature + this.temperatureOffset;
       if (this.temperature == null || isNaN(this.temperature)) return "#d3d3d3"; // Neutral Grau
-      if (this.temperature < lowerThreshold) return "linear-gradient(135deg, #aecde0, #5a8da4)"; // Unter Sollwert → Subtiles Blau
-      if (this.temperature > upperThreshold) return "linear-gradient(135deg, #e8a6a6, #b34646)"; // Über Sollwert → Subtiles Rot
-      return "linear-gradient(135deg, #a8d5a6, #5b9d68)"; // Innerhalb des Bereichs → Subtiles Grün
+      if (this.temperature < lowerThreshold) return "#586cfc"; // Unter Sollwert → Subtiles Blau
+      if (this.temperature > upperThreshold) return "#cc443c"; // Über Sollwert → Subtiles Rot
+      return "#589404"; // Innerhalb des Bereichs → Subtiles Grün
     },
     // Farbe basierend auf der Luftfeuchtigkeit
     humidityColor() {
       const lowerThreshold = this.targetHumidity - this.humidityOffset;
       const upperThreshold = this.targetHumidity + this.humidityOffset;
     if (this.humidity == null || isNaN(this.humidity)) return "#d3d3d3"; // Neutral Grau
-    if (this.humidity < lowerThreshold) return "linear-gradient(135deg, #aecde0, #5a8da4)"; // Unter Sollwert → Subtiles Blau
-    if (this.humidity > upperThreshold) return "linear-gradient(135deg, #e8a6a6, #b34646)"; // Über Sollwert → Subtiles Rot
-      return "linear-gradient(135deg, #a8d5a6, #5b9d68)"; // Innerhalb des Bereichs → Subtiles Grün
+    if (this.humidity < lowerThreshold) return "#586cfc"; // Unter Sollwert → Subtiles Blau
+    if (this.humidity > upperThreshold) return "#cc443c"; // Über Sollwert → Subtiles Rot
+      return "#589404"; // Innerhalb des Bereichs → Subtiles Grün
   },
 },
  methods: {
   co2Color() {
     if (this.co2 == null || isNaN(this.co2)) return "#d3d3d3"; // Neutral Grau
-    if (this.co2 < 800) return "linear-gradient(135deg, #a8d5a6, #5b9d68)"; // Subtiles Grün
-    if (this.co2 > 1000) return "linear-gradient(135deg, #e8a6a6, #b34646)"; // Subtiles Rot
-    return "linear-gradient(135deg, #f5d19e, #d8a972)"; // Elegantes Gelb
+    if (this.co2 < 800) return "#589404"; // Subtiles Grün
+    if (this.co2 > 1000) return "#cc443c"; // Subtiles Rot
+    return "#f0b424"; // Elegantes Gelb
     },
   co2Text() {
     if (this.co2 == null || isNaN(this.co2)) return "N/A";
@@ -91,9 +91,10 @@ export default {
 
 <template>
   <div class="room-card" @click="$emit('click')">
-    <h2 class="room-title">{{ name }}</h2>
     <div class="room-layout">
       <img :src="image" alt="Raum Layout" class="room-image" />
+      <h2 class="room-title">{{ name }}</h2>
+      <div class="metrics">
       <div class="metrics">
         <div class="co2-status" :style="{ background: co2Color() }">
           CO₂ {{co2Text()}}
@@ -106,8 +107,9 @@ export default {
         <div class="humidity" :style="{ background: humidityColor }">
           {{ humidity }}%
         </div>
-      </div>
     </div>
+  </div>
+  </div>
   </div>
 </template>
 
@@ -137,12 +139,13 @@ export default {
   padding: 0px;
   box-shadow: 2px 4px 12px #00000014;
   backdrop-filter: blur(15px);
-  width: 300px;
-  max-width: 90%;
+  width: 100%;
+  aspect-ratio: 16/9;
   position: relative;
   transform-origin: center;
   transition: all .3s cubic-bezier(0,0,.5,1);
   will-change: transform; /* Für optimiertes Rendering */
+  overflow: hidden;
 }
 
 .room-card:hover {
@@ -152,32 +155,59 @@ export default {
 
 /* Titel */
 .room-title {
-  color: #000000;
-  margin-bottom: 20px;
-  text-align: center;
-  font-size: 32px;
-  line-height: 38.4px;
-  letter-spacing: -0.68px;
+  position: absolute;
+  top: 10%;
+  left: 6%;
+  color: #ffffff;
+  margin: 0;
+  font-size: 56px;
+  line-height: 67.2px;
+  letter-spacing: -1.19px;
   font-weight: 700;
+  z-index: 2; 
 }
 
 /* Raum-Layout */
 .room-layout {
   position: relative;
   width: 100%;
-  padding-top: 56.25%; /* Verhältnis 16:9 */
+  height: 100%;
   overflow: hidden;
+}
+
+.room-layout::before,
+.room-layout::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50%;
+  pointer-events: none;  /* damit der Klick-Event durchgeht */
+  z-index: 1;
+}
+
+/* Oberer Gradient */
+.room-layout::before {
+  top: 0;
+  background: linear-gradient(to bottom, 
+    rgba(0,0,0,0.8) 0%,
+    rgba(0,0,0,0) 100%
+  );
+}
+
+/* Unterer Gradient */
+.room-layout::after {
+  bottom: 0;
+  background: linear-gradient(to top, 
+    rgba(0,0,0,0.8) 0%,
+    rgba(0,0,0,0) 100%
+  );
 }
 
 /* Raum-Bild */
 .room-image {
-  border-radius: 0 0 18px 18px;
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height:100%;
   filter: grayscale(20%) contrast(1.2);
   transition: filter 0.3s ease;
 }
@@ -186,13 +216,12 @@ export default {
 /* Metriken */
 .metrics {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: space-between;
+  bottom: 10%;
+  left: 3%;
+  right: 3%;
+  gap: 12px;
+  z-index: 2;
 }
 
 /* Dynamische Anzeige für Temperatur, Luftfeuchtigkeit und CO2 */
@@ -200,33 +229,44 @@ export default {
 .humidity,
 .co2-status {
   flex: 1 1 calc(33.333% - 10px);
-  padding: 10px;
-  border-radius: 10px;
+  padding: 4px;
   text-align: center;
-  font-weight: bold;
   color: #fff;
-  font-size: 20px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  font-size: 32px;
+  line-height: 38.4px;
+  letter-spacing: -0.68px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 52px;
 }
 
 /* Responsivität */
-@media (max-width: 768px) {
+@media (max-width: 1300px) {
   .room-card {
     width: 100%;
   }
 
   .room-title {
-    font-size: 20px;
+    top: 8%;
+    left: 6%;
+    font-size: 32px;
   }
 
   .metrics {
-    gap: 5px;
+    gap: 8px;
   }
 
   .temperature,
   .humidity,
   .co2-status {
+    bottom: 3%;
+    left: 3%;
+    right: 3%;
+    padding: 4px;
     font-size: 14px;
+    line-height: 18.2px;
   }
 }
 
