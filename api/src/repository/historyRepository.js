@@ -14,8 +14,8 @@ async function getHistoryByRoom(roomId, startDate, endDate) {
 
     const request = pool.request();
     request.input('roomId', sql.VarChar, roomId);
-    request.input('startDate', sql.DateTime, startDate || '1900-01-01'); // Standardwert, falls kein Datum angegeben
-    request.input('endDate', sql.DateTime, endDate || new Date()); // Standardwert: heute
+    request.input('startDate', sql.DateTime, startDate);
+    request.input('endDate', sql.DateTime, endDate);
 
     const result = await request.query(query);
     await pool.close();

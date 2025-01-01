@@ -40,6 +40,7 @@
                 <HumidityWidget ref="humidityWidget" :humidity="humidity" :targetHumidity="targetHumidity"
                   @adjust-target-humidity="adjustTargetHumidity" />
                 <Co2Widget ref="co2Widget" :co2="co2" />
+                <HistoryWidget :roomId="roomId" />
               </div>
             </div>
           </template>
@@ -68,6 +69,7 @@ import RoomEdit from './RoomEdit.vue';
 import TemperatureWidget from '../components/TemperatureWidget.vue';
 import HumidityWidget from '../components/HumidityWidget.vue';
 import Co2Widget from '../components/co2Widget.vue';
+import HistoryWidget from "../components/HistoryWidget.vue";
 
 
 export default {
@@ -75,7 +77,8 @@ export default {
     RoomEdit,
     TemperatureWidget,
     HumidityWidget,
-    Co2Widget
+    Co2Widget,
+    HistoryWidget
   },
   props: {
     room: {
