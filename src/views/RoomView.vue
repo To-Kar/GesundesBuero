@@ -211,12 +211,18 @@ export default {
   <div class="room-detail-view">
       <RoomDetail
         v-if="showDetail"
-        :room="rooms.find(r => r.number === roomId)"
+        :image="image"
+        :name="name"
+        :roomId="roomId"
+        :temperature="temperature"
+        :humidity="humidity"
+        :co2="co2"
 
         :temperatureOffset="temperatureOffset" 
         :humidityOffset="humidityOffset"
 
         :isAdding="isAdding"
+        :is_connected="is_connected"
 
         @close="showDetail = false"
 

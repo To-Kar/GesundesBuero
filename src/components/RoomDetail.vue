@@ -78,14 +78,33 @@ export default {
     Co2Widget
   },
   props: {
-    room: {
-      type: Object,
-      required: true,
-      default: () => ({})
-    },
     isAdding: {
       type: Boolean,
       default: false,
+    },
+    image: {
+      type: String,
+      required: true
+    },
+    name: {
+      type: String,
+      default: "Büroraum",
+    },
+    roomId: {
+      type: String,
+      required: true,
+    },
+    temperature: {
+      type: Number,
+      required: true,
+    },
+    humidity: {
+      type: Number,
+      required: true,
+    },
+    co2: {
+      type: Number,
+      required: true,
     },
     temperatureOffset: {
       type: Number,
@@ -94,6 +113,10 @@ export default {
     humidityOffset: {
       type: Number,
       default: 5
+    },
+    is_connected: {
+      type: Boolean,
+      default: false
     },
   },
   data() {
@@ -139,27 +162,7 @@ export default {
       }
       return false;
     },
-    image() {
-      return this.room.image || "";
-    },
-    name() {
-      return this.room.name || "Büroraum";
-    },
-    roomId() {
-      return this.room.number || "";
-    },
-    temperature() {
-      return this.room.temperature || 0;
-    },
-    humidity() {
-      return this.room.humidity || 0;
-    },
-    co2() {
-      return this.room.co2 || "N/A";
-    },
-    is_connected() {
-      return this.room.is_connected || false;
-    },
+
   },
   methods: {
     async fetchRoomDetails() {
@@ -193,7 +196,7 @@ export default {
         } finally {
           this.disableHumidityButtons = false;
         }
-      }, 500);
+      }, 900);
     },
 
     adjustTargetHumidity(change) {
@@ -213,9 +216,9 @@ export default {
         } finally {
           this.disableTemperatureButtons = false;
         }
-      }, 500);
+      }, 1900);
     },
-    
+
     goBack() {
       this.isVisible = false;
       this.$emit("close");
