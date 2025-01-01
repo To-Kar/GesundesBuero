@@ -1,17 +1,11 @@
 const swaggerJsDoc = require('swagger-jsdoc');
+const baseDefinitions = require('../swagger/swaggerDefinitions');
 
 
-// Swagger Optionen
 const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Gesundes Büro API',
-      version: '1.0.0',
-      description: 'API-Dokumentation für die Funktionen der Anwendung Gesundes Büro.',
-    },
-  },
-  apis: ['./src/controllers/*.js'], // Der Pfad zu den Dateien mit Swagger-Kommentaren
+  definition: baseDefinitions,
+
+  apis: ['./src/controllers/*.js'], 
 };
 
 // Swagger-Spezifikation generieren

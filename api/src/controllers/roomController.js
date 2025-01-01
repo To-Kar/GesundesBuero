@@ -56,13 +56,6 @@ app.http('room', {
  *     responses:
  *       201:
  *         description: Raum erfolgreich hinzugefügt
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  */
 app.http('addRoom', {
     methods: ['POST'],
@@ -85,7 +78,7 @@ app.http('addRoom', {
 
 /**
  * @swagger
- * /rooms/{roomId}:
+  * /rooms/{roomId}:
  *   patch:
  *     summary: Raum aktualisieren
  *     tags:
