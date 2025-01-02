@@ -88,6 +88,10 @@ export default {
 
         this.showSaveNotification = true;
 
+        eventBus.emit('offsets-updated', {
+          temperatureOffset: this.temperatureOffset,
+          humidityOffset: this.humidityOffset
+        });
         setTimeout(() => {
           this.showSaveNotification = false;
         }, 3000);

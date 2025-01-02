@@ -55,9 +55,18 @@ export default {
   },
   beforeUnmount() {
   eventBus.off('add-room', this.addRoom);
+  eventBus.off('room-created', this.refreshSensorDataAfterRoomCreation);
 },
 
   methods:{
+    handleTargetUpdate({ roomId, targetTemperature, targetHumidity }) {
+    const room = this.rooms.find(r => r.number === roomId);
+    if (room) {
+      room.target_temperature = targetTemperature;
+      room.target_humidity = targetHumidity;
+    }
+    console.log("Zielwerte aktualisiert für Raum:", roomId);
+  },
   goToRoomDetail(image, name, roomId, temperature, humidity, co2) {
     console.log("Raum-ID angeklickt:", roomId);
     if (!roomId) {
@@ -211,12 +220,18 @@ export default {
   <div class="room-detail-view">
       <RoomDetail
         v-if="showDetail"
-        :room="rooms.find(r => r.number === roomId)"
+        :image="image"
+        :name="name"
+        :roomId="roomId"
+        :temperature="temperature"
+        :humidity="humidity"
+        :co2="co2"
 
         :temperatureOffset="temperatureOffset" 
         :humidityOffset="humidityOffset"
 
         :isAdding="isAdding"
+        :is_connected="is_connected"
 
         @close="showDetail = false"
 
@@ -225,6 +240,7 @@ export default {
         
         @save-feedback="handleFeedback"
         @update-room="updateRoomData"
+        @target-updated="handleTargetUpdate"
       />
   </div>
 
