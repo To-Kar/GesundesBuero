@@ -21,6 +21,7 @@
     "primeicons": "^7.0.0",
     "primevue": "^4.2.5",
     "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-dist": "^5.18.2",
     "swagger-ui-express": "^5.0.1",
     "vue": "^3.5.12",
     "vue-charts": "^0.2.1",

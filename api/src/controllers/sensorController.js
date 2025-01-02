@@ -181,6 +181,24 @@ app.http('room-sensor-data', {
 });
 
 
+
+/**
+ * @swagger
+ * /sensors:
+ *   post:
+ *     summary: Neuen Sensor hinzufügen
+ *     tags:
+ *       - Sensoren
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Sensor'
+ *     responses:
+ *       201:
+ *         description: Sensor erfolgreich hinzugefügt
+ */
 app.http('addSensor', {
     methods: ['POST'],
     authLevel: 'anonymous',
@@ -192,6 +210,34 @@ app.http('addSensor', {
     }),
 });
 
+
+
+
+/**
+ * @swagger
+ * /sensors/{sensor_id}:
+ *   delete:
+ *     summary: Sensor löschen
+ *     tags:
+ *       - Sensoren
+ *     parameters:
+ *       - in: path
+ *         name: sensor_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID des Sensors
+ *     responses:
+ *       200:
+ *         description: Sensor erfolgreich gelöscht
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 app.http('deleteSensor', {
     methods: ['DELETE'],
     authLevel: 'anonymous',
