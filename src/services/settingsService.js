@@ -1,5 +1,6 @@
 import { apiClient } from './apiClient';
 
+
 export const settingsService = {
   async getSettings() {
     try {
@@ -30,4 +31,37 @@ export const settingsService = {
       throw error;
     }
   },
+
+  async updateOffsets(offsets) {
+    try {
+      await apiClient.patch('/settings/offsets', offsets);
+      console.log('Offsets erfolgreich aktualisiert.');
+    } catch (error) {
+      console.error('Fehler beim Aktualisieren der Offsets:', error);
+      throw error;
+    }
+  },
+  
+  async getSensors() {
+    try {
+      const response = await apiClient.get('/sensors');
+      console.log('Sensoren erfolgreich geladen.');
+      return response.data;
+    } catch (error) {
+      console.error('Fehler beim Abrufen der Sensor-Daten:', error);
+      throw error;
+    }
+  },
+  
+  async getOffsets() {
+    try {
+      const response = await apiClient.get('/settings/offsets');
+      return response.data;
+    } catch (error) {
+      console.error('Fehler beim Abrufen der Offsets:', error);
+      throw error;
+    }
+  },
+  
+  
 };
