@@ -125,11 +125,11 @@ export default {
     
     <div class="room-layout">
       <div class="room-image-container" :class="{ 'disconnected': !is_connected }">
-        <div v-if="!is_connected || sensor_id == null" class="connection-status">{{ connectionMessage }}</div>
         <img :src="image" alt="Raum Layout" class="room-image" />
         
         <!-- Overlay nur anzeigen, wenn is_connected false ist -->
         <div v-if="!is_connected" class="overlay-image"></div>
+        <div v-if="!is_connected || sensor_id == null" class="connection-status">{{ connectionMessage }}</div>
       </div>
       
       <h2 class="room-title" :class="{ 'disconnected-title': !is_connected }">{{ name }}</h2>
@@ -289,30 +289,43 @@ export default {
 }
 /* Overlay anzeigen, wenn disconnected */
 
-.disconnected-image {
-  filter: grayscale(100%) blur(1.5px); /* Graustufen und Unschärfe */
-  transition: filter 0.3s ease, opacity 0.3s ease; /* Sanfter Übergang */
+.room-image-container.disconnected .room-image {
+  filter: grayscale(80%) contrast(0.8);
+  opacity: 0.7;
 }
 .disconnected-title {
-  top: 10%;
-  left: 6%;
-  color: white;
-  transition: color 0.3s ease, opacity 0.3s ease;
+  filter: grayscale(80%) contrast(0.8);
 }
 .overlay-image {
-  opacity: 0.5;
+  opacity: 1;
   position: absolute;
   top: 0;
   left: 0;  /* Overlay startet korrekt bei der linken Ecke */
   width: 100%;
   height: 100%;
-  background-image: url('');  
+  background-image: url('../assets/disconnect.png');  
   background-size: contain;  /* Bildgröße wird angepasst, um das gesamte Element zu füllen */
   background-position: center;  /* Bild wird zentriert */
   background-repeat: no-repeat; /* Verhindert Wiederholung des Bildes */
-  background-color: rgb(247, 247, 247);  /* Leichtes dunkles Overlay */
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
+}
+.connection-status {
+ position: absolute;
+ top: 50%;
+ left: 50%;
+ transform: translate(-50%, -50%);
+ color: white;
+ font-size: 18px;
+ line-height: 25.2px;
+ letter-spacing: 0.009em;
+ font-weight: 400;
+ text-align: center;
+ z-index: 4;
+ background: rgba(0, 0, 0, 0.8);
+ padding: 12px;
+ border-radius: 52px;
+ white-space: nowrap;
 }
 
 /* Responsivität */
@@ -342,6 +355,11 @@ export default {
     font-size: 14px;
     line-height: 18.2px;
   }
+.connection-status{
+  font-size: 14px;
+  line-height: 18.2px;
+  padding: 8px;
+}
 }
 
 </style>
