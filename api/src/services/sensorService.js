@@ -108,9 +108,46 @@ function validateIp(ip_address) {
     return ipRegex.test(ip_address);
 }
 
+
+async function addSensor(sensorData) {
+    const { sensor_id, ip_address } = sensorData;
+
+    if (!sensor_id || !ip_address) {
+        throw { status: 400, message: 'sensor_id und ip_address sind erforderlich.' };
+    }
+
+    // IP-Validierung
+    if (!validateIp(ip_address)) {
+        throw { status: 400, message: 'Ungültige IP-Adresse.' };
+    }
+
+    // Sensor in die DB schreiben
+    const result = await sensorRepository.insertSensor(sensor_id, ip_address);
+
+    return { message: 'Sensor erfolgreich hinzugefügt.', sensor_id };
+}
+
+async function deleteSensor(sensor_id) {
+    if (!sensor_id) {
+        throw { status: 400, message: 'sensor_id ist erforderlich.' };
+    }
+
+    const result = await sensorRepository.removeSensor(sensor_id);
+
+    if (result.rowsAffected[0] === 0) {
+        throw { status: 404, message: 'Sensor nicht gefunden.' };
+    }
+
+    return { message: `Sensor ${sensor_id} erfolgreich gelöscht.` };
+}
+
+
+
 module.exports = {
     updateSensorDataAndFetchInterval,
     getSensorData,
     getAllSensors,
-    handleIpUpdate
+    handleIpUpdate,
+    addSensor,
+    deleteSensor
 };

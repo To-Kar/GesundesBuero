@@ -165,6 +165,65 @@ async function updateSensorStatus(sensorId, isConnected) {
     }
 }
 
+async function insertSensor(sensor_id, ip_address) {
+    let pool;
+    try {
+        pool = await sql.connect(config);
+
+        const query = `
+            INSERT INTO SENSOR (sensor_id, ip_address)
+            VALUES (@sensor_id, @ip_address)
+        `;
+
+        const request = pool.request();
+        request.input('sensor_id', sql.VarChar, sensor_id);
+        request.input('ip_address', sql.VarChar, ip_address);
+
+        const result = await request.query(query);
+
+        if (result.rowsAffected[0] === 0) {
+            throw { status: 500, message: 'Sensor konnte nicht hinzugefügt werden.' };
+        }
+
+        return result;
+    } catch (error) {
+        console.error('Fehler beim Hinzufügen des Sensors:', error);
+        throw error;
+    } finally {
+        if (pool) {
+            await pool.close();
+        }
+    }
+}
+
+
+async function removeSensor(sensor_id) {
+    let pool;
+    try {
+        pool = await sql.connect(config);
+
+        const query = `
+            DELETE FROM SENSOR
+            WHERE sensor_id = @sensor_id
+        `;
+
+        const request = pool.request();
+        request.input('sensor_id', sql.VarChar, sensor_id);
+
+        const result = await request.query(query);
+        return result;
+    } catch (error) {
+        console.error('Fehler beim Löschen des Sensors:', error);
+        throw error;
+    } finally {
+        if (pool) {
+            await pool.close();
+        }
+    }
+}
+
+
+
 
 module.exports = {
     updateSensorData,
@@ -173,6 +232,8 @@ module.exports = {
     updateSensorIp,
     getSensorsWithRoomData,
     updateSensorStatus,
+    insertSensor,
+    removeSensor
 
 
 };
