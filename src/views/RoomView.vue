@@ -1,7 +1,7 @@
 <script>
 import Room from "../components/Room.vue";
 import RoomDetail from "../components/RoomDetail.vue";
-import { roomApi } from "../services/roomService";
+import { roomService } from "../services/roomService";
 import { settingsService } from "../services/settingsService";
 import { eventBus } from '../plugins/eventBus';
 
@@ -38,7 +38,7 @@ export default {
 
     try {
       // Räume und zugehörige Sensordaten abrufen
-      const { rooms, offsets } = await roomApi.getRoomsAndOffsets();
+      const { rooms, offsets } = await roomService.getRoomsAndOffsets();
       this.rooms = rooms;
       this.temperatureOffset = offsets.temperature_offset;
       this.humidityOffset = offsets.humidity_offset;
@@ -55,9 +55,18 @@ export default {
   },
   beforeUnmount() {
   eventBus.off('add-room', this.addRoom);
+  eventBus.off('room-created', this.refreshSensorDataAfterRoomCreation);
 },
 
   methods:{
+    handleTargetUpdate({ roomId, targetTemperature, targetHumidity }) {
+    const room = this.rooms.find(r => r.number === roomId);
+    if (room) {
+      room.target_temperature = targetTemperature;
+      room.target_humidity = targetHumidity;
+    }
+    console.log("Zielwerte aktualisiert für Raum:", roomId);
+  },
   goToRoomDetail(image, name, roomId, temperature, humidity, co2) {
     console.log("Raum-ID angeklickt:", roomId);
     if (!roomId) {
@@ -78,7 +87,7 @@ export default {
   async refreshRooms() {
     
     try {
-      this.rooms = await roomApi.getAllRoomsWithSensorData();
+      this.rooms = await roomService.getAllRoomsWithSensorData();
 
       // Wenn Detailfenster noch offen ist, aktualisieren wir die Props
       if (this.showDetail && this.roomId) {
@@ -86,6 +95,7 @@ export default {
         if (updatedRoom) {
           this.temperature = updatedRoom.temperature;
           this.humidity = updatedRoom.humidity;
+          this.co2 = updatedRoom.co2;
         }
       }
     } catch (error) {
@@ -109,6 +119,7 @@ export default {
     if (room) {
       room.temperature = updatedRoom.temperature;
       room.humidity = updatedRoom.humidity;
+      room.co2 = updatedRoom.co2;
     }
   },
   
@@ -157,8 +168,10 @@ export default {
     // Sensordaten aus der API abrufen
     async fetchSensorData() {
       try {
-        this.rooms = await roomApi.getAllRoomsWithSensorData();
+        this.rooms = await roomService.getAllRoomsWithSensorData();
         console.log("Sensordaten erfolgreich aktualisiert");
+
+        
         this.$forceUpdate();
       } catch (error) {
         console.error("Fehler beim Laden der Sensordaten:", error.message);
@@ -227,6 +240,7 @@ export default {
         
         @save-feedback="handleFeedback"
         @update-room="updateRoomData"
+        @target-updated="handleTargetUpdate"
       />
   </div>
 

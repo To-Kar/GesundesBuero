@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const { app } = require('@azure/functions');
 const { swaggerDocs } = require('./config/swaggerConfig');
 const path = require('path');
@@ -52,3 +53,15 @@ require('./controllers/roomController');
   
   console.log('Swagger UI verfügbar unter: http://localhost:7071/swagger-ui-assets');
   console.log('Swagger JSON verfügbar unter: http://localhost:7071/swagger.json');
+=======
+// app.js
+
+const { app } = require('@azure/functions');
+
+// Funktionen importieren
+
+require('./controllers/sensorController');
+require('./controllers/notificationController')
+require('./controllers/settingsController')
+require('./controllers/roomController')
+>>>>>>> develop
