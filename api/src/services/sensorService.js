@@ -128,7 +128,7 @@ async function addSensor(sensorData) {
     // Sensor in die DB schreiben
     const result = await sensorRepository.insertSensor(sensor_id, ip_address);
 
-    return { message: 'Sensor erfolgreich hinzugefügt.', sensor_id };
+    return { message: 'Sensor erfolgreich hinzugefügt.', sensor_id, ip_address};
 }
 
 async function deleteSensor(sensor_id) {
