@@ -35,11 +35,16 @@
             <div class="details">
               <!-- Widgets-->
               <div class="widget-container">
+                <template v-if="!isLoading">
                 <TemperatureWidget ref="tempWidget" :temperature="temperature" :targetTemperature="targetTemperature"
                   @adjust-target-temperature="adjustTargetTemperature" />
                 <HumidityWidget ref="humidityWidget" :humidity="humidity" :targetHumidity="targetHumidity"
                   @adjust-target-humidity="adjustTargetHumidity" />
                 <Co2Widget ref="co2Widget" :co2="co2" />
+              </template>
+              <template v-else>
+          <div class="loading-message">Lade Raumdaten...</div>
+        </template>
               </div>
             </div>
           </template>
@@ -78,14 +83,33 @@ export default {
     Co2Widget
   },
   props: {
-    room: {
-      type: Object,
-      required: true,
-      default: () => ({})
-    },
     isAdding: {
       type: Boolean,
       default: false,
+    },
+    image: {
+      type: String,
+      required: true
+    },
+    name: {
+      type: String,
+      default: "Büroraum",
+    },
+    roomId: {
+      type: String,
+      required: true,
+    },
+    temperature: {
+      type: Number,
+      required: true,
+    },
+    humidity: {
+      type: Number,
+      required: true,
+    },
+    co2: {
+      type: Number,
+      required: true,
     },
     temperatureOffset: {
       type: Number,
@@ -95,10 +119,15 @@ export default {
       type: Number,
       default: 5
     },
+    is_connected: {
+      type: Boolean,
+      default: false
+    },
   },
   data() {
     return {
       isVisible: false,
+      isLoading: true,
       targetTemperature: null,
       targetHumidity: null,
       debounceTimeout: null,
@@ -139,27 +168,7 @@ export default {
       }
       return false;
     },
-    image() {
-      return this.room.image || "";
-    },
-    name() {
-      return this.room.name || "Büroraum";
-    },
-    roomId() {
-      return this.room.number || "";
-    },
-    temperature() {
-      return this.room.temperature || 0;
-    },
-    humidity() {
-      return this.room.humidity || 0;
-    },
-    co2() {
-      return this.room.co2 || "N/A";
-    },
-    is_connected() {
-      return this.room.is_connected || false;
-    },
+
   },
   methods: {
     async fetchRoomDetails() {
@@ -170,6 +179,9 @@ export default {
         this.currentSensorId = room.sensor_id;
         this.currentName = room.name;
         this.currentImage = room.image;
+        this.isLoading = false;
+
+
       } catch (error) {
         console.error("Fehler beim Abrufen der Raumdaten:", error);
       }
@@ -188,12 +200,18 @@ export default {
       this.debounceTimeoutTemp = setTimeout(async () => {
         try {
           await roomService.updateTarget(this.roomId, "target_temp", this.targetTemperature);
+
+          this.$emit('target-updated', {
+            roomId: this.roomId,
+            targetTemperature: this.targetTemperature,
+            targetHumidity: this.targetHumidity
+          });
         } catch (error) {
           console.error("Fehler beim Speichern der Zieltemperatur:", error);
         } finally {
           this.disableHumidityButtons = false;
         }
-      }, 500);
+      }, 1000);
     },
 
     adjustTargetHumidity(change) {
@@ -213,9 +231,9 @@ export default {
         } finally {
           this.disableTemperatureButtons = false;
         }
-      }, 500);
+      }, 1000);
     },
-    
+
     goBack() {
       this.isVisible = false;
       this.$emit("close");
