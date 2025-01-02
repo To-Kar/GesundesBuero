@@ -162,7 +162,7 @@ app.http('sensor-data', {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/SensorData'
+ *                 $ref: '#/components/schemas/Sensor'
  */
 app.http('room-sensor-data', {
     methods: ['GET'],

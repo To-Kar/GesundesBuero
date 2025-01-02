@@ -5,6 +5,13 @@ module.exports = {
       version: '1.0.0',
       description: 'API-Dokumentation für die Funktionen der Anwendung Gesundes Büro.'
     },
+
+    servers: [
+      {
+        url: '/api',
+      }
+    ],
+
     components: {
       schemas: {
         Notification: {
@@ -19,37 +26,35 @@ module.exports = {
         Room: {
           type: 'object',
           properties: {
-            room_id: { type: 'string', description: 'Eindeutige ID des Raums' },
+            room_id: { type: 'string', description: 'ID des Raums' },
             name: { type: 'string', description: 'Name des Raums' },
+            imageURL: { type: 'string', description: 'URL des Raum-Bilds' },
             target_temp: { type: 'number', description: 'Zieltemperatur des Raums' },
-            target_humidity: { type: 'number', description: 'Ziel-Luftfeuchtigkeit des Raums' }
+            target_humidity: { type: 'number', description: 'Ziel-Luftfeuchtigkeit des Raums' },
+            sensor_id: { type: 'string', description: 'Sensor-ID, die dem Raum zugeordnet ist' }
           },
           required: ['room_id', 'name']
+        },
+        Settings: {
+          type: 'object',
+          properties: {
+            update_interval: { type: 'number', description: 'Abfrageintervall in Minuten' },
+            temperature_offset: { type: 'number', description: 'Temperatur-Offset in Grad' },
+            humidity_offset: { type: 'number', description: 'Luftfeuchtigkeits-Offset in Prozent' }
+          },
+          required: ['update_interval']
         },
         Sensor: {
           type: 'object',
           properties: {
             sensor_id: { type: 'string', description: 'Eindeutige ID des Sensors' },
-            ip_address: { type: 'string', description: 'IP-Adresse des Sensors' }
+            ip_address: { type: 'string', description: 'IP-Adresse des Sensors' },
+            temperature: { type: 'number', description: 'Gemessene Temperatur' },
+            humidity: { type: 'number', description: 'Gemessene Luftfeuchtigkeit' },
+            co2: { type: 'number', description: 'Gemessener CO₂-Wert' },
+            is_connected: { type: 'boolean', description: 'Verbindungsstatus des Sensors' }
           },
           required: ['sensor_id']
-        },
-        Settings: {
-          type: 'object',
-          properties: {
-            interval: {
-              type: 'number',
-              description: 'Abfrageintervall in Minuten'
-            },
-            temperature_offset: {
-              type: 'number',
-              description: 'Temperatur-Offset in Grad'
-            },
-            humidity_offset: {
-              type: 'number',
-              description: 'Luftfeuchtigkeits-Offset in Prozent'
-            }
-          }
         },
         SensorData: {
           type: 'object',

@@ -18,10 +18,15 @@ const settingsService = require('../services/settingsService');
  *             schema:
  *               type: object
  *               properties:
- *                 interval:
+ *                 update_interval:
  *                   type: number
- *                 offsets:
- *                   type: object
+ *                   description: Das Abfrageintervall in Minuten
+ *                 temperature_offset:
+ *                   type: number
+ *                   description: Offset für die Temperaturmessung
+ *                 humidity_offset:
+ *                   type: number
+ *                   description: Offset für die Luftfeuchtigkeitsmessung
  */
 app.http('settings', {
     methods: ['GET'],
@@ -47,9 +52,9 @@ app.http('settings', {
  *           schema:
  *             type: object
  *             properties:
- *               interval:
+ *               update_interval:
  *                 type: number
- *                 description: Das neue Intervall in Minuten
+ *                 description: Neues Intervall in Minuten
  *     responses:
  *       200:
  *         description: Intervall erfolgreich aktualisiert
@@ -91,8 +96,10 @@ app.http('interval', {
  *               properties:
  *                 temperature_offset:
  *                   type: number
+ *                   description: Offset für die Temperaturmessung
  *                 humidity_offset:
  *                   type: number
+ *                   description: Offset für die Luftfeuchtigkeitsmessung
  */
 app.http('getOffsets', {
     methods: ['GET'],
@@ -122,10 +129,10 @@ app.http('getOffsets', {
  *             properties:
  *               temperature_offset:
  *                 type: number
- *                 description: Temperatur-Offset in Grad
+ *                 description: Neuer Temperatur-Offset
  *               humidity_offset:
  *                 type: number
- *                 description: Luftfeuchtigkeits-Offset in Prozent
+ *                 description: Neuer Luftfeuchtigkeits-Offset
  *     responses:
  *       200:
  *         description: Offsetwerte erfolgreich aktualisiert

@@ -18,7 +18,7 @@ const errorHandlerWrapper = require('../utils/errorHandler');
  *         schema:
  *           type: string
  *         required: false
- *         description: ID eines spezifischen Raums
+ *         description: ID eines spezifischen Raums. Wenn nicht angegeben, werden alle Räume zurückgegeben.
  *     responses:
  *       200:
  *         description: Erfolgreich abgerufen
@@ -27,7 +27,26 @@ const errorHandlerWrapper = require('../utils/errorHandler');
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Room'
+ *                 type: object
+ *                 properties:
+ *                   room_id:
+ *                     type: string
+ *                     description: Die eindeutige ID des Raums.
+ *                   name:
+ *                     type: string
+ *                     description: Der Name des Raums.
+ *                   imageURL:
+ *                     type: string
+ *                     description: Die URL des Bildes, das den Raum darstellt.
+ *                   target_temp:
+ *                     type: number
+ *                     description: Zieltemperatur des Raums.
+ *                   target_humidity:
+ *                     type: number
+ *                     description: Ziel-Luftfeuchtigkeit des Raums.
+ *                   sensor_id:
+ *                     type: string
+ *                     description: Die ID des Sensors, der dem Raum zugeordnet ist.
  */
 app.http('room', {
     methods: ['GET'],
