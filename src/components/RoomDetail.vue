@@ -44,8 +44,8 @@
                 <HistoryWidget :roomId="roomId" />
               </template>
               <template v-else>
-          <div class="loading-message">Lade Raumdaten...</div>
-        </template>
+                <div class="loading-message">Lade Raumdaten...</div>
+              </template>
               </div>
             </div>
           </template>
