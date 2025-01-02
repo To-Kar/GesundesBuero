@@ -41,10 +41,11 @@
                 <HumidityWidget ref="humidityWidget" :humidity="humidity" :targetHumidity="targetHumidity"
                   @adjust-target-humidity="adjustTargetHumidity" />
                 <Co2Widget ref="co2Widget" :co2="co2" />
+                <HistoryWidget :roomId="roomId" />
               </template>
               <template v-else>
-          <div class="loading-message">Lade Raumdaten...</div>
-        </template>
+                <div class="loading-message">Lade Raumdaten...</div>
+              </template>
               </div>
             </div>
           </template>
@@ -73,6 +74,7 @@ import RoomEdit from './RoomEdit.vue';
 import TemperatureWidget from '../components/TemperatureWidget.vue';
 import HumidityWidget from '../components/HumidityWidget.vue';
 import Co2Widget from '../components/co2Widget.vue';
+import HistoryWidget from "../components/HistoryWidget.vue";
 
 
 export default {
@@ -80,7 +82,8 @@ export default {
     RoomEdit,
     TemperatureWidget,
     HumidityWidget,
-    Co2Widget
+    Co2Widget,
+    HistoryWidget
   },
   props: {
     isAdding: {
