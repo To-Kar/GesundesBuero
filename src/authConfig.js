@@ -1,6 +1,25 @@
 
 import { PublicClientApplication, LogLevel } from "@azure/msal-browser";
 
+export async function getTokenAndLog() {
+  const account = msalInstance.getAllAccounts()[0];
+  if (!account) {
+      console.log("Kein Benutzer angemeldet.");
+      return null;
+  }
+
+  try {
+      const response = await msalInstance.acquireTokenSilent({
+          ...loginRequest,
+          account
+      });
+      console.log("JWT-Token extrahiert:", response.accessToken);
+      return response.accessToken;
+  } catch (error) {
+      console.error("Fehler beim Abrufen des Tokens:", error);
+      return null;
+  }
+}
 // Environment-aware configuration
 const isProd = import.meta.env.PROD;
 const BASE_URL = isProd

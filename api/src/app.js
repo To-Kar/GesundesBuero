@@ -1,6 +1,7 @@
 // app.js
 
 const { app } = require('@azure/functions');
+const validateJwt = require('./utils/validateJwt');
 
 // Funktionen importieren
 

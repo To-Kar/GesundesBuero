@@ -7,6 +7,7 @@ const sensorService = require('../services/sensorService');
 
 const httpResponses = require('../utils/httpResponse');
 
+const validateJwt = require('../utils/validateJwt');
 //const { checkThresholdsAndNotify } = require('./notifications');
 
 
@@ -25,19 +26,25 @@ app.http('sensors', {
 
 app.http('ip', {
     methods: ['PATCH'],
-    authLevel: 'anonymous',
+    authLevel: 'function',
     route: 'sensors/{sensor_id}/ip',
-    handler: errorHandlerWrapper(async (req) => {
-        const body = await req.json();
-        const { sensor_id, ip_address } = body;
+    handler: async (req, context) => {
+        try {
+            await validateJwt(req, context);  // Token-Validierung
 
-        console.log('Empfangene Daten im Backend:', { sensor_id, ip_address });
+            const body = await req.json();
+            const { sensor_id, ip_address } = body;
 
-        // Ip Adresse aktualisieren
-        const result = await sensorService.handleIpUpdate(sensor_id, ip_address);
+            console.log('Empfangene Daten im Backend:', { sensor_id, ip_address });
 
-        return httpResponses.success(result)
-    })
+            // Ip Adresse aktualisieren
+            const result = await sensorService.handleIpUpdate(sensor_id, ip_address);
+            return httpResponses.success(result);
+            
+        } catch (error) {
+            return { status: error.status || 500, body: error.body || 'Fehler bei der Verarbeitung' };
+        }
+    }
 });
 
 
