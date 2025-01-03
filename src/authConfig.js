@@ -76,7 +76,10 @@ export const msalConfig = {
 };
 const Client_ID = import.meta.env.VITE_CLIENT_ID;
 export const loginRequest = {
-  scopes: [`api://${Client_ID}/access_ass_user`]
+  scopes: [`api://${Client_ID}/access_ass_user`,
+  "User.Read",   
+  "profile"
+  ]
 };
 
 // Export environment variables for use in other files
