@@ -6,7 +6,8 @@ const validateJwt = require('./utils/validateJwt');
 // Funktionen importieren
 
 require('./controllers/sensorController');
-require('./controllers/notificationController')
-require('./controllers/settingsController')
-require('./controllers/roomController')
-require('./controllers/historyController')
+require('./controllers/notificationController');
+require('./controllers/settingsController');
+require('./controllers/roomController');
+require('./controllers/historyController');
+require('./functions/httpTrigger1');
