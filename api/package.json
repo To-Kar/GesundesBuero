@@ -1,0 +1,18 @@
+{
+  "name": "",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "@azure/functions": "^4.6.0",
+    "axios": "^1.7.8",
+    "mssql": "^11.0.1"
+  },
+  "devDependencies": {
+    "azure-functions-core-tools": "^4.0.6610"
+  }
+}

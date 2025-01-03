@@ -1,0 +1,29 @@
+@font-face {
+    font-family: 'BDOGrotesk';
+    src: url('./BDOGrotesk-VF.woff2') format('woff2');
+    font-weight: 100 900;;
+    font-style: normal;
+    font-display: swap;
+  }
+.heading {
+    font-family: 'BDOGrotesk';
+    font-size: 32px;
+    line-height: 38.4px;
+    letter-spacing: -0.68px;
+    font-weight: 700;
+}
+.subheading {
+    font-family: 'BDOGrotesk';
+    font-size: 18px;
+    line-height: 25.2px;
+    letter-spacing: 0.009em;
+    font-weight: 700;
+}
+
+.text-base {
+    font-family: 'BDOGrotesk';
+    font-size: 18px;
+    line-height: 25.2px;
+    letter-spacing: 0.009em;
+    font-weight: 400;
+}
