@@ -1,20 +1,54 @@
+
 import { PublicClientApplication, LogLevel } from "@azure/msal-browser";
 
+export async function getTokenAndLog() {
+  const account = msalInstance.getAllAccounts()[0];
+  if (!account) {
+      console.log("Kein Benutzer angemeldet.");
+      return null;
+  }
+
+  try {
+      const response = await msalInstance.acquireTokenSilent({
+          ...loginRequest,
+          account
+      });
+      console.log("JWT-Token extrahiert:", response.accessToken);
+      return response.accessToken;
+  } catch (error) {
+      console.error("Fehler beim Abrufen des Tokens:", error);
+      return null;
+  }
+}
 // Environment-aware configuration
 const isProd = import.meta.env.PROD;
-const BASE_URL = window.location.origin;
+const BASE_URL = isProd
+  ? import.meta.env.VITE_BASE_URL
+  : window.location.origin;
+
+const API_URL = isProd
+  ? import.meta.env.VITE_API_URL
+  : import.meta.env.VITE_API_URL || "http://localhost:7071/api";
+
+// Ensure redirect URI matches the current environment
+const redirectUri = `${BASE_URL}${import.meta.env.VITE_REDIRECT_URI}`;
+
+// Fetch clientId from environment variables
+const clientId = import.meta.env.VITE_CLIENT_ID;
+const authority = import.meta.env.VITE_AUTHORITY;
+const postLogoutRedirectUri = `${BASE_URL}${import.meta.env.VITE_POST_LOGOUT_REDIRECT_URI}`;
 
 export const msalConfig = {
   auth: {
-    clientId: import.meta.env.VITE_CLIENT_ID,
-    authority: import.meta.env.VITE_AUTHORITY,
-    redirectUri: `${BASE_URL}/room`,
+    clientId,
+    authority,
+    redirectUri,
     navigateToLoginRequestUrl: true,
-    postLogoutRedirectUri: `${BASE_URL}/post-logout`
+    postLogoutRedirectUri
   },
   cache: {
     cacheLocation: "sessionStorage",
-    storeAuthStateInCookie: true // Enable cookies for IE support
+    storeAuthStateInCookie: false
   },
   system: {
     allowNativeBroker: false,
@@ -40,18 +74,15 @@ export const msalConfig = {
     }
   }
 };
-
-const API_URL = isProd
-  ? import.meta.env.VITE_API_URL
-  : "http://localhost:7071/api";
-
+const Client_ID = import.meta.env.VITE_CLIENT_ID;
 export const loginRequest = {
-  scopes: [`api://${import.meta.env.VITE_CLIENT_ID}/access_ass_user`,
-    "User.Read",
-    "profile"
+  scopes: [`api://${Client_ID}/access_ass_user`,
+  "User.Read",   
+  "profile"
   ]
 };
 
+// Export environment variables for use in other files
 export const environment = {
   isProd,
   baseUrl: BASE_URL,
@@ -59,38 +90,28 @@ export const environment = {
 };
 
 export function isUserAdmin() {
-  const adminRole = import.meta.env.VITE_ADMIN_ROLE;
+  const adminRole = import.meta.env.VITE_ADMIN_ROLE; // Hole Admin-Rolle aus .env
   const accounts = msalInstance.getAllAccounts();
   if (accounts.length > 0) {
     const account = accounts[0];
-    const roles = account.idTokenClaims?.roles || [];
+    const roles = account.idTokenClaims?.roles || []; // Falls Rollen im Token als `roles` vorhanden
     return roles.includes(adminRole);
   }
   return false;
 }
 
-export async function getTokenAndLog() {
-  const account = msalInstance.getAllAccounts()[0];
-  if (!account) {
-    console.log("Kein Benutzer angemeldet.");
-    return null;
-  }
-  try {
-    const response = await msalInstance.acquireTokenSilent({
-      ...loginRequest,
-      account
-    });
-    console.log("JWT-Token extrahiert:", response.accessToken);
-    return response.accessToken;
-  } catch (error) {
-    console.error("Fehler beim Abrufen des Tokens:", error);
-    return null;
-  }
-}
 
+// Initialize MSAL instance
 const msalInstance = new PublicClientApplication(msalConfig);
 
-// Initialize MSAL before export
-await msalInstance.initialize();
+// Handle initialization and redirect
+(async () => {
+  try {
+    await msalInstance.initialize();
+    await msalInstance.handleRedirectPromise();
+  } catch (error) {
+    console.error("Error initializing MSAL:", error);
+  }
+})();
 
 export { msalInstance };
