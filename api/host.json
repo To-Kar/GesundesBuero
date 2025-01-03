@@ -1,12 +1,29 @@
 {
   "version": "2.0",
   "logging": {
-    "logLevel": {
-      "default": "Information"
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      }
+    }
+  },
+  "extensions": {
+    "http": {
+      "routePrefix": "api",
+      "cors": {
+        "allowedOrigins": [
+          "http://localhost:5173/",
+          "https://victorious-field-0cd4c7903.4.azurestaticapps.net/"
+        ],
+        "allowedMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allowedHeaders": [""],
+        "maxAge": 86400
+      }
     }
   },
   "extensionBundle": {
     "id": "Microsoft.Azure.Functions.ExtensionBundle",
-    "version": "[4.*, 5.0.0)"
+    "version": "[4., 5.0.0)"
   }
 }
