@@ -26,25 +26,22 @@ app.http('sensors', {
 
 app.http('ip', {
     methods: ['PATCH'],
-    authLevel: 'function',
+    authLevel: 'anonymous',
     route: 'sensors/{sensor_id}/ip',
-    handler: async (req, context) => {
-        try {
-            await validateJwt(req, context);  // Token-Validierung
-
-            const body = await req.json();
-            const { sensor_id, ip_address } = body;
-
-            console.log('Empfangene Daten im Backend:', { sensor_id, ip_address });
-
-            // Ip Adresse aktualisieren
-            const result = await sensorService.handleIpUpdate(sensor_id, ip_address);
-            return httpResponses.success(result);
-            
-        } catch (error) {
-            return { status: error.status || 500, body: error.body || 'Fehler bei der Verarbeitung' };
+    handler: errorHandlerWrapper(async (req, context) => {
+        // JWT Validierung
+        await validateJwt(req, context);
+        
+        const sensor_id = req.params.sensor_id;
+        const body = await req.json();
+        
+        if (!body.ip_address) {
+            return httpResponses.badRequest('IP-Adresse muss angegeben werden');
         }
-    }
+
+        const result = await sensorService.handleIpUpdate(sensor_id, body.ip_address);
+        return httpResponses.success(result);
+    })
 });
 
 
