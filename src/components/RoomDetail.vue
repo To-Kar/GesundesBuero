@@ -73,7 +73,7 @@ import { updateGaugeChart, disposeGauges, initGaugeChart, getDynamicColor } from
 import RoomEdit from './RoomEdit.vue';
 import TemperatureWidget from '../components/TemperatureWidget.vue';
 import HumidityWidget from '../components/HumidityWidget.vue';
-import Co2Widget from '../components/co2Widget.vue';
+import Co2Widget from '../components/Co2Widget.vue';
 import HistoryWidget from "../components/HistoryWidget.vue";
 
 
