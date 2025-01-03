@@ -1,26 +1,25 @@
 {
-    "routes": [
-      {
-        "route": "/*",
-        "allowedRoles": ["authenticated"]
-      }
-    ],
-    "responseOverrides": {
-      "401": {
-        "statusCode": 302,
-        "redirect": "/login"
-      }
-    },
-    "auth": {
-      "identityProviders": {
-        "azureActiveDirectory": {
-          "registration": {
-            "openIdIssuer": "https://login.microsoftonline.com/3acbef42-1ba8-4fd2-8f6c-bfc8d375fc6b/v2.0",
-            "clientIdSettingName": "AZURE_CLIENT_ID",
-            "clientSecretSettingName": "AZURE_CLIENT_SECRET"
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/images/.{png,jpg,gif}", "/css/", "/api/"]
+  },
+      "routes": [
+        {
+          "route": "/api/",
+          "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+          "headers": {
+            "Access-Control-Allow-Origin": "",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+            "Access-Control-Allow-Headers": ""
           }
         }
+      ],
+      "navigationFallback": {
+        "rewrite": "/index.html",
+        "exclude": ["/api/*"]
+      },
+      "platform": {
+        "apiRuntime": "node:20"
       }
-    }
-  }
-  
+
+}
