@@ -20,26 +20,8 @@ jobs:
         with:
           submodules: true
           lfs: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      # Frontend Dependencies
-      - name: Install Frontend Dependencies
-        run: npm install
-
-      # API Dependencies
-      - name: Install API Dependencies
-        run: |
-          cd api
-          npm install
-          cd ..
-          
       - name: Install OIDC Client from Core Package
         run: npm install @actions/core@1.6.0 @actions/http-client
-        
       - name: Get Id Token
         uses: actions/github-script@v6
         id: idtoken
@@ -48,7 +30,6 @@ jobs:
                const coredemo = require('@actions/core')
                return await coredemo.getIDToken()
            result-encoding: string
-           
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -57,25 +38,20 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "/"
-          api_location: "api"
+          api_location: "./api"
           output_location: "dist"
           github_id_token: ${{ steps.idtoken.outputs.result }}
-          api_build_command: "npm install"
-          app_build_command: "npm run build"
         env:
-          # DB Secrets
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_SERVER: ${{ secrets.DB_SERVER }}
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
-          # Auth Secrets
           VITE_CLIENT_ID: ${{ secrets.VITE_CLIENT_ID }}
           VITE_AUTHORITY: ${{ secrets.VITE_AUTHORITY }}
           VITE_BASE_URL: ${{ secrets.VITE_BASE_URL }}
           VITE_REDIRECT_URI: ${{ secrets.VITE_REDIRECT_URI }}
           VITE_POST_LOGOUT_REDIRECT_URI: ${{ secrets.VITE_POST_LOGOUT_REDIRECT_URI }}
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
-
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
