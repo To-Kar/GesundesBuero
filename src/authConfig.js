@@ -10,15 +10,10 @@ const API_URL = isProd
   : import.meta.env.VITE_API_URL || "http://localhost:7071/api";
 
 // Ensure redirect URI matches the current environment
-const redirectUri = `${BASE_URL}${import.meta.env.VITE_REDIRECT_URI}`;
-const clientId = import.meta.env.VITE_CLIENT_ID;
-const authority = import.meta.env.VITE_AUTHORITY;
-const postLogoutRedirectUri = `${BASE_URL}${import.meta.env.VITE_POST_LOGOUT_REDIRECT_URI}`;
-
-// Validierung der wichtigen Konfigurationswerte
-if (!clientId) console.error('VITE_CLIENT_ID fehlt in der Umgebungskonfiguration');
-if (!authority) console.error('VITE_AUTHORITY fehlt in der Umgebungskonfiguration');
-if (!redirectUri) console.error('VITE_REDIRECT_URI fehlt in der Umgebungskonfiguration');
+const redirectUri = `${BASE_URL}/room`; // Direkt auf /room setzen
+const clientId = "9bc0f1d1-d9f3-45ce-b0ac-1f8484a6b435"; // Feste Client ID
+const authority = "https://login.microsoftonline.com/3acbef42-1ba8-4fd2-8f6c-bfc8d375fc6b"; // Feste Authority
+const postLogoutRedirectUri = `${BASE_URL}/post-logout`; // Fester Logout Redirect
 
 export const msalConfig = {
   auth: {
@@ -26,18 +21,17 @@ export const msalConfig = {
     authority,
     redirectUri,
     navigateToLoginRequestUrl: true,
-    postLogoutRedirectUri,
-    validateAuthority: true  // Aktiviert Autoritätsvalidierung
+    postLogoutRedirectUri
   },
   cache: {
     cacheLocation: "sessionStorage",
     storeAuthStateInCookie: false,
-    secureCookies: true  // Erhöht die Cookie-Sicherheit
+    secureCookies: true
   },
   system: {
     allowNativeBroker: false,
     loggerOptions: {
-      logLevel: isProd ? LogLevel.Error : LogLevel.Verbose,
+      logLevel: LogLevel.Verbose, // Verbose für besseres Debugging
       loggerCallback: (level, message, containsPii) => {
         if (containsPii) return;
         
@@ -58,22 +52,17 @@ export const msalConfig = {
         }
       },
       piiLoggingEnabled: false
-    },
-    windowHashTimeout: 9000,  // Erhöht Timeout für langsame Verbindungen
-    iframeHashTimeout: 9000,
-    loadFrameTimeout: 9000
+    }
   }
 };
 
-// Verbesserte Login Request Konfiguration
+// Login Request mit korrekter Client ID
 export const loginRequest = {
   scopes: [
-    `api://${clientId}/access_ass_user`,  // Nutzt die gleiche clientId-Variable
+    `api://9bc0f1d1-d9f3-45ce-b0ac-1f8484a6b435/access_ass_user`,
     "User.Read",
     "profile"
-  ].filter(Boolean),  // Filtert leere/undefined Werte
-  prompt: "select_account",  // Ermöglicht Kontoauswahl
-  extraScopesToConsent: ["offline_access"]  // Fügt Refresh Token Support hinzu
+  ]
 };
 
 // Export environment variables
@@ -83,26 +72,22 @@ export const environment = {
   apiUrl: API_URL
 };
 
+// Admin check function
 export function isUserAdmin() {
   try {
-    const adminRole = import.meta.env.VITE_ADMIN_ROLE;
-    if (!adminRole) {
-      console.warn('VITE_ADMIN_ROLE nicht konfiguriert');
-      return false;
-    }
-
     const accounts = msalInstance.getAllAccounts();
     if (!accounts.length) return false;
 
     const account = accounts[0];
     const roles = account.idTokenClaims?.roles || [];
-    return roles.includes(adminRole);
+    return roles.includes('Admin'); // Prüft auf Admin-Rolle
   } catch (error) {
     console.error('Fehler bei der Admin-Rollenprüfung:', error);
     return false;
   }
 }
 
+// Token logging function
 export async function getTokenAndLog() {
   try {
     const account = msalInstance.getAllAccounts()[0];
@@ -111,13 +96,11 @@ export async function getTokenAndLog() {
       return null;
     }
 
-    const tokenRequest = {
+    const response = await msalInstance.acquireTokenSilent({
       ...loginRequest,
-      account,
-      forceRefresh: false  // Nutzt Cache wenn möglich
-    };
-
-    const response = await msalInstance.acquireTokenSilent(tokenRequest);
+      account
+    });
+    
     if (response?.accessToken) {
       console.log("Token erfolgreich abgerufen");
       return response.accessToken;
@@ -133,8 +116,10 @@ export async function getTokenAndLog() {
   }
 }
 
+// MSAL Instance Initialization
 const msalInstance = new PublicClientApplication(msalConfig);
 
+// Initialize and handle redirects
 (async () => {
   try {
     console.log('Starte MSAL Initialisierung...');
@@ -144,10 +129,6 @@ const msalInstance = new PublicClientApplication(msalConfig);
     const result = await msalInstance.handleRedirectPromise();
     if (result) {
       console.log('Redirect erfolgreich verarbeitet');
-      const accounts = msalInstance.getAllAccounts();
-      if (accounts.length > 0) {
-        console.log('Benutzer ist eingeloggt');
-      }
     }
   } catch (error) {
     console.error("Fehler bei MSAL Initialisierung:", error);
