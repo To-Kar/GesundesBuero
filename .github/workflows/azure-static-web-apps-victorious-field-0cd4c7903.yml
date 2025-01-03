@@ -40,11 +40,6 @@ jobs:
                const coredemo = require('@actions/core')
                return await coredemo.getIDToken()
            result-encoding: string
-
-      - name: Debug Environment
-        run: |
-             echo "Checking environment variables..."
-             env | grep VITE_
            
       - name: Build And Deploy
         id: builddeploy
