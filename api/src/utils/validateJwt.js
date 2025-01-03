@@ -8,7 +8,6 @@ const client = jwksClient({
     jwksUri: `https://login.microsoftonline.com/${TENANT_ID}/discovery/v2.0/keys`
 });
 
-// Role definitions
 const ROLES = {
     ADMIN: 'Admin',
     USER: 'User'
@@ -56,15 +55,29 @@ async function validateJwt(req, context, requiredRole = null) {
             });
         });
 
-        // Rollenüberprüfung
-        if (requiredRole) {
-            const userRole = decoded.roles?.[0] || ROLES.USER; // Fallback auf USER wenn keine Rolle definiert
-            if (requiredRole === ROLES.ADMIN && userRole !== ROLES.ADMIN) {
-                throw { status: 403, body: 'Keine Administratorrechte' };
+        // Rollenvalidierung
+        if (!decoded.roles || decoded.roles.length === 0) {
+            throw { status: 403, body: 'Keine Rolle im Token gefunden' };
+        }
+
+        // Bei Admin-Endpunkten
+        if (requiredRole === ROLES.ADMIN) {
+            const hasAdminRole = decoded.roles.includes(ROLES.ADMIN);
+            if (!hasAdminRole) {
+                throw { status: 403, body: 'Admin-Rechte erforderlich' };
             }
         }
 
+        // Bei allgemeinen Endpunkten
+        const hasValidRole = decoded.roles.some(role => 
+            [ROLES.ADMIN, ROLES.USER].includes(role)
+        );
+        if (!hasValidRole) {
+            throw { status: 403, body: 'Keine gültige Rolle' };
+        }
+
         return decoded;
+
     } catch (error) {
         console.error('Fehler in validateJwt:', error);
         throw {

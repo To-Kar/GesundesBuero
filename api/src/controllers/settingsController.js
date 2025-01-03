@@ -11,7 +11,7 @@ app.http('settings', {
     route: 'settings',
     handler: errorHandlerWrapper(async (req, context) => {
         // JWT Validierung
-        await validateJwt(req, context, ROLES.ADMIN);
+        await validateJwt(req, context);
         const settings = await settingsService.getSettings();
         return httpResponses.success(settings, 200);
     }),
@@ -40,7 +40,7 @@ app.http('getOffsets', {
     route: 'settings/offsets',
     handler: errorHandlerWrapper(async (req, context) => {
         // JWT Validierung
-        await validateJwt(req, context, ROLES.ADMIN);
+        await validateJwt(req, context);
         const result = await settingsService.getOffsets();
         return httpResponses.success(result);
     })
