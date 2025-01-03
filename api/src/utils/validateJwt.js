@@ -1,15 +1,20 @@
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
-// Azure AD Konfiguration aus den Umgebungsvariablen
 const TENANT_ID = process.env.AZURE_TENANT_ID;
-const CLIENT_ID = process.env.VITE_CLIENT_ID; // Die Client ID deiner App
+const CLIENT_ID = process.env.VITE_CLIENT_ID;
 
 const client = jwksClient({
     jwksUri: `https://login.microsoftonline.com/${TENANT_ID}/discovery/v2.0/keys`
 });
 
-async function validateJwt(req, context) {
+// Role definitions
+const ROLES = {
+    ADMIN: 'Admin',
+    USER: 'User'
+};
+
+async function validateJwt(req, context, requiredRole = null) {
     try {
         const authHeader = req.headers.get('authorization');
         if (!authHeader) {
@@ -23,41 +28,43 @@ async function validateJwt(req, context) {
             throw { status: 401, body: 'Token konnte nicht dekodiert werden' };
         }
 
-
-        // Korrekte Validierungsoptionen für deine Azure AD App
         const validationOptions = {
             audience: CLIENT_ID,
             issuer: `https://login.microsoftonline.com/${TENANT_ID}/v2.0`,
             algorithms: ['RS256']
         };
 
-        context.log('Validierungsoptionen:', validationOptions);
-
-        return new Promise((resolve, reject) => {
+        const decoded = await new Promise((resolve, reject) => {
             const kid = decodedToken.header.kid;
             client.getSigningKey(kid, (err, key) => {
                 if (err) {
                     reject({ status: 401, body: 'Token Validierungsfehler: ' + err.message });
                     return;
                 }
-
                 const signingKey = key.getPublicKey();
                 
                 jwt.verify(token, signingKey, validationOptions, (err, decoded) => {
                     if (err) {
-                        console.error('Token Verifizierungsfehler:', err);
-                        reject({ 
-                            status: 401, 
-                            body: `Token ungültig: ${err.message}` 
+                        reject({
+                            status: 401,
+                            body: `Token ungültig: ${err.message}`
                         });
                         return;
                     }
-                    
-                    console.log('Token erfolgreich validiert:', decoded);
                     resolve(decoded);
                 });
             });
         });
+
+        // Rollenüberprüfung
+        if (requiredRole) {
+            const userRole = decoded.roles?.[0] || ROLES.USER; // Fallback auf USER wenn keine Rolle definiert
+            if (requiredRole === ROLES.ADMIN && userRole !== ROLES.ADMIN) {
+                throw { status: 403, body: 'Keine Administratorrechte' };
+            }
+        }
+
+        return decoded;
     } catch (error) {
         console.error('Fehler in validateJwt:', error);
         throw {
@@ -67,4 +74,11 @@ async function validateJwt(req, context) {
     }
 }
 
-module.exports = validateJwt;
+// Middleware für Rollenbasierte Zugriffssteuerung
+function requireRole(role) {
+    return async (req, context) => {
+        await validateJwt(req, context, role);
+    };
+}
+
+module.exports = { validateJwt, requireRole, ROLES };
