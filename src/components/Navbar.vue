@@ -142,9 +142,9 @@ export default {
   const accounts = msalInstance.getAllAccounts();
   if (accounts.length > 0) {
     const account = accounts[0];
-    const adminIdentifier = "admin"; // Prüfe auf 'admin' im Namen
-    const displayName = account.idTokenClaims?.name || "";
-    return displayName.toLowerCase().includes(adminIdentifier);
+    const adminIdentifier = "Admin"; // Prüfe auf 'admin' im Namen
+    const displayName = account.idTokenClaims?.roles;
+    return displayName.includes(adminIdentifier);
   }
   return false;
 }

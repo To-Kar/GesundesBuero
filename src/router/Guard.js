@@ -1,8 +1,11 @@
 import { isUserAdmin } from '../authConfig';
 import { msalInstance, loginRequest } from '../authConfig';
+import { getTokenAndLog } from '../authConfig';
 
 export function registerGuard(router) {
   router.beforeEach(async (to, from, next) => {
+    await getTokenAndLog();  // Logge das Token bei jeder Navigation
+    next();
     const accounts = msalInstance.getAllAccounts();
     const isAuthenticated = accounts.length > 0;
 

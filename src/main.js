@@ -12,7 +12,6 @@ import PrimeVue from 'primevue/config';
 const app = createApp(App);
 app.use(router);
 app.use(echartsPlugin); 
-app.use(PrimeVue);
 
 
 

@@ -161,16 +161,15 @@ export default {
   },
   computed: {
     isAdmin() {
-      // Gleiches Prinzip wie in Navbar
-      const accounts = msalInstance.getAllAccounts();
-      if (accounts.length > 0) {
-        const account = accounts[0];
-        const adminIdentifier = "admin";
-        const displayName = account.idTokenClaims?.name || "";
-        return displayName.toLowerCase().includes(adminIdentifier);
-      }
-      return false;
-    },
+  const accounts = msalInstance.getAllAccounts();
+  if (accounts.length > 0) {
+    const account = accounts[0];
+    const adminIdentifier = "Admin"; // Prüfe auf 'admin' im Namen
+    const displayName = account.idTokenClaims?.roles;
+    return displayName.includes(adminIdentifier);
+  }
+  return false;
+}
 
   },
   methods: {
