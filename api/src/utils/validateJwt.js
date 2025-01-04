@@ -1,11 +1,12 @@
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
-
 const TENANT_ID = process.env.AZURE_TENANT_ID;
 const CLIENT_ID = process.env.VITE_CLIENT_ID;
-
 const client = jwksClient({
-    jwksUri: `https://login.microsoftonline.com/${TENANT_ID}/discovery/v2.0/keys`
+    jwksUri: `https://login.microsoftonline.com/${TENANT_ID}/discovery/v2.0/keys`,
+    cache: true,
+    cacheMaxAge: 86400000, // 24h
+    rateLimit: true
 });
 
 const ROLES = {
@@ -15,17 +16,27 @@ const ROLES = {
 
 async function validateJwt(req, context, requiredRole = null) {
     try {
+        // Prüfe beide Token-Quellen
+        const aadToken = req.headers.get('x-ms-token-aad-access-token');
         const authHeader = req.headers.get('authorization');
-        if (!authHeader) {
-            throw { status: 401, body: 'Kein Authorization Header' };
+        const token = aadToken || (authHeader ? authHeader.split(' ')[1] : null);
+
+        if (!token) {
+            throw { status: 401, body: 'Kein Token gefunden' };
         }
 
-        const token = authHeader.split(' ')[1];
         const decodedToken = jwt.decode(token, { complete: true });
-        
+       
         if (!decodedToken) {
             throw { status: 401, body: 'Token konnte nicht dekodiert werden' };
         }
+
+        // Debug Logging
+        context.log('Token Info:', {
+            tokenType: aadToken ? 'AAD Token' : 'Auth Header Token',
+            header: decodedToken.header,
+            claims: decodedToken.payload
+        });
 
         const validationOptions = {
             audience: CLIENT_ID,
@@ -33,17 +44,26 @@ async function validateJwt(req, context, requiredRole = null) {
             algorithms: ['RS256']
         };
 
+        // Debug Logging
+        context.log('Validation Options:', {
+            audience: validationOptions.audience,
+            issuer: validationOptions.issuer,
+            kid: decodedToken.header.kid
+        });
+
         const decoded = await new Promise((resolve, reject) => {
             const kid = decodedToken.header.kid;
             client.getSigningKey(kid, (err, key) => {
                 if (err) {
+                    context.log('JWKS Error:', err);
                     reject({ status: 401, body: 'Token Validierungsfehler: ' + err.message });
                     return;
                 }
                 const signingKey = key.getPublicKey();
-                
+               
                 jwt.verify(token, signingKey, validationOptions, (err, decoded) => {
                     if (err) {
+                        context.log('Verify Error:', err);
                         reject({
                             status: 401,
                             body: `Token ungültig: ${err.message}`
@@ -53,6 +73,12 @@ async function validateJwt(req, context, requiredRole = null) {
                     resolve(decoded);
                 });
             });
+        });
+
+        // Debug Logging
+        context.log('Decoded Token:', {
+            roles: decoded.roles,
+            requiredRole: requiredRole
         });
 
         // Rollenvalidierung
@@ -69,7 +95,7 @@ async function validateJwt(req, context, requiredRole = null) {
         }
 
         // Bei allgemeinen Endpunkten
-        const hasValidRole = decoded.roles.some(role => 
+        const hasValidRole = decoded.roles.some(role =>
             [ROLES.ADMIN, ROLES.USER].includes(role)
         );
         if (!hasValidRole) {
@@ -79,7 +105,13 @@ async function validateJwt(req, context, requiredRole = null) {
         return decoded;
 
     } catch (error) {
-        console.error('Fehler in validateJwt:', error);
+        context.log('Error in validateJwt:', {
+            error: error,
+            status: error.status,
+            message: error.message,
+            body: error.body
+        });
+
         throw {
             status: error.status || 500,
             body: error.body || `Interner Fehler bei der Token-Validierung: ${error.message}`
