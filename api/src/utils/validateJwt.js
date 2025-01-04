@@ -5,7 +5,7 @@ const CLIENT_ID = process.env.VITE_CLIENT_ID;
 const client = jwksClient({
     jwksUri: `https://login.microsoftonline.com/${TENANT_ID}/discovery/v2.0/keys`,
     cache: true,
-    cacheMaxAge: 86400000, // 24h
+    cacheMaxAge: 86400000,
     rateLimit: true
 });
 
@@ -16,26 +16,30 @@ const ROLES = {
 
 async function validateJwt(req, context, requiredRole = null) {
     try {
-        // Prüfe beide Token-Quellen
-        const aadToken = req.headers.get('x-ms-token-aad-access-token');
+        // WICHTIG: Prüfe BEIDE möglichen Token-Quellen
+        const aadToken = req.headers.get('x-ms-token-aad-access-token') || 
+                        req.headers.get('x-ms-access-token');
         const authHeader = req.headers.get('authorization');
+        
+        // Debug logging
+        context.log('Available Headers:', Object.fromEntries(req.headers.entries()));
+        context.log('Token Sources:', { aadToken: !!aadToken, authHeader: !!authHeader });
+
         const token = aadToken || (authHeader ? authHeader.split(' ')[1] : null);
 
         if (!token) {
-            throw { status: 401, body: 'Kein Token gefunden' };
+            throw { status: 401, body: 'Kein gültiges Token gefunden' };
         }
 
         const decodedToken = jwt.decode(token, { complete: true });
-       
+        
         if (!decodedToken) {
             throw { status: 401, body: 'Token konnte nicht dekodiert werden' };
         }
 
-        // Debug Logging
-        context.log('Token Info:', {
-            tokenType: aadToken ? 'AAD Token' : 'Auth Header Token',
+        context.log('Decoded Token:', {
             header: decodedToken.header,
-            claims: decodedToken.payload
+            payload: decodedToken.payload
         });
 
         const validationOptions = {
@@ -44,23 +48,23 @@ async function validateJwt(req, context, requiredRole = null) {
             algorithms: ['RS256']
         };
 
-        // Debug Logging
-        context.log('Validation Options:', {
-            audience: validationOptions.audience,
-            issuer: validationOptions.issuer,
-            kid: decodedToken.header.kid
-        });
-
         const decoded = await new Promise((resolve, reject) => {
             const kid = decodedToken.header.kid;
+            
+            if (!kid) {
+                reject({ status: 401, body: 'Keine KID im Token Header gefunden' });
+                return;
+            }
+
             client.getSigningKey(kid, (err, key) => {
                 if (err) {
                     context.log('JWKS Error:', err);
                     reject({ status: 401, body: 'Token Validierungsfehler: ' + err.message });
                     return;
                 }
+                
                 const signingKey = key.getPublicKey();
-               
+                
                 jwt.verify(token, signingKey, validationOptions, (err, decoded) => {
                     if (err) {
                         context.log('Verify Error:', err);
@@ -75,31 +79,23 @@ async function validateJwt(req, context, requiredRole = null) {
             });
         });
 
-        // Debug Logging
-        context.log('Decoded Token:', {
-            roles: decoded.roles,
-            requiredRole: requiredRole
-        });
-
         // Rollenvalidierung
-        if (!decoded.roles || decoded.roles.length === 0) {
-            throw { status: 403, body: 'Keine Rolle im Token gefunden' };
+        if (!decoded.roles || !Array.isArray(decoded.roles) || decoded.roles.length === 0) {
+            throw { status: 403, body: 'Keine Rollen im Token gefunden' };
         }
 
-        // Bei Admin-Endpunkten
-        if (requiredRole === ROLES.ADMIN) {
-            const hasAdminRole = decoded.roles.includes(ROLES.ADMIN);
-            if (!hasAdminRole) {
-                throw { status: 403, body: 'Admin-Rechte erforderlich' };
-            }
+        // Admin-Check
+        if (requiredRole === ROLES.ADMIN && !decoded.roles.includes(ROLES.ADMIN)) {
+            throw { status: 403, body: 'Admin-Rechte erforderlich' };
         }
 
-        // Bei allgemeinen Endpunkten
-        const hasValidRole = decoded.roles.some(role =>
-            [ROLES.ADMIN, ROLES.USER].includes(role)
+        // Allgemeine Rollenprüfung
+        const hasValidRole = decoded.roles.some(role => 
+            Object.values(ROLES).includes(role)
         );
+
         if (!hasValidRole) {
-            throw { status: 403, body: 'Keine gültige Rolle' };
+            throw { status: 403, body: 'Keine gültige Rolle gefunden' };
         }
 
         return decoded;
@@ -119,7 +115,6 @@ async function validateJwt(req, context, requiredRole = null) {
     }
 }
 
-// Middleware für Rollenbasierte Zugriffssteuerung
 function requireRole(role) {
     return async (req, context) => {
         await validateJwt(req, context, role);
