@@ -1,4 +1,6 @@
 const { app } = require('@azure/functions');
+const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
 
 const TENANT_ID = process.env.AZURE_TENANT_ID;
 const CLIENT_ID = process.env.VITE_CLIENT_ID;
