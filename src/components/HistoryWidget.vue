@@ -180,11 +180,11 @@ renderChart(data) {
     name: "Wert",
     boundaryGap: [0, "10%"],
     min: this.currentChart === "temperature" ? 15
-         : this.currentChart === "humidity" ? 20 
+         : this.currentChart === "humidity" ? 10 
          : this.currentChart === "co2" ? 200 
          : null, // Dynamischer Startwert
     max: this.currentChart === "temperature" ? 30 
-         : this.currentChart === "humidity" ? 80 
+         : this.currentChart === "humidity" ? 100 
          : this.currentChart === "co2" ? 1800 
          : null, // Dynamischer Endwert
   },
