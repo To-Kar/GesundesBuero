@@ -93,7 +93,7 @@ export const sensorService = {
       },
 
       async addSensor(sensor) {
-        const response = await apiClient.post('http://localhost:7071/api/sensors', {
+        const response = await apiClient.post('/sensors', {
           sensor_id: sensor.sensor_id,
           ip_address: sensor.ip_address
         });
