@@ -13,9 +13,9 @@ const ROLES = {
     USER: 'User'
 };
 
-async function validateJwt(req, context, requiredRole = null) {
+async function validateJwt(req, requiredRole = null) {
     try {
-        const authHeader = req.headers.get('authorization');
+        const authHeader = req.headers.authorization;
         if (!authHeader) {
             throw { status: 401, body: 'Kein Authorization Header' };
         }
@@ -89,8 +89,8 @@ async function validateJwt(req, context, requiredRole = null) {
 
 // Middleware für Rollenbasierte Zugriffssteuerung
 function requireRole(role) {
-    return async (req, context) => {
-        await validateJwt(req, context, role);
+    return async (req) => {
+        await validateJwt(req, role);
     };
 }
 
