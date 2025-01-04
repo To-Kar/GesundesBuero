@@ -26,6 +26,7 @@
   
   <script>
   import * as echarts from "echarts";
+  import { historyService } from "../services/historyService";
   
   export default {
     props: {
@@ -59,36 +60,33 @@
         this.fetchData(); // Daten neu laden
       },
       async fetchData() {
-  if (!this.selectedInterval) {
-    this.selectedInterval = this.intervals[3]; // Standard auf 7 Tage setzen
-  }
-
-  const endDate = new Date().toISOString();
-  const startDate = new Date(Date.now() - this.selectedInterval.duration).toISOString();
-  const hourly = this.selectedInterval.hourly ? "&hourly=true" : "";
-
-  try {
-    const response = await fetch(
-      `http://localhost:7071/api/room-history/${this.roomId}?startDate=${startDate}&endDate=${endDate}${hourly}`
-    );
-
-    if (!response.ok) throw new Error("API-Anfrage fehlgeschlagen");
-    const data = await response.json();
-
-    if (!Array.isArray(data) || data.length === 0) {
-      this.renderChart([]); // Leeres Diagramm rendern
-      return;
+    if (!this.selectedInterval) {
+      this.selectedInterval = this.intervals[3]; // Standard auf 7 Tage setzen
     }
 
-    // Aggregiere die Daten basierend auf dem aktuellen Intervall
-    const aggregatedData = this.getAggregatedData(data);
+    const endDate = new Date().toISOString();
+    const startDate = new Date(Date.now() - this.selectedInterval.duration).toISOString();
 
-    this.renderChart(aggregatedData);
-  } catch (error) {
-    console.error("Fehler beim Abrufen der Daten:", error);
-    this.renderChart([]);
-  }
-},
+    try {
+      const data = await historyService.fetchRoomHistory(
+        this.roomId,
+        startDate,
+        endDate,
+        this.selectedInterval.hourly
+      );
+
+      if (!Array.isArray(data) || data.length === 0) {
+        this.renderChart([]); // Leeres Diagramm rendern
+        return;
+      }
+
+      const aggregatedData = this.getAggregatedData(data);
+      this.renderChart(aggregatedData);
+    } catch (error) {
+      console.error("Fehler beim Abrufen der Daten:", error);
+      this.renderChart([]);
+    }
+  },
 
 
 getAggregatedData(data) {
