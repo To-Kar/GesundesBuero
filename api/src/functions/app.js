@@ -6,3 +6,4 @@ const { app } = require('@azure/functions');
 
 
 require('./httpTrigger1');
+require('../controllers/historyController');
