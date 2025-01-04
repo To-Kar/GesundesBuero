@@ -37,7 +37,7 @@ function isSensorActive(lastUpdated, timeout) {
     const currentTime = Date.now();
 
     const difference = Math.abs((currentTime + 1000*60*60) - lastUpdatedTime);
-    const timeout_computed = timeout * 1000 * 2;
+    const timeout_computed = timeout * 1000 * 3;
 
     // Prüfen, ob der Sensor innerhalb des Intervalls aktualisiert wurde
     return difference <= timeout_computed;
