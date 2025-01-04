@@ -2,7 +2,6 @@ const { app } = require('@azure/functions');
 const errorHandlerWrapper = require('../utils/errorHandler'); 
 const httpResponses = require('../utils/httpResponse');
 const settingsService = require('../services/settingsService');
-const { validateJwt, ROLES } = require('../utils/validateJwt');
 
 
 app.http('settings', {
@@ -11,7 +10,6 @@ app.http('settings', {
     route: 'settings',
     handler: errorHandlerWrapper(async (req, context) => {
         // JWT Validierung
-        await validateJwt(req, context);
         const settings = await settingsService.getSettings();
         return httpResponses.success(settings, 200);
     }),
@@ -24,7 +22,7 @@ app.http('interval', {
     route: 'settings/interval',
     handler: errorHandlerWrapper(async (req, context) => {
         // JWT Validierung
-        await validateJwt(req, context, ROLES.ADMIN);
+
         const body = await req.json();
 
         const result = await settingsService.updateInterval(body);
@@ -40,7 +38,7 @@ app.http('getOffsets', {
     route: 'settings/offsets',
     handler: errorHandlerWrapper(async (req, context) => {
         // JWT Validierung
-        await validateJwt(req, context);
+
         const result = await settingsService.getOffsets();
         return httpResponses.success(result);
     })
@@ -55,7 +53,7 @@ app.http('updateOffsets', {
     route: 'settings/offsets',
     handler: errorHandlerWrapper(async (req, context) => {
         // JWT Validierung
-        await validateJwt(req, context, ROLES.ADMIN);
+
         const body = await req.json();
         const result = await settingsService.updateOffsets(body);
         return httpResponses.success(result);
