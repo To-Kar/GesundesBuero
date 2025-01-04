@@ -23,6 +23,7 @@ apiClient.interceptors.request.use(async (config) => {
             const token = response.accessToken;
             console.log("JWT-Token gesendet:", token);  // Token in der Konsole ausgeben
             config.headers['Authorization'] = `Bearer ${token}`;
+            config.headers['x-ms-token-aad-access-token'] = token;
         } catch (error) {
             console.error("Fehler beim Abrufen des Tokens:", error);
         }
