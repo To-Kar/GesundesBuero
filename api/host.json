@@ -7,16 +7,7 @@
   },
   "extensions": {
     "http": {
-      "routePrefix": "api",
-      "cors": {
-        "allowedOrigins": [
-          "http://localhost:5173",
-          "https://victorious-field-0cd4c7903.4.azurestaticapps.net"
-        ],
-        "allowedMethods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        "allowedHeaders": ["*"],
-        "maxAge": 86400
-      }
+      "routePrefix": "api"
     }
   },
   "extensionBundle": {

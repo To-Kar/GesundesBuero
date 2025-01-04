@@ -11,7 +11,7 @@ app.http('notifications', {
     route: 'notifications',
     handler: errorHandlerWrapper(async (req, context) => {
         // JWT Validierung
-        await validateJwt(req);
+        await validateJwt(req, context);
         const notifications = await notificationService.getAllNotifications();
         return httpResponses.success({
             success: true,
