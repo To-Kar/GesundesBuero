@@ -23,7 +23,7 @@ body {
   margin: 0;
 }
   #app {
-    padding-top: 108px;
+    padding: 108px 20px;
     min-height: 100vh; /* Stellt sicher, dass der Hintergrund mindestens die gesamte Bildschirmhöhe abdeckt */
     max-width: 100vw;
     max-width: 100vw;

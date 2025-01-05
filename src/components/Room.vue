@@ -400,7 +400,7 @@ export default {
 @media (max-width: 770px) {
     .overlay-container {
     top: 9%;
-    left: 74%;
+    left: 69%;
   }
 }
 </style>
