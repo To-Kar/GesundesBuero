@@ -158,38 +158,6 @@ async function deleteRoom(roomId) {
 
 
 async function updateRoomTargets(roomId, targets) {
-    const pool = await sql.connect(config);
-
-    if (!pool.connected) {
-        throw { status: 503, message: 'Could not establish database connection' };
-    }
-
-    const dbRequest = pool.request();
-    dbRequest.input('roomId', sql.VarChar, roomId);
-
-    let query = 'UPDATE ROOM SET ';
-    const updateFields = [];
-
-    if (targets.target_temp !== undefined) {
-        updateFields.push('target_temp = @target_temp');
-        dbRequest.input('target_temp', sql.Float, targets.target_temp);
-    }
-    if (targets.target_humidity !== undefined) {
-        updateFields.push('target_humidity = @target_humidity');
-        dbRequest.input('target_humidity', sql.Float, targets.target_humidity);
-    }
-
-    query += updateFields.join(', ');
-    query += ' WHERE room_id = @roomId';
-
-    const result = await dbRequest.query(query);
-
-    await pool.close();
-    return result;
-}
-
-
-async function updateRoomTargets(roomId, targets) {
     let pool;
     try {
         pool = await sql.connect(config);

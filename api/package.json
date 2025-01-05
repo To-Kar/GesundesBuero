@@ -5,16 +5,23 @@
   "main": "src/functions/app.js",
   "scripts": {
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@azure/functions": "^4.6.0",
     "axios": "^1.7.8",
-    "mssql": "^11.0.1",
     "jsonwebtoken": "^9.0.2",
-    "jwks-rsa": "^3.1.0"
+    "jwks-rsa": "^3.1.0",
+    "mssql": "^11.0.1"
   },
   "devDependencies": {
-    "azure-functions-core-tools": "^4.0.6610"
+    "azure-functions-core-tools": "^4.0.6610",
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "moduleDirectories": ["node_modules", "src"]
   }
 }
