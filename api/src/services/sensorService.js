@@ -36,8 +36,8 @@ function isSensorActive(lastUpdated, timeout) {
     const lastUpdatedTime = new Date(lastUpdated).getTime();
     const currentTime = Date.now();
 
-    const difference = Math.abs((currentTime + 1000*60*60) - lastUpdatedTime);
-    const timeout_computed = timeout * 1000 * 2;
+    const difference = Math.abs((currentTime) - lastUpdatedTime);
+    const timeout_computed = timeout * 1000 * 3;
 
     // Prüfen, ob der Sensor innerhalb des Intervalls aktualisiert wurde
     return difference <= timeout_computed;
@@ -61,17 +61,21 @@ async function getSensorData(sensorId) {
     const updateInterval = await settingsRepository.fetchIntervalFromSettings();
 
     const transformedData = [];
-    for (const sensor of sensors) {
-        const isConnected = isSensorActive(sensor.last_updated, updateInterval);
-        console.log(`Sensor ID: ${sensor.sensor_id}, Last Updated: ${sensor.last_updated}, is_connected: ${isConnected}`);
-        
-        // Sensorstatus in der DB aktualisieren
-        await sensorRepository.updateSensorStatus(sensor.sensor_id, isConnected);
+        for (const sensor of sensors) {
+            const oldIsConnected = sensor.is_connected;
+            const newIsConnected = isSensorActive(sensor.last_updated, updateInterval);
+            console.log(`Sensor ID: ${sensor.sensor_id}, Last Updated: ${sensor.last_updated}, is_connected: ${newIsConnected}`);
 
-        transformedData.push({
-            ...sensor,
-        });
-    }
+            if (oldIsConnected !== newIsConnected) {
+                await sensorRepository.updateSensorStatus(sensor.sensor_id, newIsConnected);
+                console.log(`Sensor ${sensor.sensor_id} aktualisiert. old=${oldIsConnected}, new=${newIsConnected}`);
+            } else {
+                console.log(`Sensor ${sensor.sensor_id} unverändert (is_connected=${oldIsConnected}). Kein Update nötig.`);
+            }
+            transformedData.push({
+                ...sensor,
+            });
+        }
     
     return sensorId ? transformedData[0] : transformedData;
 }
@@ -124,7 +128,7 @@ async function addSensor(sensorData) {
     // Sensor in die DB schreiben
     const result = await sensorRepository.insertSensor(sensor_id, ip_address);
 
-    return { message: 'Sensor erfolgreich hinzugefügt.', sensor_id };
+    return { message: 'Sensor erfolgreich hinzugefügt.', sensor_id, ip_address};
 }
 
 async function deleteSensor(sensor_id) {

@@ -21,8 +21,8 @@ export default {
       temperature: 0,
       humidity: 0,
       isAdding: false, // Flag, wenn ein neuer Raum hinzugefügt wird.
-      saveStatus: "", 
-      saveMessage: "", 
+      saveStatus: "",
+      saveMessage: "",
       updateInterval: 10000, // Intervallzeit aus der Settings-Tabelle
       intervalId: null,     // Speichert die Timer-ID
       temperatureOffset: 0,
@@ -32,11 +32,9 @@ export default {
   },
 
   async created() {
-    this.loading = true;
-
-    await this.fetchSettingsAndStartInterval();
-
     try {
+      this.loading = true;
+      await this.fetchSettingsAndStartInterval();
       // Räume und zugehörige Sensordaten abrufen
       const { rooms, offsets } = await roomService.getRoomsAndOffsets();
       this.rooms = rooms;
@@ -54,97 +52,97 @@ export default {
     eventBus.on('room-created', this.refreshSensorDataAfterRoomCreation);
   },
   beforeUnmount() {
-  eventBus.off('add-room', this.addRoom);
-  eventBus.off('room-created', this.refreshSensorDataAfterRoomCreation);
-},
+    eventBus.off('add-room', this.addRoom);
+    eventBus.off('room-created', this.refreshSensorDataAfterRoomCreation);
+  },
 
-  methods:{
+  methods: {
     handleTargetUpdate({ roomId, targetTemperature, targetHumidity }) {
-    const room = this.rooms.find(r => r.number === roomId);
-    if (room) {
-      room.target_temperature = targetTemperature;
-      room.target_humidity = targetHumidity;
-    }
-    console.log("Zielwerte aktualisiert für Raum:", roomId);
-  },
-  goToRoomDetail(image, name, roomId, temperature, humidity, co2) {
-    console.log("Raum-ID angeklickt:", roomId);
-    if (!roomId) {
-      console.error("Kein roomId übergeben!");
-      return;
-    }
-    this.image = image;
-    this.isAdding = false; // normaler Bearbeitungsmodus anstatt Hinzufügemodus
-    this.name = name;
-    this.roomId = roomId;
-    this.temperature = temperature;
-    this.co2 = co2;
-    this.humidity = humidity;
-    this.showDetail = true; // Anzeige der Detailansicht
-  },
-
-  // Räume neu laden, wenn 'room-updated' Event vom RoomDetail kommt
-  async refreshRooms() {
-    
-    try {
-      this.rooms = await roomService.getAllRoomsWithSensorData();
-
-      // Wenn Detailfenster noch offen ist, aktualisieren wir die Props
-      if (this.showDetail && this.roomId) {
-        const updatedRoom = this.rooms.find(r => r.number === this.roomId);
-        if (updatedRoom) {
-          this.temperature = updatedRoom.temperature;
-          this.humidity = updatedRoom.humidity;
-          this.co2 = updatedRoom.co2;
-        }
+      const room = this.rooms.find(r => r.number === roomId);
+      if (room) {
+        room.target_temperature = targetTemperature;
+        room.target_humidity = targetHumidity;
       }
-    } catch (error) {
-      this.error = error.message;
-      console.error("Fehler beim Laden der Räume:", error);
-    }
-  },
+      console.log("Zielwerte aktualisiert für Raum:", roomId);
+    },
+    goToRoomDetail(image, name, roomId, temperature, humidity, co2) {
+      console.log("Raum-ID angeklickt:", roomId);
+      if (!roomId) {
+        console.error("Kein roomId übergeben!");
+        return;
+      }
+      this.image = image;
+      this.isAdding = false; // normaler Bearbeitungsmodus anstatt Hinzufügemodus
+      this.name = name;
+      this.roomId = roomId;
+      this.temperature = temperature;
+      this.co2 = co2;
+      this.humidity = humidity;
+      this.showDetail = true; // Anzeige der Detailansicht
+    },
 
-  addRoom() {
-    this.isAdding = true;
-    this.image = "https://static5.depositphotos.com/1010050/513/i/450/depositphotos_5135344-stock-photo-modern-office.jpg";
-    this.name = "Neuer Raum";
-    this.roomId = ""; 
-    this.temperature = 20; 
-    this.humidity = 50; 
-    this.showDetail = true; // Detailansicht öffnen
-  },
+    // Räume neu laden, wenn 'room-updated' Event vom RoomDetail kommt
+    async refreshRooms() {
 
-  updateRoomData(updatedRoom) {
-    const room = this.rooms.find(r => r.number === updatedRoom.roomId);
-    if (room) {
-      room.temperature = updatedRoom.temperature;
-      room.humidity = updatedRoom.humidity;
-      room.co2 = updatedRoom.co2;
-    }
-  },
-  
-  closeRoomDetail() {
-    this.showDetail = false;
-    this.refreshRooms();
-  },
-
-  // Feedback anzeigen und nach 2 Sekunden ausblenden
-  handleFeedback({ status, message }) {
-    console.log("Feedback erhalten:", status, message);
-    this.saveStatus = status; 
-    this.saveMessage = message; 
-
-    setTimeout(() => {
-      this.saveStatus = "";
-      this.saveMessage = "";
-    }, 2000);
-  },
-
-  // Abrufen des Update-Intervalls und Starten des Timers
-  async fetchSettingsAndStartInterval() {
       try {
-        
-        this.updateInterval =  await settingsService.fetchAndReturnInterval();
+        this.rooms = await roomService.getAllRoomsWithSensorData();
+
+        // Wenn Detailfenster noch offen ist, aktualisieren wir die Props
+        if (this.showDetail && this.roomId) {
+          const updatedRoom = this.rooms.find(r => r.number === this.roomId);
+          if (updatedRoom) {
+            this.temperature = updatedRoom.temperature;
+            this.humidity = updatedRoom.humidity;
+            this.co2 = updatedRoom.co2;
+          }
+        }
+      } catch (error) {
+        this.error = error.message;
+        console.error("Fehler beim Laden der Räume:", error);
+      }
+    },
+
+    addRoom() {
+      this.isAdding = true;
+      this.image = "https://static5.depositphotos.com/1010050/513/i/450/depositphotos_5135344-stock-photo-modern-office.jpg";
+      this.name = "Neuer Raum";
+      this.roomId = "";
+      this.temperature = 20;
+      this.humidity = 50;
+      this.showDetail = true; // Detailansicht öffnen
+    },
+
+    updateRoomData(updatedRoom) {
+      const room = this.rooms.find(r => r.number === updatedRoom.roomId);
+      if (room) {
+        room.temperature = updatedRoom.temperature;
+        room.humidity = updatedRoom.humidity;
+        room.co2 = updatedRoom.co2;
+      }
+    },
+
+    closeRoomDetail() {
+      this.showDetail = false;
+      this.refreshRooms();
+    },
+
+    // Feedback anzeigen und nach 2 Sekunden ausblenden
+    handleFeedback({ status, message }) {
+      console.log("Feedback erhalten:", status, message);
+      this.saveStatus = status;
+      this.saveMessage = message;
+
+      setTimeout(() => {
+        this.saveStatus = "";
+        this.saveMessage = "";
+      }, 2000);
+    },
+
+    // Abrufen des Update-Intervalls und Starten des Timers
+    async fetchSettingsAndStartInterval() {
+      try {
+
+        this.updateInterval = await settingsService.fetchAndReturnInterval();
         console.log("Update-Intervall gesetzt auf:", this.updateInterval, "ms");
 
         // Timer neustarten
@@ -171,17 +169,13 @@ export default {
         this.rooms = await roomService.getAllRoomsWithSensorData();
         console.log("Sensordaten erfolgreich aktualisiert");
 
-        
+
         this.$forceUpdate();
       } catch (error) {
         console.error("Fehler beim Laden der Sensordaten:", error.message);
       }
     },
 
-    // Manuelle Aktualisierung der Sensordaten
-    async manualRefresh() {
-      await this.fetchSettingsAndStartInterval(); // Aktualisiere Intervall und lade Sensordaten neu
-    },
   },
   beforeDestroy() {
     if (this.intervalId) clearInterval(this.intervalId); // Timer stoppen, wenn Komponente zerstört wird
@@ -210,11 +204,11 @@ export default {
       @click="goToRoomDetail(room.image, room.name, room.number, room.temperature, room.humidity, room.co2)"
     />
 
-    
+
   </div>
 
   <div v-if="saveStatus" class="save-feedback" :class="saveStatus">
-      {{ saveMessage }}
+    {{ saveMessage }}
   </div>
 
   <div class="room-detail-view">
@@ -244,11 +238,11 @@ export default {
       />
   </div>
 
- 
+
 </template>
 
 <style scoped>
-*{
+* {
   font-family: 'BDOGrotesk', system-ui, sans-serif;
 }
 
@@ -259,13 +253,14 @@ export default {
   gap: 1rem;
 }
 
-.room-view > * {
+.room-view>* {
   flex: 1 1 calc(50% - 1rem);
   max-width: calc(50% - 1rem);
   box-sizing: border-box;
 }
+
 @media screen and (max-width: 768px) {
-  .room-view > * {
+  .room-view>* {
     flex: 1 1 100%;
     max-width: 100%;
   }
@@ -285,17 +280,20 @@ export default {
   text-align: center;
   flex: 1 1 calc(50% - 1rem);
   max-width: calc(50% - 1rem);
-  aspect-ratio: 1.5 / 1; 
+  aspect-ratio: 1.5 / 1;
 
 }
+
 .room.add-room:hover {
   background-color: #dbdbdb;
 }
+
 .add-room-icon {
   font-size: 48px;
   color: #929292;
   margin: 0;
 }
+
 .add-room-text {
   font-size: 30px;
   color: #929292;
@@ -327,7 +325,4 @@ export default {
   background-color: #da0000;
   color: #ffffff;
 }
-
-
-
 </style>

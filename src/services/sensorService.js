@@ -83,7 +83,6 @@ export const sensorService = {
     async updateSensorIp(sensor) {
         try {
           await apiClient.patch(`/sensors/${sensor.sensor_id}/ip`, {
-            sensor_id: sensor.sensor_id,
             ip_address: sensor.ip_address
           });
           console.log(`IP-Adresse erfolgreich aktualisiert: ${sensor.ip_address}`);
@@ -94,7 +93,7 @@ export const sensorService = {
       },
 
       async addSensor(sensor) {
-        const response = await apiClient.post('http://localhost:7071/api/sensors', {
+        const response = await apiClient.post('/sensors', {
           sensor_id: sensor.sensor_id,
           ip_address: sensor.ip_address
         });

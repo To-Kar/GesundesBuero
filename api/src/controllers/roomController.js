@@ -2,6 +2,7 @@ const { app } = require('@azure/functions');
 const roomService = require('../services/roomService');
 const httpResponses = require('../utils/httpResponse');
 const errorHandlerWrapper = require('../utils/errorHandler'); 
+const { validateJwt, ROLES } = require('../utils/validateJwt');
 
 
 
@@ -52,7 +53,8 @@ app.http('room', {
     methods: ['GET'],
     authLevel: 'anonymous',
     route: 'rooms/{roomId?}', 
-    handler: errorHandlerWrapper(async (request) => {
+    handler: errorHandlerWrapper(async (request, context) => {
+        await validateJwt(request, context);
         const roomId = request.params.roomId;
         const rooms = await roomService.getRooms(roomId);
         return httpResponses.success(roomId ? rooms[0] : rooms);
@@ -80,7 +82,9 @@ app.http('addRoom', {
     methods: ['POST'],
     authLevel: 'anonymous',
     route: 'rooms',
-    handler: errorHandlerWrapper(async (request) => {
+    handler: errorHandlerWrapper(async (request, context) => {
+        // JWT Validierung
+        await validateJwt(request, context, ROLES.ADMIN);
         const roomData = await request.json();
 
         // Validierung
@@ -137,7 +141,9 @@ app.http('updateRoom', {
     methods: ['PATCH'],
     authLevel: 'anonymous',
     route: 'rooms/{roomId}',
-    handler: errorHandlerWrapper(async (request) => {
+    handler: errorHandlerWrapper(async (request, context) => {
+      // JWT Validierung
+      await validateJwt(request, context, ROLES.ADMIN);
       const roomId = request.params.roomId;
       const roomData = await request.json();
   
@@ -181,7 +187,9 @@ app.http('updateRoom', {
   app.http('deleteRoom', {
     methods: ['DELETE'],
     route: 'rooms/{roomId}',
-    handler: errorHandlerWrapper(async (request) => {
+    handler: errorHandlerWrapper(async (request, context) => {
+        // JWT Validierung
+        await validateJwt(request, context, ROLES.ADMIN);
         const roomId = request.params.roomId;
 
         if (!roomId) {
@@ -234,7 +242,9 @@ app.http('updateRoom', {
 app.http('updateTargets', {
     methods: ['PATCH'],
     route: 'rooms/{roomId}/targets',
-    handler: errorHandlerWrapper(async (request) => {
+    handler: errorHandlerWrapper(async (request, context) => {
+        // JWT Validierung
+        await validateJwt(request, context);
         const roomId = request.params.roomId;
         const { target_temp, target_humidity } = await request.json();
 

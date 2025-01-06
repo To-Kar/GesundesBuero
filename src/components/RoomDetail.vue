@@ -41,10 +41,11 @@
                 <HumidityWidget ref="humidityWidget" :humidity="humidity" :targetHumidity="targetHumidity"
                   @adjust-target-humidity="adjustTargetHumidity" />
                 <Co2Widget ref="co2Widget" :co2="co2" />
+                <HistoryWidget :roomId="roomId" />
               </template>
               <template v-else>
-          <div class="loading-message">Lade Raumdaten...</div>
-        </template>
+                <div class="loading-message">Lade Raumdaten...</div>
+              </template>
               </div>
             </div>
           </template>
@@ -72,7 +73,8 @@ import { updateGaugeChart, disposeGauges, initGaugeChart, getDynamicColor } from
 import RoomEdit from './RoomEdit.vue';
 import TemperatureWidget from '../components/TemperatureWidget.vue';
 import HumidityWidget from '../components/HumidityWidget.vue';
-import Co2Widget from '../components/co2Widget.vue';
+import Co2Widget from '../components/Co2Widget.vue';
+import HistoryWidget from "../components/HistoryWidget.vue";
 
 
 export default {
@@ -80,7 +82,8 @@ export default {
     RoomEdit,
     TemperatureWidget,
     HumidityWidget,
-    Co2Widget
+    Co2Widget,
+    HistoryWidget
   },
   props: {
     isAdding: {
@@ -158,16 +161,15 @@ export default {
   },
   computed: {
     isAdmin() {
-      // Gleiches Prinzip wie in Navbar
-      const accounts = msalInstance.getAllAccounts();
-      if (accounts.length > 0) {
-        const account = accounts[0];
-        const adminIdentifier = "admin";
-        const displayName = account.idTokenClaims?.name || "";
-        return displayName.toLowerCase().includes(adminIdentifier);
-      }
-      return false;
-    },
+  const accounts = msalInstance.getAllAccounts();
+  if (accounts.length > 0) {
+    const account = accounts[0];
+    const adminIdentifier = "Admin"; // Prüfe auf 'admin' im Namen
+    const displayName = account.idTokenClaims?.roles;
+    return displayName.includes(adminIdentifier);
+  }
+  return false;
+}
 
   },
   methods: {
@@ -607,22 +609,27 @@ button:hover {
     align-items: center;
     gap: 30px;
   }
-
+  
   .room-detail {
     height: 70%;
     width: 85%;
   }
-
+  
   .details {
     width: 100%;
     text-align: center;
     align-items: center;
   }
-
+  
   .room-image {
     max-width: 90%;
     max-height: 200px;
     margin-top: 20px;
+  }
+
+  .widget-container {
+    padding: 0;
+    gap: 30px;
   }
 }
 </style>

@@ -41,10 +41,7 @@ export const roomService = {
             const offsetResponse = await apiClient.get('/settings/offsets');
             const offsets = offsetResponse.data;
 
-            // Merging is_connected from sensor data
-            for (const room of rooms) {
-                const sensorData = await sensorService.getLatestSensorData(room.room_id);
-            }
+
 
             return { rooms, offsets };
         } catch (error) {

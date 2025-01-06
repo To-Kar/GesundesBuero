@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { msalInstance, loginRequest } from '../authConfig';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:7071/api";
 
@@ -10,16 +11,26 @@ export const apiClient = axios.create({
     }
 });
 
-// Add request interceptor for common handling
-apiClient.interceptors.request.use(
-    config => {
-        // You can add common headers here (e.g., authentication)
-        return config;
-    },
-    error => {
-        return Promise.reject(error);
+// Interceptor für jede Anfrage (fügt Token hinzu)
+apiClient.interceptors.request.use(async (config) => {
+    const accounts = msalInstance.getAllAccounts();
+    if (accounts.length > 0) {
+        try {
+            const response = await msalInstance.acquireTokenSilent({
+                ...loginRequest,
+                account: accounts[0]
+            });
+            const token = response.accessToken;
+            console.log("JWT-Token gesendet:", token);  // Token in der Konsole ausgeben
+            config.headers['Authorization'] = `Bearer ${token}`;
+            config.headers['x-ms-token-aad-access-token'] = token;
+        } catch (error) {
+            console.error("Fehler beim Abrufen des Tokens:", error);
+        }
     }
-);
+    return config;
+});
+
 
 // Add response interceptor for common error handling
 apiClient.interceptors.response.use(

@@ -1,10 +1,8 @@
 const { app } = require('@azure/functions');
 
-
+require('./controllers/historyController');
+require('./controllers/notificationController')
+require('./controllers/roomController')
 require('./controllers/sensorController');
-require('./controllers/notificationController');
-require('./controllers/settingsController');
-require('./controllers/roomController');
-
-
+require('./controllers/settingsController')
 require('./swagger/swaggerRoutes');
