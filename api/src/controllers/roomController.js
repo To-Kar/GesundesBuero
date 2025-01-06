@@ -12,7 +12,7 @@ app.http('room', {
     authLevel: 'anonymous',
     route: 'rooms/{roomId?}', 
     handler: errorHandlerWrapper(async (request, context) => {
-
+        await validateJwt(request, context);
         const roomId = request.params.roomId;
         const rooms = await roomService.getRooms(roomId);
         return httpResponses.success(roomId ? rooms[0] : rooms);
@@ -26,7 +26,7 @@ app.http('addRoom', {
     route: 'rooms',
     handler: errorHandlerWrapper(async (request, context) => {
         // JWT Validierung
-
+        await validateJwt(request, context, ROLES.ADMIN);
         const roomData = await request.json();
 
         // Validierung
@@ -48,7 +48,7 @@ app.http('updateRoom', {
     route: 'rooms/{roomId}',
     handler: errorHandlerWrapper(async (request, context) => {
       // JWT Validierung
-
+      await validateJwt(request, context, ROLES.ADMIN);
       const roomId = request.params.roomId;
       const roomData = await request.json();
   
@@ -70,7 +70,7 @@ app.http('updateRoom', {
     route: 'rooms/{roomId}',
     handler: errorHandlerWrapper(async (request, context) => {
         // JWT Validierung
-
+        await validateJwt(request, context, ROLES.ADMIN);
         const roomId = request.params.roomId;
 
         if (!roomId) {
@@ -90,7 +90,7 @@ app.http('updateTargets', {
     route: 'rooms/{roomId}/targets',
     handler: errorHandlerWrapper(async (request, context) => {
         // JWT Validierung
-
+        await validateJwt(request, context);
         const roomId = request.params.roomId;
         const { target_temp, target_humidity } = await request.json();
 

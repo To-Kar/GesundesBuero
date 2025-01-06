@@ -176,7 +176,7 @@ if (this.selectedInterval?.hourly) {
     return entry ? entry[this.currentChart] : null; // Fehlende Werte werden als `null` dargestellt
   });
 } else {
-  // Tägliche Ansicht bleibt wie gehabt
+  
   timestamps = data.map((entry) => {
     const date = new Date(entry.timestamp);
     return date.toLocaleDateString("de-DE");
@@ -185,7 +185,6 @@ if (this.selectedInterval?.hourly) {
   seriesData = data.map((entry) => entry[this.currentChart]);
 }
 
-// Setze den Titel basierend auf der aktuellen Auswahl
 if (this.currentChart === "temperature") {
   chartTitle = "Temperaturverlauf in °C";
 } else if (this.currentChart === "humidity") {
