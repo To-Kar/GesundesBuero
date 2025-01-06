@@ -16,7 +16,7 @@ app.http('sensors', {
     authLevel: 'anonymous',
     route: 'sensors',
     handler: errorHandlerWrapper(async (req, context) => {
-        await validateJwt(req, context);
+
         const result = await sensorService.getAllSensors();
         return httpResponses.success(result);
     }),
@@ -28,7 +28,7 @@ app.http('ip', {
     route: 'sensors/{sensor_id}/ip',
     handler: errorHandlerWrapper(async (req, context) => {
         // JWT Validierung
-        await validateJwt(req, context, ROLES.ADMIN);
+
         
         const sensor_id = req.params.sensor_id;
         const body = await req.json();
@@ -73,7 +73,7 @@ app.http('room-sensor-data', {
     authLevel: 'anonymous',
     route: 'room-sensor-data/{sensorId?}', 
     handler: errorHandlerWrapper(async (request, context) => {
-        await validateJwt(request, context);
+
         context.log('Anfrage für sensor-data erhalten');
 
         const sensorId = request.params.sensorId; 
@@ -91,7 +91,7 @@ app.http('addSensor', {
     authLevel: 'anonymous',
     route: 'sensors',
     handler: errorHandlerWrapper(async (req, context) => {
-        await validateJwt(req, context, ROLES.ADMIN);
+
         const body = await req.json();
         const result = await sensorService.addSensor(body);
         return httpResponses.success(result, 201);
@@ -103,7 +103,7 @@ app.http('deleteSensor', {
     authLevel: 'anonymous',
     route: 'sensors/{sensor_id}',
     handler: errorHandlerWrapper(async (req, context) => {
-        await validateJwt(req, context, ROLES.ADMIN);
+
         const sensor_id = req.params.sensor_id;
         const result = await sensorService.deleteSensor(sensor_id);
         return httpResponses.success(result, 200);
