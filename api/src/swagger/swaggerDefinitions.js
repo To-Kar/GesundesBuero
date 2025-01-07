@@ -14,6 +14,29 @@ module.exports = {
 
     components: {
       schemas: {
+        HistoryEntry: {
+          type: 'object',
+          properties: {
+              timestamp: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Zeitstempel des Eintrags',
+              },
+              temperature: {
+                  type: 'number',
+                  description: 'Temperatur zu diesem Zeitpunkt',
+              },
+              humidity: {
+                  type: 'number',
+                  description: 'Luftfeuchtigkeit zu diesem Zeitpunkt',
+              },
+              co2: {
+                  type: 'number',
+                  description: 'CO2-Wert zu diesem Zeitpunkt',
+              },
+          },
+          required: ['timestamp', 'temperature', 'humidity'],
+        },
         Notification: {
           type: 'object',
           properties: {
