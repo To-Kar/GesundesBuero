@@ -461,26 +461,15 @@ export default {
 /*Raum bearbeiten Styles */
 .header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
 }
 
 .editable-title {
-  font-size: 2rem;
-  font-weight: bold;
-  margin: 0;
   color: #a3a3a3;
   border: none;
   background: transparent;
-  font-family: inherit;
-}
-
-.edit-actions {
-  right: 60px;
-  display: flex;
-  gap: 5px;
-  align-items: center;
 }
 
 .room-title {
@@ -491,7 +480,7 @@ export default {
 }
 
 .edit-button {
-  background-color: #0083bc;
+  background-color: hsl(210, 80%, 60%);
   color: #fff;
   padding: 10px 20px;
   font-size: 18px;
@@ -499,20 +488,25 @@ export default {
   letter-spacing: 0.009em;
   font-weight: 400;
 }
-
-.save-button {
-  background-color: #0083bc;
-  color: #fff;
-  padding: 10px 20px;
-}
-
 .cancel-button {
   background-color: #a0a0a0;
   color: #fff;
   border-radius: 35px;
   padding: 10px 20px;
+  font-size: 18px;
+  line-height: 25.2px;
+  letter-spacing: 0.009em;
+  font-weight: 400;
 }
-
+.save-button {
+  background-color: hsl(210, 80%, 60%);
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 18px;
+  line-height: 25.2px;
+  letter-spacing: 0.009em;
+  font-weight: 400;
+}
 /* Overlay */
 .overlay {
   position: fixed;
@@ -593,7 +587,7 @@ export default {
 button {
   margin: 0 10px;
   padding: 1px 7px;
-  background-color: #0083bc;
+  background-color: hsl(210, 80%, 60%);
   color: whitesmoke;
   border: none;
   border-radius: 45px;

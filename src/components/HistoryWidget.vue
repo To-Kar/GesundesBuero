@@ -327,7 +327,7 @@ this.chart.setOption(option);
 
 .chart-navigation button.active,
 .time-navigation button.active {
-  background: #0083bc;
+  background: hsl(210, 80%, 60%);
   color: white;
   font-weight: bold;
 }

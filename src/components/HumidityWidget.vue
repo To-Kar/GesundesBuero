@@ -177,7 +177,7 @@ export default {
   font-size: 22px;
   line-height: 30.8px;   
   font-weight: 700;
-  color: #0083bc;
+  color: hsl(210, 80%, 60%);
 }
 
 .set-value {
@@ -188,10 +188,9 @@ export default {
 
 /* Buttons */
 button {
-  background-color: #0083bc;
+  background-color: hsl(210, 80%, 60%);
   color: whitesmoke;
   border: none;
-  cursor: pointer;
   font-size: 22px;
   font-weight: 700;
   margin: 12px;
