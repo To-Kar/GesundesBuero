@@ -1,36 +1,37 @@
 <template>
-  <img :src="roomEdit.image" alt="Raum Layout" class="room-image editable-image" />
   <div class="details">
+    <img :src="roomEdit.image" alt="Raum Layout" class="room-image editable-image" />
+
     <form @submit.prevent="emitSaveRoom" class="edit-form">
-      <div class="input-div">
-        <p>
-          <span class="input-label">Soll-Temperatur: </span>
+      <div>
+        <p class="set-value input-label">
+          <span class="soll">Soll-Temperatur: </span>
           <button type="button" @click="adjustTempLocally(-1)">−</button>
           <span class="target">{{ roomEdit.target_temp }}°C</span>
           <button type="button" @click="adjustTempLocally(1)">+</button>
         </p>
       </div>
 
-      <div class="input-div">
-        <p>
-          <span class="input-label">Soll-Luftfeuchtigkeit: </span>
+      <div>
+        <p class="set-humid input-label">
+          <span class="soll">Soll-Luftfeuchtigkeit: </span>
           <button type="button" @click="adjustHumLocally(-5)">−</button>
           <span class="target">{{ roomEdit.target_humidity }}%</span>
           <button type="button" @click="adjustHumLocally(5)">+</button>
         </p>
       </div>
 
-      <div class="input-div">
+      <div>
         <label class="input-label">Bild-URL:</label>
         <input type="text" v-model="roomEdit.image" class="input-field" />
       </div>
 
-      <div class="input-div">
+      <div>
         <label class="input-label">Raum-ID:</label>
         <input type="text" v-model="roomEdit.room_id" class="input-field" :disabled="!isAdding" />
       </div>
 
-      <div class="input-div">
+      <div>
         <label class="input-label">Sensor-ID:</label>
         <select v-model="roomEdit.sensor_id" class="input-field" @change="handleSensorChange">
           <option value="">Kein Sensor</option>
@@ -48,7 +49,7 @@
 
     <!-- Delete-Button -->
     <div class="delete-section">
-      <button v-if="isEditing &&! isAdding" class="delete-button" @click="openDeleteModal">Löschen</button>
+      <button v-if="isEditing" class="delete-button" @click="openDeleteModal">Löschen</button>
     </div>
 
     <!-- Modal für Löschen Bestätigung -->
@@ -151,7 +152,22 @@ export default {
 </script>
 
 <style scoped>
-/* Modal Styles */
+/* Transition für das Overlay */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+}
+/* Delete Styles*/
+/* Modal-Overlay */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -164,38 +180,136 @@ export default {
   align-items: center;
   justify-content: center;
 }
-
+/* Modal-Fenster */
 .modal {
   background: #fff;
-  border-radius: 18px;
+  border-radius: 35px;
   padding: 20px;
-  box-shadow: 2px 4px 12px #00000014;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   width: 90%;
   max-width: 400px;
   text-align: center;
   z-index: 1000;
 }
-
+/* Modal-Aktionen */
 .modal-actions {
   display: flex;
   justify-content: space-between;
   margin-top: 20px;
 }
-
-/* Transition Styles */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
+/* Buttons */
+.delete-confirm-button {
+  background-color: #cc443c;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 35px;
+  cursor: pointer;
+}
+.delete-confirm-button:hover {
+  background-color: #cc443c;
+}
+/* Löschen-Button (außerhalb des Modals) */
+.delete-button {
+  margin-left: 0px;
+  margin-top: 15px;
+  background-color: #cc443c;
+  color: #fff;
+  padding: 10px 20px;
+  /* Innenabstand */
+  border-radius: 35px;
+  cursor: pointer;
+  font-size: 20px;
+}
+/*Raum bearbeiten Styles */
+.header {
+  display: flex;
+  /* Flexbox verwenden */
+  align-items: center;
+  /* Vertikale Zentrierung */
+  justify-content: space-between;
+  gap: 10px;
+  /* Abstand zwischen Überschrift und Buttons */
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.editable-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+  color: #a3a3a3;
+  border: none;
+  background: transparent;
+  font-family: inherit;
 }
 
-.fade-enter-to,
-.fade-leave-from {
-  opacity: 1;
+
+.edit-actions {
+
+  right: 60px;
+  display: flex;
+  gap: 5px;
+  /* Abstand zwischen den Buttons */
+  align-items: center;
+}
+
+.room-title {
+  font-size: 35px;
+
+  margin: 0;
+  font-weight: bold;
+  padding: 1px;
+}
+
+.input-label {
+  font-size: 170%;
+
+  display: block;
+  padding-top: 10px;
+  padding-bottom: 15px;
+}
+
+.input-field {
+  width: 40%;
+  padding: 8px;
+  border-radius: 15px;
+  color: #686868;
+  border-width: 1px;
+  border-color: #b4b4b4;
+
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.input-field:focus {
+  border-color: hsl(210, 80%, 60%);;
+  outline: none;
+}
+
+
+.sensor-ip {
+  font-size: 14px;
+  color: #686868;
+  margin-top: 5px;
+}
+
+
+.edit-button {
+  background-color: hsl(210, 80%, 60%);;
+  color: #fff;
+  padding: 10px 20px;
+}
+
+.save-button {
+  background-color: hsl(210, 80%, 60%);;
+  color: #fff;
+  padding: 10px 20px;
+}
+
+.cancel-button {
+  background-color: #a0a0a0;
+  color: #fff;
+  border-radius: 35px;
+  padding: 10px 20px;
 }
 
 /* Overlay */
@@ -209,100 +323,50 @@ export default {
   backdrop-filter: blur(4px);
   z-index: 99;
 }
-
-/* Custom Styles */
-.input-field:focus {
-  border-color: hsl(210, 80%, 60%);
-  outline: none;
-}
-
-.details {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-}
-
+/* Bild */
 .room-image {
-  width: 500px;
-  height: 340px;
-  object-fit: cover;
-  border-radius: 18px;
-  box-shadow: 2px 4px 12px #00000014;
-  margin-right: 24px;
+  max-width: 50%;
+  max-height: 900px;
+  object-fit: contain;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 37px;
 }
-
+.temp,
+.humid {
+  font-size: 180%;
+  color: #0083bc;
+}
+.soll {
+  font-size: 140%;
+}
+/* Buttons */
 button {
-  margin: 12px;
-  background-color: hsl(210, 80%, 60%);
+  margin: 0 10px;
+  padding: 1px 7px;
+  background-color: hsl(210, 80%, 60%);;
   color: whitesmoke;
-  border:none;
-  border-radius: 50px;
-  padding: 0px 24px;
-  font-size: 22px;
-  line-height: 25.2px;
-  letter-spacing: 0.009em;
-  font-weight: 700;
-  transition: all .3s cubic-bezier(0, 0, .5, 1);
+  border: none;
+  border-radius: 45px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
-
 button:hover {
-  transform: scale(1.02);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  transform: scale(1.1);
 }
-.cancel-button {
-  background-color: #a0a0a0;
-}
-
-.input-label {
-  font-size: 26px;
-  line-height: 30.8px;   
-  font-weight: 400;       
-  color: black; 
-  display: block;
-}
-.delete-button {
-  background-color: #cc443c;
-  color: #fff;
-  padding: 10px 20px;
-  font-size: 18px;
-  line-height: 25.2px;
-  letter-spacing: 0.009em;
-  font-weight: 400;
-}
-.input-field {
-  width: 40%;
-  border-radius: 18px;
-  color: #686868;
-  border: 1px solid #b4b4b4;
-  font-size: 26px;
-  line-height: 30.8px;   
-  font-weight: 400;
-}
-.input-div{
+.room-detail .set-value,
+.room-detail .set-humid {
   display: flex;
   align-items: center;
+  gap: 10px;
+  font-size: 20px;
 }
-.edit-form{
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  width: 100%;
-  position: relative;
-}
-
-@media screen and (max-width: 920px) {
-  .details {
-    flex-direction: column;
-    align-items: center;
-    gap: 30px;
-    width: 100%;
-  }
-  
-  .room-image {
-    max-width: 340px;
-    width: 100%;
-    height: 200px;
-    margin-right: 0;
-  }
+/* Zielwerte */
+.room-detail .set-value .target,
+.room-detail .set-humid .target {
+  font-weight: bold;
+  color: hsl(210, 80%, 60%);;
+  font-size: 22px;
 }
 </style>
