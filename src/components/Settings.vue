@@ -220,13 +220,13 @@ export default {
                 </div>
               </div>
               <div class="offset-item">
-                <label class="offset-label">Offset für Luftfeuchtigkeit:</label>
+                <label class="offset-label">Offset für Luftfeuchte:</label>
                 <div class="input-wrapper">
                   <input type="number" v-model="humidityOffset" min="-100" max="100" class="interval-display" />
                   <span class="unit">%</span>
                 </div>
-                <button class="save-button" @click="saveOffsets">Speichern</button>
               </div>
+              <button class="save-button" @click="saveOffsets">Speichern</button>
             </div>
           </div>
           <div class="settings-section">
@@ -378,7 +378,7 @@ body {
   justify-content: flex-end;
   align-items: flex-end;
   height: 100%;
-  margin-top: 46px;
+  margin-top: auto;
 }
 
 .save-notification {
@@ -422,14 +422,12 @@ body {
 }
 
 .interval-input-container {
-  display: flex;
   justify-content: space-around;
   gap: 20px;
 }
 
 .input-group {
   display: flex;
-  flex-direction: column;
   align-items: center;
   width: 100%;
 }
@@ -439,6 +437,7 @@ body {
   font-weight: 500;
   color: black;
   margin-bottom: 8px;
+  margin-right: auto
 }
 
 .interval-display {
@@ -485,7 +484,7 @@ body {
   font-size: 16px;
   font-weight: 500;
   color: #333;
-  margin-right: 15px;
+  margin-right: auto;
 }
 
 
@@ -509,6 +508,15 @@ body {
 
 .save-offset-button:hover {
   background-color: hsl(120, 50%, 40%);
+}
+
+@media screen and (max-width: 768px) {
+  .input-group {
+
+  flex-direction: row;
+
+}
+
 }
 
 @keyframes fadeInOut {

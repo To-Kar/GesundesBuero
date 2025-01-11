@@ -4,7 +4,31 @@ const httpResponses = require('../utils/httpResponse');
 const settingsService = require('../services/settingsService');
 const { validateJwt, ROLES } = require('../utils/validateJwt');
 
-
+/**
+ * @swagger
+ * /settings:
+ *   get:
+ *     summary: Abrufen der Anwendungseinstellungen
+ *     tags:
+ *       - Einstellungen
+ *     responses:
+ *       200:
+ *         description: Erfolgreich die Einstellungen abgerufen
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 update_interval:
+ *                   type: number
+ *                   description: Das Abfrageintervall in Minuten
+ *                 temperature_offset:
+ *                   type: number
+ *                   description: Offset für die Temperaturmessung
+ *                 humidity_offset:
+ *                   type: number
+ *                   description: Offset für die Luftfeuchtigkeitsmessung
+ */
 app.http('settings', {
     methods: ['GET'],
     authLevel: 'anonymous',
@@ -17,7 +41,34 @@ app.http('settings', {
     }),
 });
 
-
+/**
+ * @swagger
+ * /settings/interval:
+ *   patch:
+ *     summary: Aktualisieren des Abfrageintervalls
+ *     tags:
+ *       - Einstellungen
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               update_interval:
+ *                 type: number
+ *                 description: Neues Intervall in Minuten
+ *     responses:
+ *       200:
+ *         description: Intervall erfolgreich aktualisiert
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 app.http('interval', {
     methods: ['PATCH'],
     authLevel: 'anonymous',
@@ -33,7 +84,28 @@ app.http('interval', {
     }),
 });
 
-
+/**
+ * @swagger
+ * /settings/offsets:
+ *   get:
+ *     summary: Abrufen der aktuellen Offsetwerte
+ *     tags:
+ *       - Einstellungen
+ *     responses:
+ *       200:
+ *         description: Erfolgreich die Offsetwerte abgerufen
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 temperature_offset:
+ *                   type: number
+ *                   description: Offset für die Temperaturmessung
+ *                 humidity_offset:
+ *                   type: number
+ *                   description: Offset für die Luftfeuchtigkeitsmessung
+ */
 app.http('getOffsets', {
     methods: ['GET'],
     authLevel: 'anonymous',
@@ -48,7 +120,37 @@ app.http('getOffsets', {
 
 
 
-// PATCH - Offsets aktualisieren
+/**
+ * @swagger
+ * /settings/offsets:
+ *   patch:
+ *     summary: Aktualisieren der Offsetwerte
+ *     tags:
+ *       - Einstellungen
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               temperature_offset:
+ *                 type: number
+ *                 description: Neuer Temperatur-Offset
+ *               humidity_offset:
+ *                 type: number
+ *                 description: Neuer Luftfeuchtigkeits-Offset
+ *     responses:
+ *       200:
+ *         description: Offsetwerte erfolgreich aktualisiert
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 app.http('updateOffsets', {
     methods: ['PATCH'],
     authLevel: 'anonymous',

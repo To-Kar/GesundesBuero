@@ -3,6 +3,49 @@ const historyService = require('../services/historyService');
 const httpResponses = require('../utils/httpResponse');
 const errorHandlerWrapper = require('../utils/errorHandler');
 
+
+/**
+ * @swagger
+ * /room-history/{roomId}:
+ *   get:
+ *     summary: Historische Daten für einen Raum abrufen
+ *     tags:
+ *       - Historie
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID des Raums, dessen Historie abgerufen werden soll
+ *       - in: query
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Startdatum für den Historie-Zeitraum (z. B. 2023-01-01T00:00:00Z)
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Enddatum für den Historie-Zeitraum (z. B. 2023-12-31T23:59:59Z)
+ *     responses:
+ *       200:
+ *         description: Erfolgreich die Historie abgerufen
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/HistoryEntry'
+ *       400:
+ *         description: Fehlende oder ungültige Parameter
+ *       500:
+ *         description: Interner Serverfehler
+ */
 app.http('getRoomHistory', {
     methods: ['GET'],
     authLevel: 'anonymous',
