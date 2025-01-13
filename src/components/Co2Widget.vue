@@ -65,53 +65,34 @@ export default {
 </script>
 
 <style scoped>
-.widget-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 60px;
-  padding: 75px;
-  padding-top: 37px;
-  box-sizing: border-box;
-}
-
 .widget {
   background-color: #f9f9f9;
-  border-radius: 25px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 2px 4px 12px #00000014;
   width: 340px;
   height: 340px;
   text-align: center;
-  border: 1px solid #ddd;
   position: relative;
 }
 
+
 .widget-title {
-  font-size: 22px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 0px;
+  font-size: 26px;
+  line-height: 30.8px;   
+  font-weight: 700;       
+  color: black; 
 }
 
 .widget-value {
   font-size: 22px;
-  font-weight: bold;
-  color: #333;
-}
-
-.control-overlay {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  z-index: 2;
+  line-height: 30.8px;   
+  font-weight: 700;       
+  color: black; 
 }
 
 .control-co2-overlay {
   position: absolute;
-  bottom: 14px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;

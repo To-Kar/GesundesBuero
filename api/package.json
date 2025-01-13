@@ -10,7 +10,11 @@
   "dependencies": {
     "@azure/functions": "^4.6.0",
     "axios": "^1.7.8",
-    "mssql": "^11.0.1"
+    "mssql": "^11.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.1.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-dist": "^5.18.2"
   },
   "devDependencies": {
     "azure-functions-core-tools": "^4.0.6610"

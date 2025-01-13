@@ -11,8 +11,8 @@
                 <div class="sensor-field-row">
                     <label class="input-label">IP-Adresse:</label>
                     <input type="text" v-model="newSensor.ip_address" class="ip-input" placeholder="IP-Adresse" />
-                    <button class="save-button add-button" @click="addSensor">Hinzufügen</button>
                 </div>
+                <button class="save-button add-button" @click="addSensor">Hinzufügen</button>
             </div>
         </div>
 
@@ -25,8 +25,10 @@
             <div class="sensor-field-row">
                 <label class="input-label">IP-Adresse:</label>
                 <input type="text" v-model="sensor.ip_address" class="ip-input" />
-                <button class="save-button" @click="$emit('save-ip', sensor)">Speichern</button>
-                <button class="delete-button" @click="$emit('open-delete', sensor)">Löschen</button>
+            </div>
+            <div class="sensorspeichernlöschen">
+            <button class="save-button" @click="$emit('save-ip', sensor)">Speichern</button>
+            <button class="delete-button" @click="$emit('open-delete', sensor)">Löschen</button>
             </div>
         </div>
     </div>
@@ -64,6 +66,16 @@ export default {
 </script>
 
 <style scoped>
+
+.save-button add-button{
+    margin-top: 20px;
+}
+.sensorspeichernlöschen {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
 .save-button {
     align-self: center;
     padding: 8px 16px;
@@ -76,6 +88,7 @@ export default {
     transition: background-color 0.2s ease;
     flex-shrink: 0;
     margin-left: auto;
+    display: flex;
 }
 
 .delete-button {
@@ -135,6 +148,7 @@ export default {
     font-weight: 500;
     color: black;
     margin-bottom: 8px;
+    margin-right: auto;
 }
 
 .sensor-label {
@@ -142,7 +156,7 @@ export default {
     font-weight: 500;
     color: black;
     margin-bottom: 8px;
-    margin-right: 8px;
+    margin-right: auto;
 }
 
 .ip-input {
@@ -155,6 +169,7 @@ export default {
     border-radius: 4px;
     box-sizing: border-box;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 6px;
 }
 
 .sensor-title {
@@ -167,4 +182,5 @@ export default {
     font-size: 14px;
     color: #555;
 }
+
 </style>

@@ -3,8 +3,27 @@ const { app } = require('@azure/functions');
 const notificationService = require('../services/notificationService');
 const httpResponses = require('../utils/httpResponse');
 const errorHandlerWrapper = require('../utils/errorHandler');
-const { validateJwt, ROLES } = require('../utils/validateJwt');
+const { validateJwt } = require('../utils/validateJwt');
 
+
+
+/**
+ * @swagger
+ * /notifications:
+ *   get:
+ *     summary: Benachrichtigungen abrufen
+ *     tags:
+ *       - Notifications
+ *     responses:
+ *       200:
+ *         description: Erfolgreich abgerufen
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Notification'
+ */
 app.http('notifications', {
     methods: ['GET'],
     authLevel: 'anonymous',

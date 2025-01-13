@@ -1,16 +1,29 @@
 const { app } = require('@azure/functions');
 const validateApiKey = require('../utils/validateApiKey'); 
 const errorHandlerWrapper = require('../utils/errorHandler'); 
-
 const sensorService = require('../services/sensorService');
-
-
 const httpResponses = require('../utils/httpResponse');
-
 const { validateJwt, ROLES } = require('../utils/validateJwt');
+//const { checkThresholdsAndNotify } = require('./notifications');
 
 
-// GET - Alle Sensoren abrufen
+/**
+ * @swagger
+ * /sensors:
+ *   get:
+ *     summary: Alle Sensoren abrufen
+ *     tags:
+ *       - Sensoren
+ *     responses:
+ *       200:
+ *         description: Erfolgreich alle Sensoren abgerufen
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Sensor'
+ */
 app.http('sensors', {
     methods: ['GET'],
     authLevel: 'anonymous',
@@ -22,6 +35,42 @@ app.http('sensors', {
     }),
 });
 
+/**
+ * @swagger
+ * /sensors/{sensor_id}/ip:
+ *   patch:
+ *     summary: IP-Adresse eines Sensors aktualisieren
+ *     tags:
+ *       - Sensoren
+ *     parameters:
+ *       - in: path
+ *         name: sensor_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID des Sensors
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sensor_id:
+ *                 type: string
+ *               ip_address:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: IP-Adresse erfolgreich aktualisiert
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 app.http('ip', {
     methods: ['PATCH'],
     authLevel: 'anonymous',
@@ -43,7 +92,36 @@ app.http('ip', {
 });
 
 
-// gemessene Sensor-Daten aktualisieren
+/**
+ * @swagger
+ * /sensor/sensor-data:
+ *   patch:
+ *     summary: Sensordaten aktualisieren
+ *     tags:
+ *       - Sensoren
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sensor_id:
+ *                 type: string
+ *               data:
+ *                 type: object
+ *                 description: Sensordaten (z.B. Temperatur, Feuchtigkeit, etc.)
+ *     responses:
+ *       200:
+ *         description: Sensordaten erfolgreich aktualisiert
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 app.http('sensor-data', {
     methods: ['PATCH'],
     authLevel: 'anonymous',
@@ -67,7 +145,31 @@ app.http('sensor-data', {
     }),
 });
 
-// Raumsensorwerte erhalten
+
+/**
+ * @swagger
+ * /room-sensor-data/{sensorId?}:
+ *   get:
+ *     summary: Sensordaten für einen bestimmten Sensor abrufen
+ *     tags:
+ *       - Sensoren
+ *     parameters:
+ *       - in: path
+ *         name: sensorId
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: ID des Sensors (optional)
+ *     responses:
+ *       200:
+ *         description: Sensordaten erfolgreich abgerufen
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Sensor'
+ */
 app.http('room-sensor-data', {
     methods: ['GET'],
     authLevel: 'anonymous',
@@ -86,6 +188,24 @@ app.http('room-sensor-data', {
 });
 
 
+
+/**
+ * @swagger
+ * /sensors:
+ *   post:
+ *     summary: Neuen Sensor hinzufügen
+ *     tags:
+ *       - Sensoren
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Sensor'
+ *     responses:
+ *       201:
+ *         description: Sensor erfolgreich hinzugefügt
+ */
 app.http('addSensor', {
     methods: ['POST'],
     authLevel: 'anonymous',
@@ -98,6 +218,34 @@ app.http('addSensor', {
     }),
 });
 
+
+
+
+/**
+ * @swagger
+ * /sensors/{sensor_id}:
+ *   delete:
+ *     summary: Sensor löschen
+ *     tags:
+ *       - Sensoren
+ *     parameters:
+ *       - in: path
+ *         name: sensor_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID des Sensors
+ *     responses:
+ *       200:
+ *         description: Sensor erfolgreich gelöscht
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 app.http('deleteSensor', {
     methods: ['DELETE'],
     authLevel: 'anonymous',

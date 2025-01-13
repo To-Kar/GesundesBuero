@@ -17,3 +17,4 @@ app.use(echartsPlugin);
 
 registerGuard(router);
 app.mount('#app');
+
