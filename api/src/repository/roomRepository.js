@@ -1,6 +1,6 @@
 const sql = require('mssql');
 const config = require('../config/dbConfig');
-
+const Room = require('../models/Room');
 
 async function fetchRooms(roomId) {
     let pool;
@@ -24,12 +24,13 @@ async function fetchRooms(roomId) {
     }
 
     const result = await dbRequest.query(query);
-    return result.recordset;
+    return result.recordset.map(row => Room.fromDb(row));
 }
 
 
 async function saveRoom(roomData) {
-    const { room_id, name, sensor_id, image_url, target_temp, target_humidity } = roomData;
+
+    const room = new Room(roomData);
 
     let pool;
     try {
@@ -40,12 +41,12 @@ async function saveRoom(roomData) {
         `;
 
         const requestDb = pool.request();
-        requestDb.input('room_id', sql.VarChar, room_id);
-        requestDb.input('name', sql.NVarChar, name);
-        requestDb.input('sensor_id', sql.VarChar, sensor_id || null);
-        requestDb.input('image_url', sql.NVarChar, image_url || null);
-        requestDb.input('target_temp', sql.Float, target_temp || 22);
-        requestDb.input('target_humidity', sql.Float, target_humidity || 50);
+        requestDb.input('room_id', sql.VarChar, room.room_id);
+        requestDb.input('name', sql.NVarChar, room.name);
+        requestDb.input('sensor_id', sql.VarChar, room.sensor_id || null);
+        requestDb.input('image_url', sql.NVarChar, room.image_url || null);
+        requestDb.input('target_temp', sql.Float, room.target_temp || 22);
+        requestDb.input('target_humidity', sql.Float, room.target_humidity || 50);
 
         const result = await requestDb.query(query);
         return result;

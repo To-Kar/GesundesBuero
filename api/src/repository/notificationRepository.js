@@ -1,15 +1,28 @@
 const sql = require('mssql');
 const config = require('../config/dbConfig');
+const Notification = require('../models/Notification');
+
+async function withConnection(operation) {
+    let pool;
+    try {
+        pool = await sql.connect(config);
+        return await operation(pool);
+    } finally {
+        if (pool) {
+            await pool.close();
+        }
+    }
+}
 
 async function createNotification(notification) {
     return withConnection(async (pool) => {
         const request = pool.request();
-        request.input('notification_id', sql.VarChar, notification.notificationId);
-        request.input('sensor_id', sql.VarChar, notification.sensorId);
-        request.input('room_id', sql.VarChar, notification.roomId);
+        request.input('notification_id', sql.VarChar, notification.notification_id);
+        request.input('sensor_id', sql.VarChar, notification.sensor_id);
+        request.input('room_id', sql.VarChar, notification.room_id);
         request.input('type', sql.VarChar, notification.type);
         request.input('description', sql.NVarChar, notification.description);
-        request.input('timestamp', sql.DateTime2, notification.timestamp || new Date());
+        request.input('timestamp', sql.DateTime2, notification.timestamp);
         
         await request.query(`
             INSERT INTO Notification (
@@ -30,19 +43,9 @@ async function createNotification(notification) {
                 @timestamp
             )
         `);
+        
+        return notification;
     });
-}
-
-async function withConnection(operation) {
-    let pool;
-    try {
-        pool = await sql.connect(config);
-        return await operation(pool);
-    } finally {
-        if (pool) {
-            await pool.close();
-        }
-    }
 }
 
 async function deleteByRoomAndType(roomId, type) {
@@ -79,13 +82,32 @@ async function getAllWithRoomNames() {
             ORDER BY timestamp DESC
         `;
         const result = await pool.request().query(query);
-        return result.recordset;
+        return result.recordset.map(row => {
+            const notification = Notification.fromDb(row);
+            notification.room_name = row.room_name;
+            return notification;
+        });
+    });
+}
+
+async function updateNotificationStatus(notificationId, status) {
+    return withConnection(async (pool) => {
+        const request = pool.request();
+        request.input('notification_id', sql.VarChar, notificationId);
+        request.input('status', sql.Bit, status);
+        
+        await request.query(`
+            UPDATE Notification
+            SET status = @status
+            WHERE notification_id = @notification_id
+        `);
     });
 }
 
 module.exports = {
+    createNotification,
     deleteByRoomAndType,
     getNextNotificationId,
-    createNotification,
-    getAllWithRoomNames
+    getAllWithRoomNames,
+    updateNotificationStatus
 };

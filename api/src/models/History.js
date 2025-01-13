@@ -18,6 +18,16 @@ class History {
             timestamp: row.timestamp,
         });
     }
-}
 
+    toJSON() {
+        return {
+            sensor_id: this.sensor_id,
+            room_id: this.room_id,
+            temperature: this.temperature,
+            humidity: this.humidity,
+            co2: this.co2,
+            timestamp: this.timestamp
+        };
+    }
+}
 module.exports = History;

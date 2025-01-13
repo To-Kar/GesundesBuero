@@ -34,7 +34,6 @@ app.http('settings', {
     authLevel: 'anonymous',
     route: 'settings',
     handler: errorHandlerWrapper(async (req, context) => {
-        // JWT Validierung
         await validateJwt(req, context);
         const settings = await settingsService.getSettings();
         return httpResponses.success(settings, 200);
@@ -74,7 +73,6 @@ app.http('interval', {
     authLevel: 'anonymous',
     route: 'settings/interval',
     handler: errorHandlerWrapper(async (req, context) => {
-        // JWT Validierung
         await validateJwt(req, context, ROLES.ADMIN);
         const body = await req.json();
 
@@ -111,7 +109,6 @@ app.http('getOffsets', {
     authLevel: 'anonymous',
     route: 'settings/offsets',
     handler: errorHandlerWrapper(async (req, context) => {
-        // JWT Validierung
         await validateJwt(req, context);
         const result = await settingsService.getOffsets();
         return httpResponses.success(result);
@@ -156,7 +153,6 @@ app.http('updateOffsets', {
     authLevel: 'anonymous',
     route: 'settings/offsets',
     handler: errorHandlerWrapper(async (req, context) => {
-        // JWT Validierung
         await validateJwt(req, context, ROLES.ADMIN);
         const body = await req.json();
         const result = await settingsService.updateOffsets(body);
