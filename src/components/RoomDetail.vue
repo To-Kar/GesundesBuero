@@ -609,22 +609,27 @@ button:hover {
     align-items: center;
     gap: 30px;
   }
-
+  
   .room-detail {
     height: 70%;
     width: 85%;
   }
-
+  
   .details {
     width: 100%;
     text-align: center;
     align-items: center;
   }
-
+  
   .room-image {
     max-width: 90%;
     max-height: 200px;
     margin-top: 20px;
+  }
+
+  .widget-container {
+    padding: 0;
+    gap: 30px;
   }
 }
 </style>
