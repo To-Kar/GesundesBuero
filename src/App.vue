@@ -19,6 +19,9 @@ export default {
 </template>
 
 <style>
+* {
+  font-family: 'BDOGrotesk', system-ui, sans-serif;
+}
 body {
   margin: 0;
 }

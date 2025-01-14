@@ -118,6 +118,7 @@ export default {
         room.temperature = updatedRoom.temperature;
         room.humidity = updatedRoom.humidity;
         room.co2 = updatedRoom.co2;
+        room.is_connected = updatedRoom.is_connected;
       }
     },
 
@@ -251,6 +252,7 @@ export default {
   flex-wrap: wrap;
   justify-content: center;
   gap: 1rem;
+  padding: 0.7rem;
 }
 
 .room-view>* {

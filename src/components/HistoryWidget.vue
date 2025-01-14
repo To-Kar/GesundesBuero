@@ -1,6 +1,6 @@
 <template>
   <div class="history-widget">
-    <h3>Historische Daten</h3>
+    <h3 class="widget-title">Historische Daten</h3>
     <!-- Navigation für Diagramme -->
     <div class="chart-navigation">
       <button v-for="chart in charts" :key="chart.name" @click="currentChart = chart.name" :class="{ active: currentChart === chart.name }">
@@ -290,10 +290,10 @@ this.chart.setOption(option);
   max-width: 900px;
   margin: auto;
   height: 100%;
-  padding: 20px;
+  padding: 12px;
   background-color: #f9f9f9;
-  border-radius: 25px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 18px;
+  box-shadow: 2px 4px 12px #00000014;
 }
 
 .chart {
@@ -317,6 +317,9 @@ this.chart.setOption(option);
   margin: 5px;
   cursor: pointer;
   font-size: 14px;
+  line-height: 19.6px;
+  letter-spacing: 0.007em; 
+  font-weight: 400;
   border-radius: 4px;
   flex: 1; /* Gleichmäßige Verteilung */
   text-align: center;
@@ -324,12 +327,18 @@ this.chart.setOption(option);
 
 .chart-navigation button.active,
 .time-navigation button.active {
-  background: #0083bc;
+  background: hsl(210, 80%, 60%);
   color: white;
   font-weight: bold;
 }
+.widget-title{
+  font-size: 26px;
+  line-height: 30.8px;   
+  font-weight: 700;       
+  color: black;
+}
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 920px) {
   .history-widget {
     width: 100%;
     padding: 10px;
