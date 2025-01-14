@@ -3,6 +3,7 @@ const roomService = require('../services/roomService');
 const httpResponses = require('../utils/httpResponse');
 const errorHandlerWrapper = require('../utils/errorHandler'); 
 const { validateJwt, ROLES } = require('../utils/validateJwt');
+const Room = require('../models/Room');
 
 
 
@@ -57,7 +58,7 @@ app.http('room', {
         await validateJwt(request, context);
         const roomId = request.params.roomId;
         const rooms = await roomService.getRooms(roomId);
-        return httpResponses.success(roomId ? rooms[0] : rooms);
+        return httpResponses.success(roomId ? rooms[0].toJSON() : rooms.map(r => r.toJSON()));
     }),
 });
 
@@ -88,9 +89,7 @@ app.http('addRoom', {
         const roomData = await request.json();
 
         // Validierung
-        if (!roomData.room_id || !roomData.name) {
-            return httpResponses.badRequest('room_id und name sind erforderlich.');
-        }
+        Room.validate(roomData);
         // Service-Aufruf Raum hinzufügen
         const result = await roomService.addRoom(roomData);
 
@@ -246,16 +245,16 @@ app.http('updateTargets', {
         // JWT Validierung
         await validateJwt(request, context);
         const roomId = request.params.roomId;
-        const { target_temp, target_humidity } = await request.json();
+        const targetData = await request.json();
 
-        if (!roomId || (!target_temp && !target_humidity)) {
-            return httpResponses.badRequest(
-                'Room ID und mindestens ein Sollwert (target_temp oder target_humidity) sind erforderlich'
-            );
-        }
+        Room.validate({
+            room_id: roomId,
+            name: 'Temporary',
+            ...targetData
+        });
 
         // Service-Aufruf zur Aktualisierung der Sollwerte
-        const result = await roomService.updateRoomTargets(roomId, { target_temp, target_humidity });
+        const result = await roomService.updateRoomTargets(roomId, targetData);
         return httpResponses.success(result, 200);
     }),
 });

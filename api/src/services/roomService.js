@@ -3,6 +3,7 @@ const sensorRepository = require('../repository/sensorRepository');
 const settingsRepository = require('../repository/settingsRepository');
 const sensorService = require('./sensorService');
 const notificationService = require('./notificationService');
+const Room = require('../models/Room');
 
 async function getRooms(roomId) {
     const rooms = await roomRepository.fetchRooms(roomId);
@@ -14,13 +15,18 @@ async function getRooms(roomId) {
         error.status = 404;
         throw error;
     }
-    return rooms;
+    return rooms.map(room => Room.fromDb(room));
 }
 
 async function addRoom(roomData) {
-    const { room_id, sensor_id } = roomData;  // sensor_id hier extrahieren
 
-    await roomRepository.saveRoom(roomData);
+    Room.validate(roomData);
+
+    const { room_id, sensor_id } = roomData;  // sensor_id hier extrahieren
+    
+    const newRoom = new Room(roomData);
+
+    await roomRepository.saveRoom(newRoom.toJSON());
 
     if (sensor_id) {
         const assignedRoom = await roomRepository.getRoomBySensor(sensor_id, room_id);  // room_id übergeben
@@ -36,6 +42,8 @@ async function addRoom(roomData) {
 
 
 async function updateRoom(roomId, roomData) {
+    Room.validate({ room_id: roomId, ...roomData });
+
     const { name, sensor_id, image_url, target_temp, target_humidity } = roomData;
 
     if (sensor_id) {
