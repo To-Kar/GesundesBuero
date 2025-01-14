@@ -199,7 +199,7 @@ export default {
 }
 /* Buttons */
 .delete-confirm-button {
-  background-color: #dc3545;
+  background-color: #cc443c;
   color: #fff;
   padding: 10px 20px;
   border: none;
@@ -207,13 +207,13 @@ export default {
   cursor: pointer;
 }
 .delete-confirm-button:hover {
-  background-color: #c82333;
+  background-color: #cc443c;
 }
 /* Löschen-Button (außerhalb des Modals) */
 .delete-button {
   margin-left: 0px;
   margin-top: 15px;
-  background-color: #dc3545;
+  background-color: #cc443c;
   color: #fff;
   padding: 10px 20px;
   /* Innenabstand */
@@ -281,7 +281,7 @@ export default {
 }
 
 .input-field:focus {
-  border-color: #0083bc;
+  border-color: hsl(210, 80%, 60%);;
   outline: none;
 }
 
@@ -294,13 +294,13 @@ export default {
 
 
 .edit-button {
-  background-color: #0083bc;
+  background-color: hsl(210, 80%, 60%);;
   color: #fff;
   padding: 10px 20px;
 }
 
 .save-button {
-  background-color: #0083bc;
+  background-color: hsl(210, 80%, 60%);;
   color: #fff;
   padding: 10px 20px;
 }
@@ -344,7 +344,7 @@ export default {
 button {
   margin: 0 10px;
   padding: 1px 7px;
-  background-color: #0083bc;
+  background-color: hsl(210, 80%, 60%);;
   color: whitesmoke;
   border: none;
   border-radius: 45px;
@@ -366,7 +366,7 @@ button:hover {
 .room-detail .set-value .target,
 .room-detail .set-humid .target {
   font-weight: bold;
-  color: #0083bc;
+  color: hsl(210, 80%, 60%);;
   font-size: 22px;
 }
 </style>

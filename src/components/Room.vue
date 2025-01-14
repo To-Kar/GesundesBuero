@@ -189,7 +189,6 @@ export default {
 .room-card:hover {
   transform: scale(1.01);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
-  /* Weicher Schatten */
 }
 
 .room-image-container {
@@ -324,7 +323,7 @@ export default {
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-  flex-shrink: 0; /* Verhindert das Schrumpfen der Icons */
+  flex-shrink: 0; 
   background-image: url('../assets/no-sensor.png');
 }
 .connection-status {

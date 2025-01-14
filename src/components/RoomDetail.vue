@@ -461,54 +461,52 @@ export default {
 /*Raum bearbeiten Styles */
 .header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
 }
 
 .editable-title {
-  font-size: 2rem;
-  font-weight: bold;
-  margin: 0;
   color: #a3a3a3;
   border: none;
   background: transparent;
-  font-family: inherit;
-}
-
-.edit-actions {
-  right: 60px;
-  display: flex;
-  gap: 5px;
-  align-items: center;
 }
 
 .room-title {
-  font-size: 35px;
-  margin: 0;
-  font-weight: bold;
-  padding: 1px;
+  font-size: 32px;
+  line-height: 38.4px;
+  letter-spacing: -0.68px;
+  font-weight: 700;
 }
 
 .edit-button {
-  background-color: #0083bc;
+  background-color: hsl(210, 80%, 60%);
   color: #fff;
   padding: 10px 20px;
+  font-size: 18px;
+  line-height: 25.2px;
+  letter-spacing: 0.009em;
+  font-weight: 400;
 }
-
-.save-button {
-  background-color: #0083bc;
-  color: #fff;
-  padding: 10px 20px;
-}
-
 .cancel-button {
   background-color: #a0a0a0;
   color: #fff;
   border-radius: 35px;
   padding: 10px 20px;
+  font-size: 18px;
+  line-height: 25.2px;
+  letter-spacing: 0.009em;
+  font-weight: 400;
 }
-
+.save-button {
+  background-color: hsl(210, 80%, 60%);
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 18px;
+  line-height: 25.2px;
+  letter-spacing: 0.009em;
+  font-weight: 400;
+}
 /* Overlay */
 .overlay {
   position: fixed;
@@ -543,6 +541,7 @@ export default {
   right: 0px;
   border: none;
   font-size: 30px;
+  font-weight: 700;
   cursor: pointer;
   background-color: whitesmoke;
   color: #000000;
@@ -554,42 +553,41 @@ export default {
 .room-detail {
   position: fixed;
   bottom: 0;
-  left: 3%;
+  left: 50%;
+  transform: translateX(-50%);
   width: 92%;
   height: 65%;
   background-color: whitesmoke;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 4px 12px #00000014;
   z-index: 100;
   overflow-y: auto;
   border-top-right-radius: 30px;
   border-top-left-radius: 30px;
-  padding: 20px;
+  padding: 24px;
 }
 
 /* Flexbox-Layout für Bild und Details */
 .content {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
   align-items: flex-start;
-  gap: 20px;
 }
 
 /* Bild */
 .room-image {
-  max-width: 50%;
-  max-height: 900px;
-  object-fit: contain;
-  border-radius: 15px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-top: 37px;
+  width: 500px;
+  height: 340px;
+  object-fit: cover;
+  border-radius: 18px;
+  box-shadow: 2px 4px 12px #00000014;
+  margin-right: 24px;
 }
 
 /* Buttons */
 button {
   margin: 0 10px;
   padding: 1px 7px;
-  background-color: #0083bc;
+  background-color: hsl(210, 80%, 60%);
   color: whitesmoke;
   border: none;
   border-radius: 45px;
@@ -601,9 +599,22 @@ button {
 button:hover {
   transform: scale(1.1);
 }
+.widget-container {
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  gap: 24px;
+  width: 100%;
+  position: relative;
+}
+.widget-container > *:last-child {
+  position: relative; 
+  left: 0;
+  margin-left: 0;
+}
 
 /* Responsive Design: Mobile Ansicht */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 920px) {
   .content {
     flex-direction: column;
     align-items: center;
@@ -612,24 +623,32 @@ button:hover {
   
   .room-detail {
     height: 70%;
-    width: 85%;
+    width: 88%;
   }
   
   .details {
     width: 100%;
-    text-align: center;
+    display: flex;   
+    justify-content: center;
     align-items: center;
   }
   
   .room-image {
-    max-width: 90%;
-    max-height: 200px;
-    margin-top: 20px;
+    max-width: 340px;
+    width: 100%;
+    height: 200px;
+    margin-right: 0;
   }
 
   .widget-container {
     padding: 0;
-    gap: 30px;
+    gap: 24px;
+    justify-content: center;
+  }
+  .widget-container > *:last-child {
+    position: unset;
+    left: unset;
+    transform: unset;
   }
 }
 </style>

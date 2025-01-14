@@ -117,48 +117,37 @@ export default {
   }
 };
 </script>
-<style>
-.widget-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 60px;
-  padding: 75px;
-  padding-top: 37px;
-  box-sizing: border-box;
-}
-
+<style scoped>
 .widget {
   background-color: #f9f9f9;
-  border-radius: 25px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 2px 4px 12px #00000014;
   width: 340px;
   height: 340px;
   text-align: center;
-  border: 1px solid #ddd;
   position: relative;
 }
 
 .widget-title {
-  font-size: 22px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 0px;
+  font-size: 26px;
+  line-height: 30.8px;   
+  font-weight: 700;       
+  color: black; 
 }
 
 .widget-value {
   font-size: 22px;
-  font-weight: bold;
-  color: #333;
+  line-height: 30.8px;   
+  font-weight: 700;       
+  color: black; 
 }
 
 .control-overlay {
   position: absolute;
-  bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
+  bottom: 30px;
   z-index: 2;
 }
 
@@ -167,8 +156,8 @@ export default {
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 250px;
-  margin: 0 auto;
+  height: calc(100% - 100px);
+  padding: 0 12px;
   box-sizing: border-box;
   position: relative;
 }
@@ -182,39 +171,36 @@ export default {
 
 .widget-button {
   border-radius: 50px;
-  margin: 0px 5px;
-  padding: 2px 7px;
+  padding: 0px 24px;
 }
 
 .target {
   font-size: 22px;
-  font-weight: bold;
-  color: #0083bc;
+  line-height: 30.8px;   
+  font-weight: 700;
+  color: hsl(210, 80%, 60%);
 }
 
 .set-value {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
 }
 
 /* Buttons */
 button {
-
-  background-color: #0083bc;
+  background-color: hsl(210, 80%, 60%);
   color: whitesmoke;
   border: none;
   cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 12px;
+  transition: all .3s cubic-bezier(0, 0, .5, 1);
 }
 
 button:hover {
-  transform: scale(1.1);
+  transform: scale(1.02);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
 }
-
-
-
-
 </style>

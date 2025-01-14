@@ -252,6 +252,7 @@ export default {
   flex-wrap: wrap;
   justify-content: center;
   gap: 1rem;
+  padding: 0.7rem;
 }
 
 .room-view>* {
