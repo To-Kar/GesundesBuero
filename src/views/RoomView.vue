@@ -118,6 +118,7 @@ export default {
         room.temperature = updatedRoom.temperature;
         room.humidity = updatedRoom.humidity;
         room.co2 = updatedRoom.co2;
+        room.is_connected = updatedRoom.is_connected;
       }
     },
 
