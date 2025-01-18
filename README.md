@@ -182,7 +182,10 @@ Passen Sie Ihre Komfortzonen und Warnmeldungen an. Sie können auch Benachrichti
 
 6. Deploymentprozess / CI/CD:  
    - GitHub Actions für automatisches Bauen und Bereitstellen bei jedem Push auf main  
-   - Optionales Test-Deployment für Pull Requests  
+   - Optionales Test-Deployment für Pull Requests
+
+7. Hardware Integration:
+   - Sensorskript installieren auf dem Raspberry Pi (https://github.com/kevinboehmisch/Gesundes_Buero_Raspberry_Pi/tree/main)
 
 ---
 
